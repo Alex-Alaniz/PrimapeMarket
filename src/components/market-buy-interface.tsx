@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
 import { prepareContractCall, readContract, toWei } from "thirdweb";
 import { contract, tokenContract } from "@/constants/contract";
-import { approve } from "thirdweb/extensions/erc20";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast"
@@ -115,7 +114,7 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
         setIsApproving(true);
         try {
             // Verify contract setup
-            const contractInfo = await debugContractAddresses();
+            await debugContractAddresses();
             const bettingToken = await readContract({
                 contract,
                 method: "function bettingToken() view returns (address)",
@@ -173,11 +172,11 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
                 description: "You can now proceed with the purchase.",
                 duration: 5000,
             });
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
             console.error("Approval error:", error);
             toast({
                 title: "Approval Failed",
-                description: error?.message || "Failed to approve token spending. Please try again.",
+                description: error instanceof Error ? error.message : "Failed to approve token spending. Please try again.",
                 variant: "destructive",
             });
         } finally {
