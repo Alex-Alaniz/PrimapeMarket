@@ -1,6 +1,6 @@
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toFixed } from "@/lib/utils";
 
 interface MarketSharesDisplayProps {
@@ -47,16 +47,23 @@ export function MarketSharesDisplay({
     useEffect(() => {
         if (!sharesBalance || !market) return;
 
-        const newWinnings = {
-            A: calculateWinnings('A'),
-            B: calculateWinnings('B')
+        // Memoize calculateWinnings function using useCallback
+        const calculateCurrentWinnings = (option: 'A' | 'B') => {
+            if (!sharesBalance || !market) return BigInt(0);
+            const totalShares = Number(market.totalOptionAShares) + Number(market.totalOptionBShares);
+            if (totalShares === 0) return BigInt(0);
+            
+            const shares = option === 'A' ? sharesBalance.optionAShares : sharesBalance.optionBShares;
+            return shares;
         };
 
-        // Only update if values actually changed
-        if (newWinnings.A !== winnings.A || newWinnings.B !== winnings.B) {
-            setWinnings(newWinnings);
-        }
-    }, [sharesBalance, market.totalOptionAShares, market.totalOptionBShares]);
+        const newWinnings = {
+            A: calculateCurrentWinnings('A'),
+            B: calculateCurrentWinnings('B')
+        };
+
+        setWinnings(newWinnings);
+    }, [sharesBalance, market?.totalOptionAShares, market?.totalOptionBShares, market]);
 
     const displayWinningsA = toFixed(Number(toEther(winnings.A)), 2);
     const displayWinningsB = toFixed(Number(toEther(winnings.B)), 2);
