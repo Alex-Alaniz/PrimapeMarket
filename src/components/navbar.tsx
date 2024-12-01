@@ -89,7 +89,7 @@ export function Navbar() {
                                 Claiming...
                             </>
                         ) : (
-                            'Claim Tokens'
+                            'FREE JungleJuice'
                         )}
                     </Button>
                 )}
