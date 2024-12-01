@@ -10,7 +10,7 @@ interface MarketSharesDisplayProps {
         totalOptionAShares: bigint;
         totalOptionBShares: bigint;
     };
-    sharesBalance: {
+    sharesBalance?: {
         optionAShares: bigint;
         optionBShares: bigint;
     };
@@ -20,34 +20,14 @@ export function MarketSharesDisplay({
     market,
     sharesBalance,
 }: MarketSharesDisplayProps) {
-    const [winnings, setWinnings] = useState<{ A: bigint; B: bigint }>({ 
-        A: BigInt(0), 
-        B: BigInt(0) 
+    const [winnings, setWinnings] = useState({
+        A: BigInt(0),
+        B: BigInt(0)
     });
-
-    const calculateWinnings = (option: 'A' | 'B') => {
-        if (!sharesBalance || !market) return BigInt(0);
-
-        const userShares = option === 'A' ? sharesBalance.optionAShares : sharesBalance.optionBShares;
-        const totalSharesForOption = option === 'A' ? market.totalOptionAShares : market.totalOptionBShares;
-        const totalLosingShares = option === 'A' ? market.totalOptionBShares : market.totalOptionAShares;
-
-        if (totalSharesForOption === BigInt(0)) return BigInt(0);
-
-        // Calculate user's proportion of the winning side
-        const userProportion = (userShares * BigInt(1000000)) / totalSharesForOption; // Multiply by 1M for precision
-        
-        // Calculate their share of the losing side's shares
-        const winningsFromLosingShares = (totalLosingShares * userProportion) / BigInt(1000000);
-        
-        // Total winnings is their original shares plus their proportion of losing shares
-        return userShares + winningsFromLosingShares;
-    };
 
     useEffect(() => {
         if (!sharesBalance || !market) return;
 
-        // Memoize calculateWinnings function using useCallback
         const calculateCurrentWinnings = (option: 'A' | 'B') => {
             if (!sharesBalance || !market) return BigInt(0);
             const totalShares = Number(market.totalOptionAShares) + Number(market.totalOptionBShares);
@@ -71,7 +51,7 @@ export function MarketSharesDisplay({
     return (
         <div className="flex flex-col gap-2">
             <div className="w-full text-sm text-muted-foreground">
-                Your shares: {market.optionA} - {Math.floor(parseInt(toEther(sharesBalance?.optionAShares)))}, {market.optionB} - {Math.floor(parseInt(toEther(sharesBalance?.optionBShares)))}
+                Your shares: {market.optionA} - {Math.floor(parseInt(toEther(sharesBalance?.optionAShares ?? BigInt(0))))}, {market.optionB} - {Math.floor(parseInt(toEther(sharesBalance?.optionBShares ?? BigInt(0))))}
             </div>
             {(winnings.A > 0 || winnings.B > 0) && (
                 <div className="flex flex-col gap-1">
