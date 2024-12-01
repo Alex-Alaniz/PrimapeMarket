@@ -1,6 +1,6 @@
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { toFixed } from "@/lib/utils";
 
 interface MarketSharesDisplayProps {

@@ -233,9 +233,9 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
             });
             
             handleCancel();
-        } catch (error: any) {
+        } catch (error: Error | unknown) {
             console.error("Purchase error details:", {
-                error: error?.message || error,
+                error: error instanceof Error ? error.message : String(error),
                 tokenContract: tokenContract.address,
                 marketContract: contract.address,
                 chainId: contract.chain.id,
@@ -243,7 +243,7 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
             });
             toast({
                 title: "Purchase Failed",
-                description: error?.message || "There was an error processing your purchase. Please try again.",
+                description: error instanceof Error ? error.message : "There was an error processing your purchase. Please try again.",
                 variant: "destructive",
             });
         } finally {
