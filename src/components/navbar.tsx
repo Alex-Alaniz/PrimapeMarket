@@ -1,11 +1,40 @@
 import { ConnectButton, lightTheme, useActiveAccount } from "thirdweb/react";
 import { client } from "@/app/client";
-import { baseSepolia } from "thirdweb/chains";
-import { inAppWallet } from "thirdweb/wallets";
+import { defineChain } from "thirdweb/chains";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+
+// Define wallets array outside the component
+const wallets = [
+    inAppWallet({
+        auth: {
+            options: [
+                "google",
+                "discord",
+                "telegram",
+                "farcaster",
+                "email",
+                "x",
+                "passkey",
+                "phone",
+                "github",
+                "twitch",
+                "coinbase",
+                "apple",
+                "line",
+                "facebook",
+            ],
+        },
+    }),
+    createWallet("io.metamask"),
+    createWallet("com.coinbase.wallet"),
+    createWallet("me.rainbow"),
+    createWallet("io.rabby"),
+    createWallet("io.zerion.wallet"),
+];
 
 export function Navbar() {
     const account = useActiveAccount();
@@ -43,7 +72,10 @@ export function Navbar() {
     
     return (
         <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Simple Prediction Market</h1>
+            <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">Primape Market</h1>
+                <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-semibold">BETA</span>
+            </div>
             <div className="items-center flex gap-2">
                 {account && (
                     <Button 
@@ -64,7 +96,13 @@ export function Navbar() {
                 <ConnectButton 
                     client={client} 
                     theme={lightTheme()}
-                    chain={baseSepolia}
+                    chain={defineChain(33139)}
+                    wallets={wallets}
+                    connectModal={{
+                        size: "compact",
+                        title: "Primapes Markets",
+                        showThirdwebBranding: false,
+                    }}
                     connectButton={{
                         style: {
                             fontSize: '0.75rem !important',
@@ -74,14 +112,11 @@ export function Navbar() {
                     }}
                     detailsButton={{
                         displayBalanceToken: {
-                            [baseSepolia.id]: "0x4D9604603527322F44c318FB984ED9b5A9Ce9f71"
+                            [defineChain(33139).id]: "0x173c93e5DD071F4EDbc52f1BA22C014D34CFEf5e"
                         }
                     }}
-                    wallets={[
-                        inAppWallet(),
-                    ]}
                     accountAbstraction={{
-                        chain: baseSepolia,
+                        chain: defineChain(33139),
                         sponsorGas: true,
                     }}
                 />

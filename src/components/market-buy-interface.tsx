@@ -97,19 +97,89 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
         }
     };
 
-    // Handle token approval transaction
+    // Add this debug function at the top of your component
+    const debugContractAddresses = async () => {
+        console.log("Contract Addresses:", {
+            predictionContract: contract.address,
+            tokenContract: tokenContract.address,
+            bettingTokenFromContract: await readContract({
+                contract,
+                method: "function bettingToken() view returns (address)",
+                params: []
+            })
+        });
+    };
+
+    // Modify handleSetApproval to use this check
     const handleSetApproval = async () => {
         setIsApproving(true);
         try {
-            const tx = await approve({
-                contract: tokenContract,
-                spender: contract.address,
-                amount: amount
+            // Verify contract setup
+            const contractInfo = await debugContractAddresses();
+            const bettingToken = await readContract({
+                contract,
+                method: "function bettingToken() view returns (address)",
+                params: []
             });
-            await mutateTransaction(tx);
+
+            // Validate token addresses match
+            if (bettingToken.toLowerCase() !== tokenContract.address.toLowerCase()) {
+                throw new Error(`Token mismatch: Contract expects ${bettingToken}, but using ${tokenContract.address}`);
+            }
+
+            const amountInTokenDecimals = await convertToTokenDecimals(amount);
+            
+            console.log("Approval Details:", {
+                tokenBeingApproved: tokenContract.address,
+                spenderAddress: contract.address,
+                amount: amountInTokenDecimals
+            });
+
+            // Prepare and send approval transaction
+            const tx = await prepareContractCall({
+                contract: tokenContract,
+                method: "function approve(address spender, uint256 amount) returns (bool)",
+                params: [contract.address, BigInt(amountInTokenDecimals)]
+            });
+
+            // Wait for transaction to be confirmed
+            const result = await mutateTransaction(tx);
+            console.log("Approval transaction confirmed:", result);
+            
+            // Add a small delay to allow the blockchain to update
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Verify allowance after approval
+            const newAllowance = await readContract({
+                contract: tokenContract,
+                method: "function allowance(address owner, address spender) view returns (uint256)",
+                params: [account?.address as string, contract.address]
+            });
+            
+            console.log("Allowance verification:", {
+                owner: account?.address,
+                spender: contract.address,
+                allowance: newAllowance.toString()
+            });
+
+            if (BigInt(newAllowance) < BigInt(amountInTokenDecimals)) {
+                throw new Error("Approval failed: Allowance not set correctly");
+            }
+
             setBuyingStep('confirm');
-        } catch (error) {
-            console.error(error);
+            
+            toast({
+                title: "Approval Successful",
+                description: "You can now proceed with the purchase.",
+                duration: 5000,
+            });
+        } catch (error: any) {
+            console.error("Approval error:", error);
+            toast({
+                title: "Approval Failed",
+                description: error?.message || "Failed to approve token spending. Please try again.",
+                variant: "destructive",
+            });
         } finally {
             setIsApproving(false);
         }
@@ -124,31 +194,88 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
 
         setIsConfirming(true);
         try {
+            const amountInWei = toWei(amount.toString());
+            
+            // Final allowance check
+            const finalCheck = await readContract({
+                contract: tokenContract,
+                method: "function allowance(address owner, address spender) view returns (uint256)",
+                params: [account?.address as string, contract.address]
+            });
+            
+            console.log("Final pre-purchase checks:", {
+                requiredAmount: amountInWei.toString(),
+                currentAllowance: finalCheck.toString(),
+                marketId,
+                isOptionA: selectedOption === 'A',
+                userAddress: account?.address,
+                marketContract: contract.address,
+                tokenContract: tokenContract.address
+            });
+
+            if (finalCheck < BigInt(amountInWei)) {
+                throw new Error(`Insufficient allowance. Required: ${amountInWei}, Got: ${finalCheck}`);
+            }
+
+            // Proceed with purchase
             const tx = await prepareContractCall({
                 contract,
                 method: "function buyShares(uint256 _marketId, bool _isOptionA, uint256 _amount)",
-                params: [BigInt(marketId), selectedOption === 'A', BigInt(toWei(amount.toString()))]
+                params: [BigInt(marketId), selectedOption === 'A', BigInt(amountInWei)]
             });
-            await mutateTransaction(tx);
-            
-            // Show success toast
+
+            const result = await mutateTransaction(tx);
+            console.log("Purchase complete:", result);
+
             toast({
                 title: "Purchase Successful!",
                 description: `You bought ${amount} ${selectedOption === 'A' ? market.optionA : market.optionB} shares`,
-                duration: 5000, // 5 seconds
-            })
+                duration: 5000,
+            });
             
             handleCancel();
-        } catch (error) {
-            console.error(error);
-            // Optionally show error toast
+        } catch (error: any) {
+            console.error("Purchase error details:", {
+                error: error?.message || error,
+                tokenContract: tokenContract.address,
+                marketContract: contract.address,
+                chainId: contract.chain.id,
+                account: account?.address
+            });
             toast({
                 title: "Purchase Failed",
-                description: "There was an error processing your purchase",
+                description: error?.message || "There was an error processing your purchase. Please try again.",
                 variant: "destructive",
-            })
+            });
         } finally {
             setIsConfirming(false);
+        }
+    };
+
+    const convertToTokenDecimals = async (amount: number) => {
+        try {
+            const decimals = await readContract({
+                contract: tokenContract,
+                method: "function decimals() view returns (uint8)",
+                params: []
+            });
+            console.log("Token decimals:", decimals);
+            
+            // Convert to string first to avoid floating point issues
+            const amountString = amount.toString();
+            const multiplier = BigInt(10) ** BigInt(decimals);
+            const amountInTokenDecimals = BigInt(amountString) * multiplier;
+            
+            console.log("Amount conversion:", {
+                originalAmount: amount,
+                multiplier: multiplier.toString(),
+                finalAmount: amountInTokenDecimals.toString()
+            });
+            
+            return amountInTokenDecimals.toString();
+        } catch (error) {
+            console.error("Error getting token decimals:", error);
+            return toWei(amount.toString());
         }
     };
 
@@ -256,7 +383,7 @@ export function MarketBuyInterface({ marketId, market }: MarketBuyInterfaceProps
                             // Amount input step
                             <div className="flex flex-col">
                                 <span className="text-xs text-gray-500 mb-1">
-                                    {`1 ${selectedOption === 'A' ? market.optionA : market.optionB} = 1 PREDICT`}
+                                    {`1 ${selectedOption === 'A' ? market.optionA : market.optionB} = 1 JungleJuice`}
                                 </span>
                                 <div className="flex flex-col gap-1 mb-4">
                                     <div className="flex items-center gap-2 overflow-visible">

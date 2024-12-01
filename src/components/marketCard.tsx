@@ -8,6 +8,7 @@ import { MarketResolved } from "./market-resolved";
 import { MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
+import Image from "next/image";
 
 // Props for the MarketCard component
 // index is the market id
@@ -27,6 +28,7 @@ interface Market {
   totalOptionAShares: bigint;
   totalOptionBShares: bigint;
   resolved: boolean;
+  image: string;
 }
 
 // Interface for the shares balance
@@ -55,7 +57,8 @@ export function MarketCard({ index, filter }: MarketCardProps) {
         outcome: marketData[4],
         totalOptionAShares: marketData[5],
         totalOptionBShares: marketData[6],
-        resolved: marketData[7]
+        resolved: marketData[7],
+        image: `/images/markets/${index + 1}.jpg`
     } : undefined;
 
     // Get the shares balance
@@ -103,9 +106,20 @@ export function MarketCard({ index, filter }: MarketCardProps) {
                 <MarketCardSkeleton />
             ) : (
                 <>
-                    <CardHeader>
-                        {market && <MarketTime endTime={market.endTime} />}
-                        <CardTitle>{market?.question}</CardTitle>
+                    <CardHeader className="relative flex flex-col gap-2">
+                        <div className="flex justify-between items-start gap-4">
+                            <div>
+                                {market && <MarketTime endTime={market.endTime} />}
+                                <CardTitle className="mt-2">{market?.question}</CardTitle>
+                            </div>
+                            <Image 
+                                src={market?.image || '/images/default-market.jpg'}
+                                alt={market?.question || "Market"}
+                                width={80}
+                                height={80}
+                                className="rounded-lg object-cover shadow-sm"
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {market && (
