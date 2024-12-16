@@ -1,67 +1,38 @@
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
-import { useEffect, useState } from "react";
-import { toFixed } from "@/lib/utils";
+import { Market } from "@/types/prediction-market";
 
 interface MarketSharesDisplayProps {
-    market: {
-        optionA: string;
-        optionB: string;
-        totalOptionAShares: bigint;
-        totalOptionBShares: bigint;
-    };
-    sharesBalance?: {
-        optionAShares: bigint;
-        optionBShares: bigint;
-    };
+    market: Market;
+    userShares: bigint[];
+    compact?: boolean;
 }
 
 export function MarketSharesDisplay({
     market,
-    sharesBalance,
+    userShares,
+    compact = false
 }: MarketSharesDisplayProps) {
-    const [winnings, setWinnings] = useState({
-        A: BigInt(0),
-        B: BigInt(0)
-    });
-
-    useEffect(() => {
-        if (!sharesBalance || !market) return;
-
-        const calculateCurrentWinnings = (option: 'A' | 'B') => {
-            if (!sharesBalance || !market) return BigInt(0);
-            const totalShares = Number(market.totalOptionAShares) + Number(market.totalOptionBShares);
-            if (totalShares === 0) return BigInt(0);
-            
-            const shares = option === 'A' ? sharesBalance.optionAShares : sharesBalance.optionBShares;
-            return shares;
-        };
-
-        const newWinnings = {
-            A: calculateCurrentWinnings('A'),
-            B: calculateCurrentWinnings('B')
-        };
-
-        setWinnings(newWinnings);
-    }, [sharesBalance, market?.totalOptionAShares, market?.totalOptionBShares, market]);
-
-    const displayWinningsA = toFixed(Number(toEther(winnings.A)), 2);
-    const displayWinningsB = toFixed(Number(toEther(winnings.B)), 2);
-
     return (
-        <div className="flex flex-col gap-2">
+        <div className={`flex flex-col ${compact ? 'gap-1' : 'gap-2'}`}>
             <div className="w-full text-sm text-muted-foreground">
-                Your shares: {market.optionA} - {Math.floor(parseInt(toEther(sharesBalance?.optionAShares ?? BigInt(0))))}, {market.optionB} - {Math.floor(parseInt(toEther(sharesBalance?.optionBShares ?? BigInt(0))))}
-            </div>
-            {(winnings.A > 0 || winnings.B > 0) && (
-                <div className="flex flex-col gap-1">
-                    <div className="text-xs text-muted-foreground">Winnings:</div>
-                    <div className="flex gap-2">
-                        <Badge variant="secondary">{market.optionA}: {displayWinningsA} shares</Badge>
-                        <Badge variant="secondary">{market.optionB}: {displayWinningsB} shares</Badge>
-                    </div>
+                Your shares:
+                <div className="flex flex-wrap gap-2 mt-1">
+                    {market.options.map((option, index) => {
+                        const shares = userShares[index] || BigInt(0);
+                        const sharesInEther = Number(toEther(shares)).toFixed(2);
+                        return (
+                            <Badge 
+                                key={index} 
+                                variant={Number(sharesInEther) > 0 ? "default" : "secondary"}
+                                className={compact ? 'text-xs py-0.5' : ''}
+                            >
+                                {option}: {sharesInEther}
+                            </Badge>
+                        );
+                    })}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

@@ -20,14 +20,22 @@ export function EnhancedPredictionMarketDashboard() {
         params: []
     });
 
+    console.log('Market Count:', marketCount ? Number(marketCount) : 'Loading...');
+    console.log('Is Loading:', isLoadingMarketCount);
+
     // Modified auto-scroll effect with pause functionality
     useEffect(() => {
-        if (!marketCount || isPaused) return;
+        if (!marketCount || Number(marketCount) === 0 || isPaused) {
+            console.log('Effect skipped:', { marketCount, isPaused });
+            return;
+        }
         
         const interval = setInterval(() => {
-            setCurrentCardIndex((prev) => 
-                prev + 1 >= Number(marketCount) ? 0 : prev + 1
-            );
+            setCurrentCardIndex((prev) => {
+                const nextIndex = prev + 1 >= Number(marketCount) ? 0 : prev + 1;
+                console.log('Updating card index:', nextIndex);
+                return nextIndex;
+            });
         }, 3000);
 
         return () => clearInterval(interval);
@@ -42,30 +50,29 @@ export function EnhancedPredictionMarketDashboard() {
         <div className="min-h-screen flex flex-col">
             <div className="flex-grow container mx-auto p-4">
                 <Navbar />
-                <div className="mb-4 relative h-[400px]">
+                <div className="mb-8 relative h-[450px] overflow-visible rounded-xl">
                     <Image 
                         src={`/images/markets/${currentCardIndex + 1}.jpg`}
                         alt="Market Banner"
                         fill
                         priority
-                        className="object-cover rounded-lg transition-all duration-500"
+                        className="object-cover brightness-50 transition-all duration-500"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-start justify-center pt-8">
                         <div 
-                            className="w-[400px] transform transition-all duration-500 hover:scale-105 z-10"
+                            className="w-[450px] max-w-[85%] transform transition-all duration-500 hover:scale-[1.02] z-10"
                             onMouseEnter={() => setIsPaused(true)}
                             onMouseLeave={() => setIsPaused(false)}
                         >
                             {!isLoadingMarketCount && (
-                                <div className="relative">
-                                    <MarketCard 
-                                        index={currentCardIndex} 
-                                        filter="active"
-                                    />
-                                    <div className="absolute w-full overflow-visible" style={{ top: '100%' }}>
-                                        <div className="pt-4">
-                                            {/* Market card's expanded content will render here */}
-                                        </div>
+                                <div className="relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
+                                    <div className="max-h-[420px] overflow-y-auto">
+                                        <MarketCard 
+                                            index={currentCardIndex} 
+                                            filter="active"
+                                            featured={true}
+                                            compact={true}
+                                        />
                                     </div>
                                 </div>
                             )}

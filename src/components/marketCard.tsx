@@ -8,109 +8,98 @@ import { MarketResolved } from "./market-resolved";
 import { MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
+import { Market, MarketFilter } from "@/types/prediction-market";
 import Image from "next/image";
 
-// Props for the MarketCard component
-// index is the market id
-// filter is the filter to apply to the market
 interface MarketCardProps {
-  index: number;
-  filter: 'active' | 'pending' | 'resolved';
+    index: number;
+    filter: MarketFilter;
+    featured?: boolean;
+    compact?: boolean;
 }
 
-// Interface for the market data
-interface Market {
-  question: string;
-  optionA: string;
-  optionB: string;
-  endTime: bigint;
-  outcome: number;
-  totalOptionAShares: bigint;
-  totalOptionBShares: bigint;
-  resolved: boolean;
-  image: string;
-}
-
-// Interface for the shares balance
-interface SharesBalance {
-  optionAShares: bigint;
-  optionBShares: bigint;
-}
-
-export function MarketCard({ index, filter }: MarketCardProps) {
-    // Get the active account
+export function MarketCard({ index, filter, featured = false, compact = false }: MarketCardProps) {
     const account = useActiveAccount();
 
-    // Get the market data
-    const { data: marketData, isLoading: isLoadingMarketData } = useReadContract({
+    // Get market info
+    const { data: marketInfo, isLoading: isLoadingMarketInfo } = useReadContract({
         contract,
-        method: "function getMarketInfo(uint256 _marketId) view returns (string question, string optionA, string optionB, uint256 endTime, uint8 outcome, uint256 totalOptionAShares, uint256 totalOptionBShares, bool resolved)",
+        method: "function getMarketInfo(uint256 _marketId) view returns (string question, uint256 endTime, bool resolved, uint256 winningOptionIndex)",
         params: [BigInt(index)]
     });
 
-    // Parse the market data
-    const market: Market | undefined = marketData ? {
-        question: marketData[0],
-        optionA: marketData[1],
-        optionB: marketData[2],
-        endTime: marketData[3],
-        outcome: marketData[4],
-        totalOptionAShares: marketData[5],
-        totalOptionBShares: marketData[6],
-        resolved: marketData[7],
-        image: `/images/markets/${index + 1}.jpg`
-    } : undefined;
-
-    // Get the shares balance
-    const { data: sharesBalanceData } = useReadContract({
+    // Get market options
+    const { data: marketOptions } = useReadContract({
         contract,
-        method: "function getSharesBalance(uint256 _marketId, address _user) view returns (uint256 optionAShares, uint256 optionBShares)",
-        params: [BigInt(index), account?.address as string]
+        method: "function getMarketOptions(uint256 _marketId) view returns (string[] memory)",
+        params: [BigInt(index)]
     });
 
-    // Parse the shares balance
-    const sharesBalance: SharesBalance | undefined = sharesBalanceData ? {
-        optionAShares: sharesBalanceData[0],
-        optionBShares: sharesBalanceData[1]
+    // Get market total shares
+    const { data: totalSharesData } = useReadContract({
+        contract,
+        method: "function getMarketTotalShares(uint256 _marketId) view returns (uint256[] memory)",
+        params: [BigInt(index)]
+    });
+
+    // Get user shares only if account exists
+    const { data: userShares } = useReadContract({
+        contract,
+        method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[] memory)",
+        params: [BigInt(index), account?.address || "0x0"]
+    });
+
+    // Parse market data with proper total shares handling
+    const market: Market | undefined = marketInfo && marketOptions ? {
+        question: marketInfo[0],
+        endTime: marketInfo[1],
+        resolved: marketInfo[2],
+        winningOptionIndex: Number(marketInfo[3]),
+        options: [...marketOptions],
+        totalSharesPerOption: totalSharesData ? [...totalSharesData] : Array(marketOptions.length).fill(BigInt(0)),
+        image: `/images/markets/${index + 1}.jpg` // Assuming the image path is based on the index
     } : undefined;
 
-    // Check if the market is expired
-    const isExpired = new Date(Number(market?.endTime) * 1000) < new Date();
-    // Check if the market is resolved
-    const isResolved = market?.resolved;
+    // Check if market is expired
+    const isExpired = market ? new Date(Number(market.endTime) * 1000) < new Date() : false;
 
-    // Check if the market should be shown
+    // Filter logic
     const shouldShow = () => {
         if (!market) return false;
         
         switch (filter) {
             case 'active':
-                return !isExpired;
+                return !isExpired && !market.resolved;
             case 'pending':
-                return isExpired && !isResolved;
+                return isExpired && !market.resolved;
             case 'resolved':
-                return isExpired && isResolved;
+                return market.resolved;
             default:
                 return true;
         }
     };
 
-    // If the market should not be shown, return null
     if (!shouldShow()) {
         return null;
     }
 
     return (
-        <Card key={index} className="flex flex-col">
-            {isLoadingMarketData ? (
+        <Card key={index} className={`flex flex-col ${featured ? 'border-0 shadow-none' : ''}`}>
+            {isLoadingMarketInfo ? (
                 <MarketCardSkeleton />
             ) : (
                 <>
-                    <CardHeader className="relative flex flex-col gap-2">
+                    <CardHeader className={`relative flex flex-col gap-2 ${compact ? 'p-4 pb-2' : ''}`}>
                         <div className="flex justify-between items-start gap-4">
-                            <div>
-                                {market && <MarketTime endTime={market.endTime} />}
-                                <CardTitle className="mt-2">{market?.question}</CardTitle>
+                            <div className="flex-1">
+                                {market && (
+                                    <div className={`${compact ? 'text-sm' : ''}`}>
+                                        <MarketTime endTime={market.endTime} />
+                                    </div>
+                                )}
+                                <CardTitle className={`mt-2 ${compact ? 'text-xl' : 'text-2xl'}`}>
+                                    {market?.question}
+                                </CardTitle>
                             </div>
                             <Image 
                                 src={market?.image || '/images/default-market.jpg'}
@@ -121,43 +110,48 @@ export function MarketCard({ index, filter }: MarketCardProps) {
                             />
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        {market && (
-                            <MarketProgress 
-                                optionA={market.optionA}
-                                optionB={market.optionB}
-                                totalOptionAShares={market.totalOptionAShares}
-                                totalOptionBShares={market.totalOptionBShares}
-                            />
+                    <CardContent className={compact ? 'px-4 py-2' : ''}>
+                        {market && market.options && market.totalSharesPerOption && (
+                            <div className="mb-4">
+                                <MarketProgress 
+                                    options={market.options}
+                                    totalShares={market.totalSharesPerOption}
+                                    _compact={compact}
+                                />
+                            </div>
                         )}
-                        {new Date(Number(market?.endTime) * 1000) < new Date() ? (
+                        {isExpired ? (
                             market?.resolved ? (
                                 <MarketResolved 
                                     marketId={index}
-                                    outcome={market.outcome}
-                                    optionA={market.optionA}
-                                    optionB={market.optionB}
+                                    winningOptionIndex={market.winningOptionIndex}
+                                    options={market.options}
+                                    totalShares={[...market.totalSharesPerOption]}
+                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
+                                    _compact={compact}
                                 />
                             ) : (
-                                <MarketPending />
+                                <MarketPending _compact={compact} />
                             )
                         ) : (
                             <MarketBuyInterface 
                                 marketId={index}
                                 market={market!}
+                                _compact={compact}
                             />
                         )}
                     </CardContent>
-                    <CardFooter>
-                        {market && sharesBalance && (
+                    <CardFooter className={compact ? 'p-4 pt-2' : ''}>
+                        {market && account && (
                             <MarketSharesDisplay 
                                 market={market}
-                                sharesBalance={sharesBalance}
+                                userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
+                                compact={compact}
                             />
                         )}
                     </CardFooter>
                 </>
             )}
         </Card>
-    )
+    );
 }

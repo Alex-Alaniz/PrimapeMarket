@@ -9,12 +9,12 @@ export function Footer() {
                     <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
                         Built by{" "}
                         <Link
-                            href="https://twitter.com/alexDotEth"
+                            href="https://x.com/primapemarkets"
                             target="_blank"
                             rel="noreferrer"
                             className="font-medium underline underline-offset-4"
                         >
-                            a bored developoor
+                            Primape Markets | BearifiedCo LLC
                         </Link>
                         . The source code is available on{" "}
                         <Link
@@ -30,7 +30,7 @@ export function Footer() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Link
-                        href="https://github.com/Alex-Alaniz/PrimapeMarket"
+                        href="https://github.com/Primape/PrimapeMarketsV1"
                         target="_blank"
                         rel="noreferrer"
                     >

@@ -70,3 +70,26 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.progress-bar {
+    @apply relative h-3 w-full overflow-hidden rounded-full bg-black/10;
+}
+
+.progress-bar-indicator {
+    @apply h-full w-full flex-1 bg-black transition-all duration-300 ease-in-out;
+}
+
+.container {
+    @apply mx-auto px-4;
+    max-width: 1400px;
+}
+
+.market-banner {
+    @apply relative h-[450px] overflow-hidden rounded-xl;
+    min-height: 450px;
+}
+
+.market-card-container {
+    @apply relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg;
+    min-height: 200px;
+}
