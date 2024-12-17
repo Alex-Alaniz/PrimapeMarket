@@ -69,7 +69,7 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
         
         switch (filter) {
             case 'active':
-                return !isExpired && !market.resolved;
+                return !market.resolved;
             case 'pending':
                 return isExpired && !market.resolved;
             case 'resolved':
@@ -120,19 +120,17 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
                                 />
                             </div>
                         )}
-                        {isExpired ? (
-                            market?.resolved ? (
-                                <MarketResolved 
-                                    marketId={index}
-                                    winningOptionIndex={market.winningOptionIndex}
-                                    options={market.options}
-                                    totalShares={[...market.totalSharesPerOption]}
-                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                    _compact={compact}
-                                />
-                            ) : (
-                                <MarketPending _compact={compact} />
-                            )
+                        {market?.resolved ? (
+                            <MarketResolved 
+                                marketId={index}
+                                winningOptionIndex={market.winningOptionIndex}
+                                options={market.options}
+                                totalShares={[...market.totalSharesPerOption]}
+                                userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
+                                _compact={compact}
+                            />
+                        ) : isExpired ? (
+                            <MarketPending _compact={compact} />
                         ) : (
                             <MarketBuyInterface 
                                 marketId={index}
