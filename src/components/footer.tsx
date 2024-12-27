@@ -24,10 +24,11 @@ export function Footer() {
                     {/* Left side - Brand and Built on */}
                     <div className="flex flex-col gap-8">
                         {/* Brand section */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <img src="/images/pm.PNG" alt="Primape Logo" className="h-8 w-auto" />
                             <h2 className="text-2xl font-bold">Primape Markets</h2>
-                            <p className="text-muted-foreground">Prime Markets for Ape Predictions.</p>
                         </div>
+                        <p className="text-muted-foreground">Prime Markets for Ape Predictions.</p>
                         
                         {/* Built on section */}
                         <div className="flex items-center gap-3">
@@ -48,10 +49,10 @@ export function Footer() {
                         <div>
                             <h3 className="font-semibold mb-4">Resources</h3>
                             <ul className="space-y-2">
-                                <li><Link href="/contact" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
-                                <li><Link href="/press" className="text-muted-foreground hover:text-foreground">Press</Link></li>
-                                <li><Link href="/learn" className="text-muted-foreground hover:text-foreground">Learn</Link></li>
-                                <li><Link href="/careers" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
+                                <li><Link href="https://discord.gg/kKuKNAHwNd" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
+                                <li><Link href="https://x.com/primapemarkets" className="text-muted-foreground hover:text-foreground">Press</Link></li>
+                                <li><Link href="https://docs.primape.markets/" className="text-muted-foreground hover:text-foreground">Learn</Link></li>
+                                <li><Link href="/" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
                             </ul>
                         </div>
 
@@ -62,7 +63,7 @@ export function Footer() {
                                 <Link href="https://x.com/primapemarkets" target="_blank" rel="noreferrer">
                                     <XLogo />
                                 </Link>
-                                <Link href="https://discord.gg/your-discord" target="_blank" rel="noreferrer">
+                                <Link href="https://discord.gg/kKuKNAHwNd" target="_blank" rel="noreferrer">
                                     <DiscordLogo />
                                 </Link>
                                 <Link href="https://github.com/Primape/PrimapeMarketsV1" target="_blank" rel="noreferrer">

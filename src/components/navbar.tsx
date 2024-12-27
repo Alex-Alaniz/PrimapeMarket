@@ -36,7 +36,8 @@ export function Navbar() {
     return (
         <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">Primape Market</h1>
+                <img src="/images/pm.PNG" alt="Primape Logo" className="h-8 w-auto" />
+                <h1 className="text-2xl font-bold">Primape Markets</h1>
                 <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-semibold">BETA</span>
             </div>
             <ConnectButton 
