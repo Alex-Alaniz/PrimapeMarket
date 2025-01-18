@@ -69,5 +69,3 @@ export function Navbar() {
         </div>
     );
 }
-
-export {ThemeProvider, useTheme};
