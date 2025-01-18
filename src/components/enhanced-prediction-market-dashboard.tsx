@@ -7,15 +7,12 @@ import { MarketCard } from './marketCard'
 import { Navbar } from './navbar'
 import { MarketCardSkeleton } from './market-card-skeleton'
 import { Footer } from "./footer"
-import { MarketFilters } from "./market-filters"
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export function EnhancedPredictionMarketDashboard() {
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     
     const { data: marketCount, isLoading: isLoadingMarketCount } = useReadContract({
         contract,
@@ -83,12 +80,6 @@ export function EnhancedPredictionMarketDashboard() {
                     </div>
                 </div>
                 <Tabs defaultValue="active" className="w-full">
-                    <MarketFilters
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        sortOrder={sortOrder}
-                        setSortOrder={setSortOrder}
-                    />
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="active">Active</TabsTrigger>
                         <TabsTrigger value="pending">Pending Resolution</TabsTrigger>
@@ -105,16 +96,13 @@ export function EnhancedPredictionMarketDashboard() {
                         <>
                             <TabsContent value="active">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {Array.from({ length: Number(marketCount) }, (_, index) => index)
-                                        .sort((a, b) => sortOrder === 'asc' ? a - b : b - a)
-                                        .map(index => (
-                                            <MarketCard 
-                                                key={index} 
-                                                index={index} 
-                                                filter="active"
-                                                searchQuery={searchQuery}
-                                            />
-                                        ))}
+                                    {Array.from({ length: Number(marketCount) }, (_, index) => (
+                                        <MarketCard 
+                                            key={index} 
+                                            index={index} 
+                                            filter="active"
+                                        />
+                                    ))}
                                 </div>
                             </TabsContent>
                             
