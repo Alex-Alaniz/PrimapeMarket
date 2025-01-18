@@ -125,6 +125,7 @@ export function EnhancedPredictionMarketDashboard() {
                                             key={index} 
                                             index={index}
                                             filter="pending"
+                                            searchQuery={searchQuery}
                                         />
                                     ))}
                                 </div>
@@ -137,6 +138,7 @@ export function EnhancedPredictionMarketDashboard() {
                                             key={index} 
                                             index={index}
                                             filter="resolved"
+                                            searchQuery={searchQuery}
                                         />
                                     ))}
                                 </div>
