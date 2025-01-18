@@ -69,7 +69,7 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
         if (!market) return false;
         
         // Search filter
-        if (searchQuery && searchQuery.length > 0) {
+        if (searchQuery && typeof searchQuery === 'string' && searchQuery.length > 0) {
             const query = searchQuery.toLowerCase();
             const questionMatch = market.question.toLowerCase().includes(query);
             const optionsMatch = market.options.some(option => 
