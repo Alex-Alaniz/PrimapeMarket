@@ -1,5 +1,6 @@
 import { Github } from "lucide-react"
 import Link from "next/link"
+import Image from 'next/image'; // Added import for Next.js Image component
 
 // Custom X (Twitter) logo component
 const XLogo = () => (
@@ -25,18 +26,20 @@ export function Footer() {
                     <div className="flex flex-col gap-8">
                         {/* Brand section */}
                         <div className="flex items-center gap-2">
-                            <img src="/images/pm.PNG" alt="Primape Logo" className="h-8 w-auto" />
+                            <Image src="/images/pm.PNG" alt="Primape Logo" width={24} height={24} className="h-8 w-auto" /> {/* Replaced img with Image */}
                             <h2 className="text-2xl font-bold">Primape Markets</h2>
                         </div>
                         <p className="text-muted-foreground">Prime Markets for Ape Predictions.</p>
-                        
+
                         {/* Built on section */}
                         <div className="flex items-center gap-3">
                             <span className="text-sm text-muted-foreground">Built on</span>
                             <Link href="https://apechain.com/" target="_blank" rel="noreferrer">
-                                <img 
-                                    src="/Powered by ApeCoin.png" 
-                                    alt="ApeChain Logo" 
+                                <Image
+                                    src="/Powered by ApeCoin.png"
+                                    alt="ApeChain Logo"
+                                    width={64} // Added width and height
+                                    height={64}
                                     className="h-16 w-auto"
                                 />
                             </Link>

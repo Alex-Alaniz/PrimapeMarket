@@ -2,6 +2,7 @@ import { ConnectButton, lightTheme } from "thirdweb/react";
 import { client } from "@/app/client";
 import { defineChain } from "thirdweb/chains";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
+import Image from 'next/image'; // Added import for Next.js Image component
 import { ThemeToggle } from "./theme-toggle";
 
 // Define wallets array outside the component
@@ -37,7 +38,13 @@ export function Navbar() {
     return (
         <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
-                <img src="/images/pm.PNG" alt="Primape Logo" className="h-8 w-auto" />
+                <Image
+                    src="/images/pm.PNG"
+                    alt="Primape Logo"
+                    width={32}
+                    height={32}
+                    className="h-8 w-auto"
+                />
                 <h1 className="text-2xl font-bold">Primape Markets</h1>
                 <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-semibold">BETA</span>
             </div>
