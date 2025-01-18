@@ -37,7 +37,12 @@ export function Footer() {
                                 <img 
                                     src="/Powered by ApeCoin.png" 
                                     alt="ApeChain Logo" 
-                                    className="h-16 w-auto"
+                                    className="h-16 w-auto block dark:hidden"
+                                />
+                                <img 
+                                    src="/Powered by ApeCoin-dark.png" 
+                                    alt="ApeChain Logo" 
+                                    className="h-16 w-auto hidden dark:block"
                                 />
                             </Link>
                         </div>
