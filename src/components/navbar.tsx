@@ -2,7 +2,7 @@ import { ConnectButton, lightTheme } from "thirdweb/react";
 import { client } from "@/app/client";
 import { defineChain } from "thirdweb/chains";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
-import { ThemeToggle } from "./theme-toggle";
+import { createContext, useContext, useState } from 'react';
 
 // Define wallets array outside the component
 const wallets = [
@@ -33,7 +33,34 @@ const wallets = [
     createWallet("io.zerion.wallet"),
 ];
 
+const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 
+const ThemeProvider = ({ children }) => {
+    const [theme, setTheme] = useState('light');
+
+    const toggleTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
+
+    return (
+        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+            {children}
+        </ThemeContext.Provider>
+    );
+};
+
+const useTheme = () => {
+    return useContext(ThemeContext);
+};
+
+const ThemeToggle = () => {
+    const { theme, toggleTheme } = useTheme();
+    return (
+        <button onClick={toggleTheme}>
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        </button>
+    );
+};
 
 
 export function Navbar() {
