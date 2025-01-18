@@ -16,6 +16,7 @@ interface MarketCardProps {
     filter: MarketFilter;
     featured?: boolean;
     compact?: boolean;
+    searchQuery?: string;
 }
 
 export function MarketCard({ index, filter, featured = false, compact = false }: MarketCardProps) {
@@ -66,6 +67,18 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
     // Filter logic
     const shouldShow = () => {
         if (!market) return false;
+        
+        // Search filter
+        if (searchQuery && searchQuery.length > 0) {
+            const query = searchQuery.toLowerCase();
+            const questionMatch = market.question.toLowerCase().includes(query);
+            const optionsMatch = market.options.some(option => 
+                option.toLowerCase().includes(query)
+            );
+            if (!questionMatch && !optionsMatch) {
+                return false;
+            }
+        }
         
         switch (filter) {
             case 'active':
