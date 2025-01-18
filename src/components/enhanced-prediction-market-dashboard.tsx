@@ -75,6 +75,7 @@ export function EnhancedPredictionMarketDashboard() {
                                             filter="active"
                                             featured={true}
                                             compact={true}
+                                            searchQuery={searchQuery}
                                         />
                                     </div>
                                 </div>
