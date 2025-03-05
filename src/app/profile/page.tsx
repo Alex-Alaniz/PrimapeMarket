@@ -19,7 +19,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const account = useActiveAccount();
   const address = account?.address;
-  const connect = useConnect();
+  const { connect } = useConnect();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -145,7 +145,7 @@ export default function ProfilePage() {
             <CardDescription>Connect your wallet to view or create your profile</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => connect()}>Connect Wallet</Button>
+            <Button onClick={() => connect.show()}>Connect Wallet</Button>
           </CardContent>
         </Card>
       </div>
