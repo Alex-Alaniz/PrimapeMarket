@@ -41,7 +41,7 @@ interface LinkRequestStatus {
 }
 
 export default function ProfilePage() {
-  const { account, isLoggedIn, AuthButton } = useAuth();
+  const { account, isLoggedIn, AuthButton, handleSignIn } = useAuth();
   const address = account?.address;
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
