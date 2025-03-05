@@ -2,12 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useActiveAccount, useConnect } from "thirdweb/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserProfile {
   user_id: number;
@@ -17,9 +17,8 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const account = useActiveAccount();
+  const { account, isLoggedIn, AuthButton } = useAuth();
   const address = account?.address;
-  const { connect } = useConnect();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -145,7 +144,7 @@ export default function ProfilePage() {
             <CardDescription>Connect your wallet to view or create your profile</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => connect.show()}>Connect Wallet</Button>
+            <AuthButton />
           </CardContent>
         </Card>
       </div>
