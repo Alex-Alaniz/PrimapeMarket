@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useActiveAccount, useConnect } from "thirdweb/react";
+import { useActiveAccount, useConnect, useConnectionStatus } from "thirdweb/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,10 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const address = useActiveAccount()?.address;
+  const account = useActiveAccount();
+  const address = account?.address;
   const connect = useConnect();
+  const connectionStatus = useConnectionStatus();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -25,12 +27,12 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (address) {
+    if (connectionStatus === "connected" && address) {
       fetchProfile();
-    } else {
+    } else if (connectionStatus === "disconnected" || connectionStatus === "connecting") {
       setLoading(false);
     }
-  }, [address]);
+  }, [address, connectionStatus]);
 
   async function fetchProfile() {
     try {
@@ -105,7 +107,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (!address) {
+  if (connectionStatus === "disconnected") {
     return (
       <div className="container mx-auto py-8">
         <Card>
@@ -115,6 +117,18 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <Button onClick={() => connect()}>Connect Wallet</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (connectionStatus === "connecting") {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">Connecting wallet...</div>
           </CardContent>
         </Card>
       </div>
