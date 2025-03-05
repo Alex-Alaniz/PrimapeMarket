@@ -1,4 +1,5 @@
 
+require('dotenv').config();
 const { Client } = require('@vercel/postgres');
 
 async function setupDatabase() {
