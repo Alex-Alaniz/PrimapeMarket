@@ -24,7 +24,12 @@ export default function LeaderboardPage() {
       try {
         const response = await fetch('/api/leaderboard');
         const data = await response.json();
-        setLeaderboard(data);
+        if (Array.isArray(data)) {
+          setLeaderboard(data);
+        } else {
+          console.error("Leaderboard data is not an array:", data);
+          setLeaderboard([]);
+        }
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       } finally {
