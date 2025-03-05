@@ -49,6 +49,10 @@ export function Navbar() {
                 <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-semibold">BETA</span>
             </div>
             <div className="flex items-center space-x-4">
+                <nav className="hidden md:flex items-center space-x-4 mr-4">
+                    <a href="/leaderboard" className="text-sm font-medium hover:text-primary">Leaderboard</a>
+                    <a href="/profile" className="text-sm font-medium hover:text-primary">Profile</a>
+                </nav>
                 <ThemeToggle />
                 <ConnectButton 
                     client={client} 
