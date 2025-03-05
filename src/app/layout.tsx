@@ -41,3 +41,40 @@ export default function RootLayout({
     </html>
   );
 }
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthWrapper } from "@/hooks/useAuth";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Primape Predictions",
+  description: "Prediction markets on ApeChain",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthWrapper>
+            {children}
+            <Toaster />
+          </AuthWrapper>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
