@@ -262,7 +262,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (!address) {
+  if (!isLoggedIn || !address) {
     return (
       <div className="container mx-auto py-8">
         <Card>
@@ -271,7 +271,9 @@ export default function ProfilePage() {
             <CardDescription>Connect your wallet to view or create your profile</CardDescription>
           </CardHeader>
           <CardContent>
-            <AuthButton />
+            <Button onClick={handleSignIn}>
+              Connect Wallet
+            </Button>
           </CardContent>
         </Card>
       </div>
