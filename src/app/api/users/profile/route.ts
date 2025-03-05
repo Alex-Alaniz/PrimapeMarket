@@ -46,6 +46,28 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  try {
+    const { wallet, displayName } = await request.json();
+    
+    if (!wallet || !displayName) {
+      return NextResponse.json({ error: 'Wallet address and display name are required' }, { status: 400 });
+    }
+    
+    // Check if user exists
+    const existingUser = await getUserByWallet(wallet);
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    const updatedUser = await updateUserDisplayName(wallet, displayName);
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
   const userId = parseInt(request.nextUrl.searchParams.get('userId') || '0');
   
   if (!userId) {

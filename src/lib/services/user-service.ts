@@ -1,4 +1,71 @@
 
+import { query } from '@/lib/db';
+
+export type User = {
+  user_id: number;
+  primary_wallet: string;
+  display_name: string;
+  created_at: string;
+};
+
+/**
+ * Get a user by their wallet address
+ */
+export async function getUserByWallet(wallet: string): Promise<User | null> {
+  const result = await query(
+    'SELECT * FROM users WHERE primary_wallet = $1',
+    [wallet.toLowerCase()]
+  );
+  
+  return result.rows[0] || null;
+}
+
+/**
+ * Create a new user
+ */
+export async function createUser(wallet: string, displayName: string): Promise<User> {
+  // Insert user
+  const userResult = await query(
+    'INSERT INTO users (primary_wallet, display_name) VALUES ($1, $2) RETURNING *',
+    [wallet.toLowerCase(), displayName]
+  );
+  
+  const user = userResult.rows[0];
+  
+  // Initialize user stats
+  await query(
+    'INSERT INTO user_stats (user_id) VALUES ($1)',
+    [user.user_id]
+  );
+  
+  return user;
+}
+
+/**
+ * Update a user's display name
+ */
+export async function updateUserDisplayName(wallet: string, displayName: string): Promise<User> {
+  const result = await query(
+    'UPDATE users SET display_name = $1 WHERE primary_wallet = $2 RETURNING *',
+    [displayName, wallet.toLowerCase()]
+  );
+  
+  return result.rows[0];
+}
+
+/**
+ * Get user statistics
+ */
+export async function getUserStats(userId: number) {
+  const result = await query(
+    'SELECT * FROM user_stats WHERE user_id = $1',
+    [userId]
+  );
+  
+  return result.rows[0] || null;
+}
+
+
 import { query, executeTransaction } from '../db';
 
 export interface User {
