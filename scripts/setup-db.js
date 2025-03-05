@@ -1,62 +1,47 @@
 
-require('dotenv').config();
-const { Client } = require('@vercel/postgres');
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
 
-async function setupDatabase() {
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-  
-  if (!connectionString) {
-    console.error('No database connection string found in environment variables!');
-    console.error('Please set up the DATABASE_URL in Replit Secrets.');
-    return;
-  }
-  
-  const client = new Client({
-    connectionString: connectionString
-  });
+dotenv.config();
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+async function setupTables() {
   try {
-    await client.connect();
-    console.log("Connected to database");
-
+    console.log('Setting up database tables...');
+    
     // Create users table
-    await client.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
-        primary_wallet VARCHAR(255) UNIQUE NOT NULL,
-        display_name VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        primary_wallet TEXT UNIQUE NOT NULL,
+        display_name TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log("Users table created/verified");
-
-    // Create user_market_activity table to track user participation
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS user_market_activity (
-        activity_id SERIAL PRIMARY KEY,
+    
+    // Create user_stats table for leaderboard
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_stats (
+        stat_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(user_id),
-        market_id INTEGER NOT NULL,
-        invested_amount NUMERIC(20, 18) NOT NULL DEFAULT 0,
-        claimed_amount NUMERIC(20, 18) NOT NULL DEFAULT 0,
-        participated_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        claimed_timestamp TIMESTAMP WITH TIME ZONE,
-        option_index INTEGER NOT NULL,
-        won BOOLEAN
+        total_invested BIGINT DEFAULT 0,
+        total_claimed BIGINT DEFAULT 0,
+        total_participated INTEGER DEFAULT 0,
+        total_won INTEGER DEFAULT 0,
+        total_lost INTEGER DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log("User market activity table created/verified");
-
-    console.log("Database setup complete");
+    
+    console.log('Database tables created successfully!');
   } catch (error) {
-    console.error('Error setting up database:', error.message);
-    console.error('Full error:', error);
+    console.error('Error setting up database tables:', error);
   } finally {
-    try {
-      await client.end();
-    } catch (err) {
-      console.error('Error closing connection:', err);
-    }
+    await pool.end();
   }
 }
 
-setupDatabase();
+setupTables();
