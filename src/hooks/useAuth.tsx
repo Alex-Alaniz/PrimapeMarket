@@ -26,7 +26,7 @@ export function useAuth() {
       // Add logout logic if needed
       setIsLoggedIn(false);
     } else {
-      connect.show();
+      connect();
     }
   };
 
