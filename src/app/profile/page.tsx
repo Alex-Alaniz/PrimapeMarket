@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWallet } from "thirdweb/react";
+import { useActiveAccount, useConnect } from "thirdweb/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,8 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { address, connect } = useWallet();
+  const address = useActiveAccount()?.address;
+  const connect = useConnect();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
