@@ -3,8 +3,16 @@ require('dotenv').config();
 const { Client } = require('@vercel/postgres');
 
 async function setupDatabase() {
+  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  
+  if (!connectionString) {
+    console.error('No database connection string found in environment variables!');
+    console.error('Please set up the DATABASE_URL in Replit Secrets.');
+    return;
+  }
+  
   const client = new Client({
-    connectionString: process.env.POSTGRES_URL
+    connectionString: connectionString
   });
 
   try {
@@ -43,7 +51,11 @@ async function setupDatabase() {
     console.error('Error setting up database:', error.message);
     console.error('Full error:', error);
   } finally {
-    await client.end();
+    try {
+      await client.end();
+    } catch (err) {
+      console.error('Error closing connection:', err);
+    }
   }
 }
 
