@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useActiveAccount, useConnect, useConnectionStatus } from "thirdweb/react";
+import { useActiveAccount, useConnect } from "thirdweb/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ export default function ProfilePage() {
   const account = useActiveAccount();
   const address = account?.address;
   const connect = useConnect();
-  const connectionStatus = useConnectionStatus();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -27,12 +26,12 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (connectionStatus === "connected" && address) {
+    if (address) {
       fetchProfile();
-    } else if (connectionStatus === "disconnected" || connectionStatus === "connecting") {
+    } else {
       setLoading(false);
     }
-  }, [address, connectionStatus]);
+  }, [address]);
 
   async function fetchProfile() {
     try {
@@ -107,7 +106,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (connectionStatus === "disconnected") {
+  if (!address) {
     return (
       <div className="container mx-auto py-8">
         <Card>
@@ -117,18 +116,6 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <Button onClick={() => connect()}>Connect Wallet</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (connectionStatus === "connecting") {
-    return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">Connecting wallet...</div>
           </CardContent>
         </Card>
       </div>
