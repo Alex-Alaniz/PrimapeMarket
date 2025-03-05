@@ -7,6 +7,7 @@ async function testConnection() {
   // Try both environment variables
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
   console.log('Connection string available:', !!connectionString);
+  console.log('Environment variables available:', Object.keys(process.env).filter(key => key.includes('DATABASE') || key.includes('POSTGRES')));
   
   if (!connectionString) {
     console.error('No database connection string found in environment variables!');
