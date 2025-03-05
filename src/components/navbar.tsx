@@ -1,9 +1,12 @@
-import { ConnectButton, lightTheme } from "thirdweb/react";
+import { ConnectButton, lightTheme, useActiveAccount } from "thirdweb/react";
 import { client } from "@/app/client";
 import { defineChain } from "thirdweb/chains";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
-import Image from 'next/image'; // Added import for Next.js Image component
+import Image from 'next/image';
 import { ThemeToggle } from "./theme-toggle";
+import Link from "next/link";
+import { User } from "lucide-react";
+import { Button } from "./ui/button";
 
 // Define wallets array outside the component
 const wallets = [
@@ -35,6 +38,8 @@ const wallets = [
 ];
 
 export function Navbar() {
+    const account = useActiveAccount();
+    
     return (
         <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
@@ -50,6 +55,16 @@ export function Navbar() {
             </div>
             <div className="flex items-center space-x-4">
                 <ThemeToggle />
+                
+                {account && (
+                    <Link href="/profile">
+                        <Button variant="ghost" size="sm" className="gap-2">
+                            <User className="h-4 w-4" />
+                            <span>Profile</span>
+                        </Button>
+                    </Link>
+                )}
+                
                 <ConnectButton 
                     client={client} 
                     theme={lightTheme()}
