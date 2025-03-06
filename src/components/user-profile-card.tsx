@@ -3,31 +3,21 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  useActiveAccount, 
-  useReadContract, 
-  AccountBalance,
-  AccountProvider,
-  type AccountBalanceInfo 
-} from 'thirdweb/react';
-import { client } from '@/app/client';
+import { useActiveAccount } from 'thirdweb/react';
 import { 
   Copy, 
   ExternalLink, 
   Check, 
-  Twitter as TwitterIcon,
-  Loader2
+  Twitter as TwitterIcon
 } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUserBalance } from '@/hooks/useUserBalance';
-import { contract } from '@/constants/contract';
-import { defineChain } from 'thirdweb/chains';
 
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { balance, portfolio, pnl, loading } = useUserBalance();
+  const { balance, portfolio, pnl } = useUserBalance();
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
@@ -87,51 +77,20 @@ export function UserProfileCard() {
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
-                  <span className="font-semibold text-sm">
-                    {account ? (
-                      <AccountProvider
-                        address={account.address}
-                        client={client} // Make sure client is imported
-                      >
-                        <AccountBalance
-                          chain={defineChain(33139)} // ApeChain
-                          loadingComponent={
-                            <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
-                          }
-                          formatFn={(props: AccountBalanceInfo) =>
-                            `${Math.ceil(props.balance * 100) / 100} ${props.symbol}`
-                          }
-                        />
-                      </AccountProvider>
-                    ) : (
-                      "0 APE"
-                    )}
-                  </span>
+                  <span className="font-semibold text-sm">{balance} APE</span>
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Portfolio</span>
-                  <span className="font-semibold text-sm">
-                    {loading ? (
-                      <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
-                    ) : (
-                      `${portfolio} APE`
-                    )}
-                  </span>
+                  <span className="font-semibold text-sm">{portfolio} APE</span>
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Profit/Loss</span>
                   <span className={cn(
                     "font-semibold text-sm",
-                    loading ? "" : (
-                      pnl.startsWith('+') ? "text-green-600" : 
-                      pnl.startsWith('-') ? "text-red-600" : ""
-                    )
+                    pnl.startsWith('+') ? "text-green-600" : 
+                    pnl.startsWith('-') ? "text-red-600" : ""
                   )}>
-                    {loading ? (
-                      <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
-                    ) : (
-                      `${pnl} APE`
-                    )}
+                    {pnl} APE
                   </span>
                 </div>
               </div>
