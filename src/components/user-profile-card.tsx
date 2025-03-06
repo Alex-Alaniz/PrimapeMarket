@@ -7,8 +7,10 @@ import {
   useActiveAccount, 
   useReadContract, 
   AccountBalance,
+  AccountProvider,
   type AccountBalanceInfo 
 } from 'thirdweb/react';
+import { client } from '@/app/client';
 import { 
   Copy, 
   ExternalLink, 
@@ -87,16 +89,20 @@ export function UserProfileCard() {
                   <span className="text-muted-foreground text-xs">Balance</span>
                   <span className="font-semibold text-sm">
                     {account ? (
-                      <AccountBalance
+                      <AccountProvider
                         address={account.address}
-                        chain={defineChain(33139)} // ApeChain
-                        loadingComponent={
-                          <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
-                        }
-                        formatFn={(props: AccountBalanceInfo) =>
-                          `${Math.ceil(props.balance * 100) / 100} ${props.symbol}`
-                        }
-                      />
+                        client={client} // Make sure client is imported
+                      >
+                        <AccountBalance
+                          chain={defineChain(33139)} // ApeChain
+                          loadingComponent={
+                            <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
+                          }
+                          formatFn={(props: AccountBalanceInfo) =>
+                            `${Math.ceil(props.balance * 100) / 100} ${props.symbol}`
+                          }
+                        />
+                      </AccountProvider>
                     ) : (
                       "0 APE"
                     )}
