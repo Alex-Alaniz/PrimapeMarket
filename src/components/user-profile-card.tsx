@@ -1,18 +1,22 @@
-'use client'
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useActiveAccount } from 'thirdweb/react';
-import { 
-  Copy, 
-  ExternalLink, 
-  Check, 
-  Twitter as TwitterIcon
-} from 'lucide-react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { useUserBalance } from '@/hooks/useUserBalance';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  useActiveAccount,
+  AccountProvider,
+  AccountAddress,
+} from "thirdweb/react";
+import {
+  Copy,
+  ExternalLink,
+  Check,
+  Twitter as TwitterIcon,
+} from "lucide-react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { useUserBalance } from "@/hooks/useUserBalance";
 
 export function UserProfileCard() {
   const account = useActiveAccount();
@@ -20,7 +24,7 @@ export function UserProfileCard() {
   const { balance, portfolio, pnl } = useUserBalance();
 
   const shortenAddress = (address: string) => {
-    if (!address) return '';
+    if (!address) return "";
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
 
@@ -37,7 +41,7 @@ export function UserProfileCard() {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden">
             {account ? (
-              <Image 
+              <Image
                 src={`https://api.dicebear.com/7.x/personas/svg?seed=${account.address}`}
                 alt="Profile"
                 width={96}
@@ -54,7 +58,7 @@ export function UserProfileCard() {
 
       <CardContent className="pt-16 pb-6 text-center">
         <h2 className="text-xl font-bold">
-          {account ? shortenAddress(account.address) : 'Not Connected'}
+          {account ? shortenAddress(account.address) : "Not Connected"}
         </h2>
 
         {account && (
@@ -80,16 +84,25 @@ export function UserProfileCard() {
                   <span className="font-semibold text-sm">{balance} APE</span>
                 </div>
                 <div className="flex flex-col p-2">
-                  <span className="text-muted-foreground text-xs">Portfolio</span>
+                  <span className="text-muted-foreground text-xs">
+                    Portfolio
+                  </span>
                   <span className="font-semibold text-sm">{portfolio} APE</span>
                 </div>
                 <div className="flex flex-col p-2">
-                  <span className="text-muted-foreground text-xs">Profit/Loss</span>
-                  <span className={cn(
-                    "font-semibold text-sm",
-                    pnl.startsWith('+') ? "text-green-600" : 
-                    pnl.startsWith('-') ? "text-red-600" : ""
-                  )}>
+                  <span className="text-muted-foreground text-xs">
+                    Profit/Loss
+                  </span>
+                  <span
+                    className={cn(
+                      "font-semibold text-sm",
+                      pnl.startsWith("+")
+                        ? "text-green-600"
+                        : pnl.startsWith("-")
+                          ? "text-red-600"
+                          : "",
+                    )}
+                  >
                     {pnl} APE
                   </span>
                 </div>
