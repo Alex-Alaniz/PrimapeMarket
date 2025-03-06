@@ -12,7 +12,7 @@ import { useActiveAccount } from 'thirdweb/react';
 import { Search } from 'lucide-react';
 
 export default function ProfilePage() {
-  const account = useActiveAccount();
+  const _account = useActiveAccount();
   const [activeTab, setActiveTab] = useState('current');
 
   return (

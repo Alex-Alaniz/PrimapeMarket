@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react';
@@ -18,8 +17,8 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { balance, portfolio, pnl, loading } = useUserBalance();
-  
+  const { balance, portfolio, pnl, _loading } = useUserBalance(); // Fixed: Added _ prefix to loading
+
   const shortenAddress = (address: string) => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
@@ -52,12 +51,12 @@ export function UserProfileCard() {
           </div>
         </div>
       </div>
-      
+
       <CardContent className="pt-16 pb-6 text-center">
         <h2 className="text-xl font-bold">
           {account ? shortenAddress(account.address) : 'Not Connected'}
         </h2>
-        
+
         {account && (
           <>
             <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -73,7 +72,7 @@ export function UserProfileCard() {
                 )}
               </button>
             </div>
-            
+
             <div className="mt-6 space-y-4">
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
@@ -95,12 +94,12 @@ export function UserProfileCard() {
                   </span>
                 </div>
               </div>
-              
+
               <Button size="sm" variant="outline" className="w-full">
                 Edit Profile
               </Button>
             </div>
-            
+
             <div className="mt-6 border-t pt-4">
               <h3 className="font-medium text-sm">Connections</h3>
               <div className="mt-2 space-y-2">

@@ -1,8 +1,6 @@
-
 'use client'
 
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useActiveAccount } from 'thirdweb/react';
 import { ArrowDown, ArrowUp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,7 +11,7 @@ interface UserActivityTableProps {
 }
 
 // This is example data - replace with actual data from your contract
-const mockData = [
+const _mockData = [
   {
     id: 1,
     market: 'Will ETH surpass $10k in 2025?',
@@ -52,7 +50,7 @@ const mockData = [
 export function UserActivityTable({ type }: UserActivityTableProps) {
   const account = useActiveAccount();
   const { markets, loading } = useUserMarkets(type);
-  
+
   if (!account) {
     return (
       <div className="p-8 text-center">
@@ -60,7 +58,7 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
       </div>
     );
   }
-  
+
   if (loading) {
     return (
       <div className="p-12 flex justify-center">
@@ -71,7 +69,7 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
       </div>
     );
   }
-  
+
   return (
     <div>
       <div className="p-4 grid grid-cols-12 text-sm font-medium text-muted-foreground border-b">
@@ -82,7 +80,7 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
         <div className="col-span-1 text-right">PNL</div>
         <div className="col-span-1 text-right">Action</div>
       </div>
-      
+
       {markets.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-muted-foreground">No predictions found</p>
@@ -100,7 +98,7 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
                 </div>
                 <span className="font-medium">{item.question}</span>
               </div>
-              
+
               <div className="col-span-1">
                 <span className={cn(
                   "px-2 py-1 rounded text-xs font-medium",
@@ -111,21 +109,21 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
                   {item.outcome}
                 </span>
               </div>
-              
+
               <div className="col-span-2 text-right">
                 <div>{item.betAmount} APE</div>
                 <div className="text-xs text-muted-foreground">
                   {item.shares} shares @{parseFloat(item.betAmount) / parseFloat(item.shares)} APE
                 </div>
               </div>
-              
+
               <div className="col-span-2 text-right">
                 <div>{item.currentValue} APE</div>
                 <div className="text-xs text-muted-foreground">
                   @{item.valuePerShare} APE/share
                 </div>
               </div>
-              
+
               <div className="col-span-1 text-right">
                 <div className={cn(
                   "font-medium",
@@ -140,7 +138,7 @@ export function UserActivityTable({ type }: UserActivityTableProps) {
                   {item.pnlPercentage}%
                 </div>
               </div>
-              
+
               <div className="col-span-1 text-right">
                 {type === 'current' && !item.resolved && (
                   <Button size="sm" variant="outline">
