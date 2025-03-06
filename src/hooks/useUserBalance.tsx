@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useActiveAccount, useReadContract } from 'thirdweb/react';
+import { toEther } from 'thirdweb';
 import { contract } from '@/constants/contract';
-import { formatEther } from 'ethers/lib/utils';
 
 export function useUserBalance() {
   const account = useActiveAccount();
@@ -27,6 +27,7 @@ export function useUserBalance() {
     params: []
   });
 
+  // Get user's wallet balance and calculate portfolio value
   useEffect(() => {
     if (!account) {
       setBalance('0');
@@ -46,7 +47,7 @@ export function useUserBalance() {
           const balanceData = await balanceResponse.json();
           if (balanceData && balanceData.result) {
             // Format balance to a readable number with 2 decimal places
-            const formattedBalance = (Number(formatEther(balanceData.result)) || 0).toFixed(2);
+            const formattedBalance = (Number(toEther(balanceData.result)) || 0).toFixed(2);
             setBalance(formattedBalance);
           }
         }
@@ -58,7 +59,7 @@ export function useUserBalance() {
         // This is a simplified placeholder that will be filled with real data
         if (totalCommittedFunds) {
           // For demo purposes, using a percentage of total committed funds
-          userPortfolioValue = Number(formatEther(totalCommittedFunds)) * 0.05; // Assuming user owns 5% of total
+          userPortfolioValue = Number(toEther(totalCommittedFunds)) * 0.05; // Assuming user owns 5% of total
         }
         
         const formattedPortfolio = userPortfolioValue.toFixed(2);
