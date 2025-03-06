@@ -7,72 +7,47 @@ import { contract } from '@/constants/contract';
 
 export function useUserBalance() {
   const account = useActiveAccount();
-  const [portfolio, setPortfolio] = useState('0');
-  const [pnl, setPnl] = useState('0');
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Read total committed funds from contract
-  const { data: totalCommittedFunds } = useReadContract({
+  // Add the following functions to fetch data from the contract
+  const { data: portfolioData, isLoading: isLoadingPortfolio, error: portfolioError } = useReadContract({
     contract,
     method: "function getTotalCommittedFunds() view returns (uint256)",
     params: []
   });
 
-  // Get user shares from contract
-  const { data: userShares, isLoading: sharesLoading } = useReadContract({
-    contract,
+  const { data: userSharesData, isLoading: isLoadingShares, error: sharesError } = useReadContract({
+    contract, 
     method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[] memory)",
-    params: [BigInt(0), account?.address || "0x0"], // Using first market as an example
-    enabled: !!account
+    params: [BigInt(0), account?.address || "0x0000000000000000000000000000000000000000"]
   });
 
+  // Handle errors
   useEffect(() => {
-    if (!account) {
-      setPortfolio('0');
-      setPnl('0');
-      setLoading(false);
-      return;
+    if (portfolioError) {
+      console.error("Portfolio error:", portfolioError);
+      setError("Failed to load portfolio data");
     }
+    if (sharesError) {
+      console.error("Shares error:", sharesError);
+      setError("Failed to load shares data");
+    }
+  }, [portfolioError, sharesError]);
 
-    const calculatePortfolio = async () => {
-      try {
-        setLoading(true);
+  const loading = isLoadingPortfolio || isLoadingShares;
 
-        // Calculate portfolio value based on user shares in markets
-        let userPortfolioValue = 0;
+  // Format data
+  const portfolioValue = portfolioData ? Number(portfolioData) / 1e18 : 0;
+  const sharesValue = userSharesData ? userSharesData.reduce((acc, val) => acc + Number(val), 0) / 1e18 : 0;
 
-        if (totalCommittedFunds) {
-          if (userShares && userShares.length > 0) {
-            // In a real implementation, you would sum up all shares across all markets
-            const totalUserShares = userShares.reduce(
-              (sum, share) => sum + Number(toEther(share)), 
-              0
-            );
-            userPortfolioValue = totalUserShares;
-          } else {
-            // Fallback calculation
-            userPortfolioValue = Number(toEther(totalCommittedFunds)) * 0.05;
-          }
-        }
+  // Calculate PnL (dummy calculation)
+  const pnl = sharesValue > 0 ? `+${(sharesValue * 0.1).toFixed(2)}` : "0.00";
 
-        const formattedPortfolio = userPortfolioValue.toFixed(2);
-        setPortfolio(formattedPortfolio);
-
-        // Calculate P&L (simplified for now)
-        // In a real implementation, this would be based on historical data
-        const pnlValue = userPortfolioValue * 0.1; // 10% profit for demo
-        const formattedPnl = pnlValue > 0 ? `+${pnlValue.toFixed(2)}` : pnlValue.toFixed(2);
-        setPnl(formattedPnl);
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error calculating portfolio:', error);
-        setLoading(false);
-      }
-    };
-
-    calculatePortfolio();
-  }, [account, totalCommittedFunds, userShares, sharesLoading]);
-
-  return { portfolio, pnl, loading };
+  return {
+    balance: 0, // This will come from the AccountBalance component
+    portfolio: portfolioValue.toFixed(2),
+    pnl,
+    loading,
+    error
+  };
 }
