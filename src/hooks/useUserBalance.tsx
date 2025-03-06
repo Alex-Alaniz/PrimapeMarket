@@ -1,62 +1,53 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount, useReadContract } from 'thirdweb/react';
+import { toEther } from 'thirdweb';
+import { contract } from '@/constants/contract';
 
 export function useUserBalance() {
   const account = useActiveAccount();
-  const [balance, setBalance] = useState('0');
-  const [portfolio, setPortfolio] = useState('0');
-  const [pnl, setPnl] = useState('0');
-  const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState<string | null>(null);
+
+  // Add the following functions to fetch data from the contract
+  const { data: portfolioData, isLoading: isLoadingPortfolio, error: portfolioError } = useReadContract({
+    contract,
+    method: "function getTotalCommittedFunds() view returns (uint256)",
+    params: []
+  });
+
+  const { data: userSharesData, isLoading: isLoadingShares, error: sharesError } = useReadContract({
+    contract, 
+    method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[] memory)",
+    params: [BigInt(0), account?.address || "0x0000000000000000000000000000000000000000"]
+  });
+
+  // Handle errors
   useEffect(() => {
-    if (!account) {
-      setBalance('0');
-      setPortfolio('0');
-      setPnl('0');
-      setLoading(false);
-      return;
+    if (portfolioError) {
+      console.error("Portfolio error:", portfolioError);
+      setError("Failed to load portfolio data");
     }
-    
-    // This is a placeholder for actual balance fetching
-    // Replace with actual API calls when ready
-    setTimeout(() => {
-      setBalance('10.0');
-      setPortfolio('12.5');
-      setPnl('+2.5');
-      setLoading(false);
-    }, 1000);
-    
-    // Actual implementation would look something like this:
-    /*
-    const fetchBalance = async () => {
-      try {
-        setLoading(true);
-        
-        // Get native token balance
-        const balance = await client.getBalance({
-          account: account.address,
-        });
-        
-        setBalance(formatEther(balance));
-        
-        // Get portfolio value and profit/loss
-        // This would involve fetching user's active predictions
-        // and calculating their current value
-        // ...
-        
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchBalance();
-    */
-  }, [account]);
-  
-  return { balance, portfolio, pnl, loading };
+    if (sharesError) {
+      console.error("Shares error:", sharesError);
+      setError("Failed to load shares data");
+    }
+  }, [portfolioError, sharesError]);
+
+  const loading = isLoadingPortfolio || isLoadingShares;
+
+  // Format data
+  const portfolioValue = portfolioData ? Number(portfolioData) / 1e18 : 0;
+  const sharesValue = userSharesData ? userSharesData.reduce((acc, val) => acc + Number(val), 0) / 1e18 : 0;
+
+  // Calculate PnL (dummy calculation)
+  const pnl = sharesValue > 0 ? `+${(sharesValue * 0.1).toFixed(2)}` : "0.00";
+
+  return {
+    balance: 0, // This will come from the AccountBalance component
+    portfolio: portfolioValue.toFixed(2),
+    pnl,
+    loading,
+    error
+  };
 }
