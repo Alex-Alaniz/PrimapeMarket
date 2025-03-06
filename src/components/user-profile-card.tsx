@@ -7,7 +7,11 @@ import {
   useActiveAccount,
   AccountProvider,
   AccountAddress,
+  AccountBalance,
+  type AccountBalanceInfo
 } from "thirdweb/react";
+import { defineChain } from "thirdweb/chains";
+import { client } from "@/app/client";
 import {
   Copy,
   ExternalLink,
@@ -81,7 +85,27 @@ export function UserProfileCard() {
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
-                  <span className="font-semibold text-sm">{balance} APE</span>
+                  {account ? (
+                      <AccountProvider
+                        address={account.address}
+                        client={client}
+                      >
+                        <AccountBalance
+                          chain={defineChain(33139)} // ApeChain 
+                          loadingComponent={
+                            <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
+                          }
+                          formatFn={(props: AccountBalanceInfo) => {
+                            if (props.balance === undefined || props.symbol === undefined) {
+                              return "Loading...";
+                            }
+                            return `${(Math.ceil(props.balance * 100) / 100).toFixed(2)} ${props.symbol}`;
+                          }}
+                        />
+                      </AccountProvider>
+                    ) : (
+                      <span className="font-semibold text-sm">{balance} APE</span>
+                    )}
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">
