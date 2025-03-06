@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useActiveAccount } from 'thirdweb/react';
-import { ArrowDown, ArrowUp, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserMarkets } from '@/hooks/useUserMarkets';
 
