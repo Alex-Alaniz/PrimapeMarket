@@ -1,0 +1,37 @@
+[19:41:58.703] Running build in Washington, D.C., USA (East) – iad1
+[19:41:58.830] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: dfdc2c6)
+[19:42:03.735] Cloning completed: 4.904s
+[19:42:09.326] Restored build cache from previous deployment (2eL2FGAinjSQw4GiWXRsuuNpMocD)
+[19:42:09.496] Running "vercel build"
+[19:42:10.155] Vercel CLI 41.2.2
+[19:42:10.759] Installing dependencies...
+[19:42:12.677] 
+[19:42:12.678] up to date in 2s
+[19:42:12.678] 
+[19:42:12.678] 204 packages are looking for funding
+[19:42:12.678]   run `npm fund` for details
+[19:42:12.716] Detected Next.js version: 15.0.1
+[19:42:12.720] Running "npm run build"
+[19:42:12.830] 
+[19:42:12.830] > simplepredictionmarket@0.1.0 build
+[19:42:12.830] > next build
+[19:42:12.830] 
+[19:42:13.720]   ▲ Next.js 15.0.1
+[19:42:13.721] 
+[19:42:13.745]    Creating an optimized production build ...
+[19:42:36.705]  ✓ Compiled successfully
+[19:42:36.710]    Linting and checking validity of types ...
+[19:42:45.041] Failed to compile.
+[19:42:45.041] 
+[19:42:45.042] ./src/components/user-profile-card.tsx:20:36
+[19:42:45.042] Type error: Property '_loading' does not exist on type '{ balance: string; portfolio: string; pnl: string; loading: boolean; }'.
+[19:42:45.042] 
+[19:42:45.042] [0m [90m 18 |[39m   [36mconst[39m account [33m=[39m useActiveAccount()[33m;[39m[0m
+[19:42:45.042] [0m [90m 19 |[39m   [36mconst[39m [copied[33m,[39m setCopied] [33m=[39m useState([36mfalse[39m)[33m;[39m[0m
+[19:42:45.042] [0m[31m[1m>[22m[39m[90m 20 |[39m   [36mconst[39m { balance[33m,[39m portfolio[33m,[39m pnl[33m,[39m _loading } [33m=[39m useUserBalance()[33m;[39m [90m// Fixed: Added _ prefix to loading[39m[0m
+[19:42:45.043] [0m [90m    |[39m                                    [31m[1m^[22m[39m[0m
+[19:42:45.043] [0m [90m 21 |[39m[0m
+[19:42:45.043] [0m [90m 22 |[39m   [36mconst[39m shortenAddress [33m=[39m (address[33m:[39m string) [33m=>[39m {[0m
+[19:42:45.043] [0m [90m 23 |[39m     [36mif[39m ([33m![39maddress) [36mreturn[39m [32m''[39m[33m;[39m[0m
+[19:42:45.093] Error: Command "npm run build" exited with 1
+[19:42:45.544] 
