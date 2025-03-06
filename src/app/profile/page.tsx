@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { useActiveAccount } from 'thirdweb/react';
 import { Search } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle, AlertCircle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 
