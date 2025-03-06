@@ -17,7 +17,7 @@ import { useUserBalance } from '@/hooks/useUserBalance';
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { balance, portfolio, pnl, loading } = useUserBalance();
+  const { balance, portfolio, pnl, _loading } = useUserBalance();
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
