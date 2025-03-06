@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useActiveAccount, useReadContract } from 'thirdweb/react';
+import { 
+  useActiveAccount, 
+  useReadContract, 
+  AccountBalance,
+  type AccountBalanceInfo 
+} from 'thirdweb/react';
 import { 
   Copy, 
   ExternalLink, 
@@ -15,6 +20,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { contract } from '@/constants/contract';
+import { defineChain } from 'thirdweb/chains';
 
 export function UserProfileCard() {
   const account = useActiveAccount();
@@ -80,10 +86,19 @@ export function UserProfileCard() {
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
                   <span className="font-semibold text-sm">
-                    {loading ? (
-                      <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
+                    {account ? (
+                      <AccountBalance
+                        address={account.address}
+                        chain={defineChain(33139)} // ApeChain
+                        loadingComponent={
+                          <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
+                        }
+                        formatFn={(props: AccountBalanceInfo) =>
+                          `${Math.ceil(props.balance * 100) / 100} ${props.symbol}`
+                        }
+                      />
                     ) : (
-                      `${balance} APE`
+                      "0 APE"
                     )}
                   </span>
                 </div>

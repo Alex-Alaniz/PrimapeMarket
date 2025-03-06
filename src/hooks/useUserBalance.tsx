@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -8,77 +7,72 @@ import { contract } from '@/constants/contract';
 
 export function useUserBalance() {
   const account = useActiveAccount();
-  const [balance, setBalance] = useState('0');
   const [portfolio, setPortfolio] = useState('0');
   const [pnl, setPnl] = useState('0');
   const [loading, setLoading] = useState(true);
-  
-  // Get user's committed funds (portfolio) from the contract
+
+  // Read total committed funds from contract
   const { data: totalCommittedFunds } = useReadContract({
     contract,
     method: "function getTotalCommittedFunds() view returns (uint256)",
     params: []
   });
 
-  // Get user's shares across all markets
-  const { data: marketCount } = useReadContract({
+  // Get user shares from contract
+  const { data: userShares, isLoading: sharesLoading } = useReadContract({
     contract,
-    method: "function marketCount() view returns (uint256)",
-    params: []
+    method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[] memory)",
+    params: [BigInt(0), account?.address || "0x0"], // Using first market as an example
+    enabled: !!account
   });
 
-  // Get user's wallet balance and calculate portfolio value
   useEffect(() => {
     if (!account) {
-      setBalance('0');
       setPortfolio('0');
       setPnl('0');
       setLoading(false);
       return;
     }
-    
-    const fetchBalance = async () => {
+
+    const calculatePortfolio = async () => {
       try {
         setLoading(true);
-        
-        // Fetch native APE token balance
-        const balanceResponse = await fetch(`https://api.apechain.io/api/v1/address/${account.address}/balance`);
-        if (balanceResponse.ok) {
-          const balanceData = await balanceResponse.json();
-          if (balanceData && balanceData.result) {
-            // Format balance to a readable number with 2 decimal places
-            const formattedBalance = (Number(toEther(balanceData.result)) || 0).toFixed(2);
-            setBalance(formattedBalance);
+
+        // Calculate portfolio value based on user shares in markets
+        let userPortfolioValue = 0;
+
+        if (totalCommittedFunds) {
+          if (userShares && userShares.length > 0) {
+            // In a real implementation, you would sum up all shares across all markets
+            const totalUserShares = userShares.reduce(
+              (sum, share) => sum + Number(toEther(share)), 
+              0
+            );
+            userPortfolioValue = totalUserShares;
+          } else {
+            // Fallback calculation
+            userPortfolioValue = Number(toEther(totalCommittedFunds)) * 0.05;
           }
         }
-        
-        // Calculate portfolio value based on active markets
-        let userPortfolioValue = 0;
-        
-        // In a real implementation, you would loop through all markets and sum up user shares
-        // This is a simplified placeholder that will be filled with real data
-        if (totalCommittedFunds) {
-          // For demo purposes, using a percentage of total committed funds
-          userPortfolioValue = Number(toEther(totalCommittedFunds)) * 0.05; // Assuming user owns 5% of total
-        }
-        
+
         const formattedPortfolio = userPortfolioValue.toFixed(2);
         setPortfolio(formattedPortfolio);
-        
+
         // Calculate P&L (simplified for now)
-        // In a real implementation, you would compare current value to initial investment
-        const formattedPnl = (userPortfolioValue * 0.1).toFixed(2); // Assuming 10% profit
-        setPnl(formattedPnl > 0 ? `+${formattedPnl}` : formattedPnl);
-        
+        // In a real implementation, this would be based on historical data
+        const pnlValue = userPortfolioValue * 0.1; // 10% profit for demo
+        const formattedPnl = pnlValue > 0 ? `+${pnlValue.toFixed(2)}` : pnlValue.toFixed(2);
+        setPnl(formattedPnl);
+
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching balance:", error);
-      } finally {
+        console.error('Error calculating portfolio:', error);
         setLoading(false);
       }
     };
-    
-    fetchBalance();
-  }, [account, totalCommittedFunds, marketCount]);
-  
-  return { balance, portfolio, pnl, loading };
+
+    calculatePortfolio();
+  }, [account, totalCommittedFunds, userShares, sharesLoading]);
+
+  return { portfolio, pnl, loading };
 }
