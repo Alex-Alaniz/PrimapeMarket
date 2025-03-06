@@ -98,9 +98,12 @@ export function UserProfileCard() {
                           loadingComponent={
                             <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
                           }
-                          formatFn={(props: AccountBalanceInfo) =>
-                            `${Math.ceil(props.balance * 100) / 100} ${props.symbol}`
-                          }
+                          formatFn={(props: AccountBalanceInfo) => {
+                            if (props.balance === undefined || props.symbol === undefined) {
+                              return "Loading...";
+                            }
+                            return `${(Math.ceil(props.balance * 100) / 100).toFixed(2)} ${props.symbol}`;
+                          }}
                         />
                       </AccountProvider>
                     ) : (
