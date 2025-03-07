@@ -8,6 +8,7 @@ import {
   useWalletBalance,
   AccountBlobbie,
   AccountAvatar,
+  AccountName,
   AccountProvider
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
@@ -90,14 +91,31 @@ export function UserProfileCard() {
       </div>
 
       <CardContent className="pt-16 pb-6 text-center">
-        <h2 className="text-xl font-bold">
-          {account ? shortenAddress(account.address) : "Not Connected"}
-        </h2>
+        {account ? (
+          <AccountProvider address={account.address} client={client}>
+            <h2 className="text-xl font-bold">
+              <AccountName 
+                loadingComponent={shortenAddress(account.address)} 
+                fallbackComponent={shortenAddress(account.address)} 
+              />
+            </h2>
+          </AccountProvider>
+        ) : (
+          <h2 className="text-xl font-bold">Not Connected</h2>
+        )}
 
         {account && (
           <>
             <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <span>{shortenAddress(account.address)}</span>
+              <AccountProvider address={account.address} client={client}>
+                <span>
+                  <AccountName 
+                    socialType="ens" 
+                    loadingComponent={shortenAddress(account.address)}
+                    fallbackComponent={shortenAddress(account.address)}
+                  />
+                </span>
+              </AccountProvider>
               <button
                 onClick={() => copyToClipboard(account.address)}
                 className="rounded-full p-1 hover:bg-muted"
