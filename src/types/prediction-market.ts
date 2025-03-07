@@ -27,8 +27,10 @@ export type MarketCategory = 'all' | 'politics' | 'crypto' | 'sports' | 'busines
 // Add market category mapping
 export const MARKET_CATEGORIES: Record<number, MarketCategory> = {
   0: 'crypto', // Default market is crypto as you mentioned
+  1: 'sports',
+  2: 'crypto',
+  3: 'crypto',
   // Add more markets with their categories as you create them
-  // 1: 'politics',
-  // 2: 'sports',
-  // etc.
-}; 
+  // The key is the marketId (corresponds to the index in the blockchain)
+  // The value must be one of the MarketCategory types ('all', 'politics', 'crypto', 'sports', 'business')
+};
