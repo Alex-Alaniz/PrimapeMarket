@@ -152,6 +152,14 @@ body {
     min-height: 200px;
 }
 
+.market-card-buttons {
+    @apply grid grid-cols-2 gap-2;
+}
+
+.market-buy-button {
+    @apply text-sm whitespace-normal h-auto py-2 overflow-hidden text-ellipsis;
+}
+
 
 /* Placeholder for Leaderboard Component */
 .leaderboard {
