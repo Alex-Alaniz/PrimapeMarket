@@ -20,4 +20,4 @@ export interface MarketInfo {
     winningOptionIndex: number;
 }
 
-export type MarketFilter = 'active' | 'pending' | 'resolved'; 
+export type MarketFilter = 'all' | 'active' | 'pending' | 'resolved'; 
