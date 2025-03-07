@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useReadContract } from 'thirdweb/react'
@@ -11,7 +10,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Button } from './ui/button'
 import { ChevronRight, TrendingUp, Zap, Globe, Award, Briefcase } from 'lucide-react'
-import Link from 'next/link'
+// import Link from 'next/link'
 
 // Market category types
 const CATEGORIES = [
@@ -24,8 +23,8 @@ const CATEGORIES = [
 
 export function EnhancedPredictionMarketDashboard() {
     const [activeCategory, setActiveCategory] = useState('all')
-    const [currentCardIndex, setCurrentCardIndex] = useState(0)
-    const [isPaused, setIsPaused] = useState(false)
+    const [_currentCardIndex, setCurrentCardIndex] = useState(0)
+    const [isPaused, _setIsPaused] = useState(false)
 
     const { data: marketCount, isLoading: isLoadingMarketCount } = useReadContract({
         contract,
@@ -58,7 +57,7 @@ export function EnhancedPredictionMarketDashboard() {
         <div className="min-h-screen flex flex-col">
             <div className="flex-grow container mx-auto p-4">
                 <Navbar />
-                
+
                 {/* Category Navigation - Polymarket style */}
                 <div className="flex overflow-x-auto pb-2 mb-6 gap-2 scrollbar-hide no-scrollbar">
                     {CATEGORIES.map((category) => (
@@ -74,7 +73,7 @@ export function EnhancedPredictionMarketDashboard() {
                         </Button>
                     ))}
                 </div>
-                
+
                 {/* Featured Markets Section */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                     {/* Global Trade Wars */}

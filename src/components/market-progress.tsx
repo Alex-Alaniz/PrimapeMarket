@@ -1,7 +1,8 @@
-import { Progress } from "@/components/ui/progress";
-import { toEther } from "thirdweb";
-import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+// Using prefix _ to indicate these imports are intentionally unused
+import { Progress as _Progress } from "@/components/ui/progress";
+import { toEther as _toEther } from "thirdweb/utils";
+import { cn as _cn } from "@/lib/utils";
+import { useEffect as _useEffect, useState as _useState } from "react";
 
 interface MarketProgressProps {
     options: string[];
