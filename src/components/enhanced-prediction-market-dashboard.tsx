@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useReadContract } from 'thirdweb/react'
@@ -5,95 +6,166 @@ import { contract } from '@/constants/contract'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MarketCard } from './marketCard'
 import { Navbar } from './navbar'
-import { MarketCardSkeleton } from './market-card-skeleton'
 import { Footer } from "./footer"
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import { Button } from './ui/button'
+import { ChevronRight, TrendingUp, Zap, Globe, Award, Briefcase } from 'lucide-react'
+import Link from 'next/link'
+
+// Market category types
+const CATEGORIES = [
+  { id: 'all', label: 'All', icon: <Globe className="h-4 w-4" /> },
+  { id: 'politics', label: 'Politics', icon: <Award className="h-4 w-4" /> },
+  { id: 'crypto', label: 'Crypto', icon: <TrendingUp className="h-4 w-4" /> },
+  { id: 'sports', label: 'Sports', icon: <Zap className="h-4 w-4" /> },
+  { id: 'business', label: 'Business', icon: <Briefcase className="h-4 w-4" /> }
+]
 
 export function EnhancedPredictionMarketDashboard() {
-    const [currentCardIndex, setCurrentCardIndex] = useState(0);
-    const [isPaused, setIsPaused] = useState(false);
+    const [activeCategory, setActiveCategory] = useState('all')
+    const [currentCardIndex, setCurrentCardIndex] = useState(0)
+    const [isPaused, setIsPaused] = useState(false)
 
     const { data: marketCount, isLoading: isLoadingMarketCount } = useReadContract({
         contract,
         method: "function marketCount() view returns (uint256)",
         params: []
-    });
-
-    console.log('Market Count:', marketCount ? Number(marketCount) : 'Loading...');
-    console.log('Is Loading:', isLoadingMarketCount);
+    })
 
     // Modified auto-scroll effect with pause functionality
     useEffect(() => {
         if (!marketCount || Number(marketCount) === 0 || isPaused) {
-            console.log('Effect skipped:', { marketCount, isPaused });
-            return;
+            return
         }
 
         const interval = setInterval(() => {
             setCurrentCardIndex((prev) => {
-                const nextIndex = prev + 1 >= Number(marketCount) ? 0 : prev + 1;
-                console.log('Updating card index:', nextIndex);
-                return nextIndex;
-            });
-        }, 3000);
+                const nextIndex = prev + 1 >= Number(marketCount) ? 0 : prev + 1
+                return nextIndex
+            })
+        }, 3000)
 
-        return () => clearInterval(interval);
-    }, [marketCount, isPaused]);
+        return () => clearInterval(interval)
+    }, [marketCount, isPaused])
 
-    // Show 6 skeleton cards while loading
-    const skeletonCards = Array.from({ length: 6 }, (_, i) => (
-        <MarketCardSkeleton key={`skeleton-${i}`} />
-    ));
+    // Create skeleton cards for loading state
+    const skeletonCards = Array(3).fill(0).map((_, index) => (
+        <div key={`skeleton-${index}`} className="h-[300px] rounded-lg bg-muted animate-pulse"></div>
+    ))
 
     return (
         <div className="min-h-screen flex flex-col">
             <div className="flex-grow container mx-auto p-4">
                 <Navbar />
-                {/* Featured Hero Market */}
-                <div className="mb-10 -mx-4 px-4 py-8 bg-gradient-to-br from-primary/10 via-background to-accent/5 border-y border-border/20">
-                    <div className="max-w-5xl mx-auto">
-                        <h2 className="text-3xl font-extrabold mb-2 flex items-center gap-2">
-                            <span className="inline-block w-3 h-3 rounded-full bg-primary"></span>
-                            Featured Market
-                        </h2>
-                        <p className="text-muted-foreground mb-6">Join thousands of traders predicting market outcomes</p>
-                        {marketCount > 0 && (
-                            <MarketCard index={0} filter="all" featured={true} />
-                        )}
-                    </div>
-                </div>
-                <div className="mb-8 relative h-[450px] overflow-visible rounded-xl">
-                    <Image 
-                        src={`/images/markets/${currentCardIndex + 1}.jpg`}
-                        alt="Market Banner"
-                        fill
-                        priority
-                        className="object-cover brightness-50 transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 flex items-start justify-center pt-8">
-                        <div 
-                            className="w-[450px] max-w-[85%] transform transition-all duration-500 hover:scale-[1.02] z-10"
-                            onMouseEnter={() => setIsPaused(true)}
-                            onMouseLeave={() => setIsPaused(false)}
+                
+                {/* Category Navigation - Polymarket style */}
+                <div className="flex overflow-x-auto pb-2 mb-6 gap-2 scrollbar-hide no-scrollbar">
+                    {CATEGORIES.map((category) => (
+                        <Button 
+                            key={category.id}
+                            variant={activeCategory === category.id ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setActiveCategory(category.id)}
+                            className="flex items-center gap-1 whitespace-nowrap"
                         >
-                            {!isLoadingMarketCount && (
-                                <div className="relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
-                                    <div className="max-h-[420px] overflow-y-auto">
-                                        <MarketCard 
-                                            index={currentCardIndex} 
-                                            filter="active"
-                                            featured={true}
-                                            compact={true}
-                                        />
-                                    </div>
-                                </div>
-                            )}
+                            {category.icon}
+                            <span>{category.label}</span>
+                        </Button>
+                    ))}
+                </div>
+                
+                {/* Featured Markets Section */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                    {/* Global Trade Wars */}
+                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
+                        <Image 
+                            src="/images/markets/1.jpg"
+                            alt="Global Trade Wars"
+                            fill
+                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
+                            <div className="text-white font-bold text-lg">Global trade wars</div>
+                            <div className="space-y-2">
+                                <p className="text-white/90 text-sm">Hedge risk & forecast the fallout amid rising tariffs</p>
+                                <Button size="sm" className="gap-1 text-xs" variant="outline">
+                                    <span>Markets</span>
+                                    <ChevronRight className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* AI Markets */}
+                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
+                        <Image 
+                            src="/images/markets/2.jpg"
+                            alt="Race to AGI"
+                            fill
+                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
+                            <div className="text-white font-bold text-lg">Race to AGI</div>
+                            <div className="space-y-2">
+                                <p className="text-white/90 text-sm">Predict model dominance, policy changes & more</p>
+                                <Button size="sm" className="gap-1 text-xs" variant="outline">
+                                    <span>Markets</span>
+                                    <ChevronRight className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* First 100 Days */}
+                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
+                        <Image 
+                            src="/images/markets/3.jpg"
+                            alt="First 100 days"
+                            fill
+                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
+                            <div className="text-white font-bold text-lg">First 100 days</div>
+                            <div className="space-y-2">
+                                <p className="text-white/90 text-sm">What will happen in these most pivotal days?</p>
+                                <Button size="sm" className="gap-1 text-xs" variant="outline">
+                                    <span>Markets</span>
+                                    <ChevronRight className="h-3 w-3" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <Tabs defaultValue="active" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+
+                {/* Trending Markets Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Trending Markets</h2>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                        <span>View All</span>
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+
+                {/* Market Cards in Compact Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+                    {isLoadingMarketCount ? (
+                        skeletonCards
+                    ) : (
+                        Array.from({ length: Math.min(Number(marketCount) || 0, 8) }, (_, index) => (
+                            <MarketCard 
+                                key={index} 
+                                index={index} 
+                                filter="all" 
+                                compact={true}
+                            />
+                        ))
+                    )}
+                </div>
+
+                {/* Market Categories Tabs */}
+                <Tabs defaultValue="active" className="w-full mb-8">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
                         <TabsTrigger value="active">Active</TabsTrigger>
                         <TabsTrigger value="pending">Pending Resolution</TabsTrigger>
                         <TabsTrigger value="resolved">Resolved</TabsTrigger>
@@ -101,43 +173,46 @@ export function EnhancedPredictionMarketDashboard() {
 
                     {isLoadingMarketCount ? (
                         <TabsContent value="active" className="mt-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {skeletonCards}
                             </div>
                         </TabsContent>
                     ) : (
                         <>
                             <TabsContent value="active">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {Array.from({ length: Number(marketCount) }, (_, index) => (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
                                             index={index} 
                                             filter="active"
+                                            compact={true}
                                         />
                                     ))}
                                 </div>
                             </TabsContent>
 
                             <TabsContent value="pending">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {Array.from({ length: Number(marketCount) }, (_, index) => (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
                                             index={index}
                                             filter="pending"
+                                            compact={true}
                                         />
                                     ))}
                                 </div>
                             </TabsContent>
 
                             <TabsContent value="resolved">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {Array.from({ length: Number(marketCount) }, (_, index) => (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
                                             index={index}
                                             filter="resolved"
+                                            compact={true}
                                         />
                                     ))}
                                 </div>

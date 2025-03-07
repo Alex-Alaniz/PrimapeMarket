@@ -63,6 +63,17 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
     // Check if market is expired
     const isExpired = market ? new Date(Number(market.endTime) * 1000) < new Date() : false;
 
+    // Calculate probability percentage for the first option (if available)
+    const calculateProbabilityPercentage = () => {
+        if (!market || !market.totalSharesPerOption || market.totalSharesPerOption.length === 0) return 0;
+        
+        const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
+        if (totalPool === BigInt(0)) return 0;
+        
+        const firstOptionShares = market.totalSharesPerOption[0];
+        return Math.round(Number(firstOptionShares * BigInt(100)) / Number(totalPool));
+    };
+
     // Filter logic
     const shouldShow = () => {
         if (!market) return false;
@@ -82,45 +93,57 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
     if (!shouldShow()) {
         return null;
     }
+    
+    // Probability percentage for first option 
+    const probabilityPercentage = calculateProbabilityPercentage();
 
     return (
-        <Card key={index} className={`flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg ${featured ? 'border-0 shadow-md' : 'border border-border/40 hover:border-primary/30'}`}>
+        <Card key={index} className={`flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg h-full ${featured ? 'border-0 shadow-md' : compact ? 'border border-border/40 hover:border-primary/30' : 'border border-border/40 hover:border-primary/30'}`}>
             {isLoadingMarketInfo ? (
                 <MarketCardSkeleton />
             ) : (
                 <>
-                    <CardHeader className={`relative flex flex-col gap-2 ${compact ? 'p-4 pb-2' : 'p-5'} ${featured ? 'bg-gradient-to-br from-primary/10 to-accent/5' : ''}`}>
-                        <div className="flex justify-between items-start gap-4">
+                    <div className="relative">
+                        <Image 
+                            src={market?.image || '/images/default-market.jpg'}
+                            alt={market?.question || "Market"}
+                            width={400}
+                            height={200}
+                            className="w-full h-32 object-cover"
+                        />
+                        {/* Probability badge - Polymarket style */}
+                        <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 text-xs font-bold text-white">
+                            {probabilityPercentage}%
+                        </div>
+                    </div>
+                    
+                    <CardHeader className={`${compact ? 'p-3 pb-2' : 'p-4 pb-3'}`}>
+                        <div className="flex items-start gap-2">
                             <div className="flex-1">
                                 {market && (
-                                    <div className={`${compact ? 'text-sm' : ''} flex items-center gap-2`}>
-                                        <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    <div className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground flex items-center gap-1`}>
+                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         <MarketTime endTime={market.endTime} />
                                     </div>
                                 )}
-                                <CardTitle className={`mt-2 ${compact ? 'text-xl' : 'text-2xl'} font-bold text-foreground`}>
+                                <CardTitle className={`${compact ? 'text-sm' : 'text-base'} font-medium line-clamp-2 mt-1`}>
                                     {market?.question}
                                 </CardTitle>
                             </div>
-                            <Image 
-                                src={market?.image || '/images/default-market.jpg'}
-                                alt={market?.question || "Market"}
-                                width={compact ? 70 : 90}
-                                height={compact ? 70 : 90}
-                                className="rounded-lg object-cover shadow-md ring-1 ring-white/10"
-                            />
                         </div>
                     </CardHeader>
-                    <CardContent className={compact ? 'px-4 py-2' : ''}>
+                    
+                    <CardContent className={`${compact ? 'px-3 py-1' : 'px-4 py-2'} flex-grow`}>
                         {market && market.options && market.totalSharesPerOption && (
-                            <div className="mb-4">
+                            <div className="mb-3">
                                 <MarketProgress 
                                     options={market.options}
                                     totalShares={market.totalSharesPerOption}
-                                    _compact={compact}
+                                    _compact={true}
                                 />
                             </div>
                         )}
+                        
                         {market?.resolved ? (
                             <MarketResolved 
                                 marketId={index}
@@ -128,27 +151,30 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
                                 options={market.options}
                                 totalShares={[...market.totalSharesPerOption]}
                                 userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                _compact={compact}
+                                _compact={true}
                             />
                         ) : isExpired ? (
-                            <MarketPending _compact={compact} />
+                            <MarketPending _compact={true} />
                         ) : (
                             <MarketBuyInterface 
                                 marketId={index}
                                 market={market!}
-                                _compact={compact}
+                                _compact={true}
                             />
                         )}
                     </CardContent>
-                    <CardFooter className={compact ? 'p-4 pt-2' : ''}>
-                        {market && account && (
-                            <MarketSharesDisplay 
-                                market={market}
-                                userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                compact={compact}
-                            />
-                        )}
-                    </CardFooter>
+                    
+                    {account && (
+                        <CardFooter className={`${compact ? 'p-3 pt-1' : 'p-4 pt-2'} border-t border-border/30`}>
+                            {market && (
+                                <MarketSharesDisplay 
+                                    market={market}
+                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
+                                    compact={true}
+                                />
+                            )}
+                        </CardFooter>
+                    )}
                 </>
             )}
         </Card>

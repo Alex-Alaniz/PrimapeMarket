@@ -10,61 +10,44 @@ interface MarketProgressProps {
 }
 
 export function MarketProgress({ options, totalShares, _compact = false }: MarketProgressProps) {
-    const [processedShares, setProcessedShares] = useState<bigint[]>([]);
+    const totalPool = totalShares.reduce((sum, shares) => sum + shares, BigInt(0));
 
-    useEffect(() => {
-        if (!totalShares) {
-            setProcessedShares(options.map(() => BigInt(0)));
-            return;
-        }
-
-        const shares = totalShares.map((share: bigint | string | number) => {
-            try {
-                if (typeof share === 'bigint') return share;
-                if (typeof share === 'string') return BigInt(share);
-                if (typeof share === 'number') return BigInt(share);
-                return BigInt(0);
-            } catch {
-                console.warn('Invalid share value:', share);
-                return BigInt(0);
-            }
-        });
-
-        setProcessedShares(shares);
-    }, [totalShares, options]);
-
-    // Calculate total sum from processed shares
-    const totalSum = processedShares.reduce((sum, share) => sum + share, BigInt(0));
+    // Get color based on option index - Polymarket inspired
+    const getOptionColor = (index: number) => {
+        const colors = [
+            'bg-emerald-500', // Yes/Green
+            'bg-red-500',     // No/Red
+            'bg-blue-500',    // Option 3
+            'bg-purple-500',  // Option 4
+            'bg-amber-500'    // Option 5
+        ];
+        return colors[index % colors.length];
+    };
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             {options.map((option, index) => {
-                const currentShares = processedShares[index] || BigInt(0);
-                const percentage = totalSum > BigInt(0)
-                    ? Number((currentShares * BigInt(10000) / totalSum)) / 100
-                    : 0;
-                const shareAmount = Number(toEther(currentShares));
+                // Calculate percentage
+                let percentage = 0;
+                if (totalPool > BigInt(0)) {
+                    percentage = Math.round(Number(totalShares[index] * BigInt(100)) / Number(totalPool));
+                }
 
                 return (
-                    <div key={index} className="transition-opacity duration-300">
-                        <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                    {option}: {shareAmount.toFixed(2)}
-                                </span>
+                    <div key={index} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5">
+                                <div className={`w-2 h-2 rounded-full ${getOptionColor(index)}`}></div>
+                                <span className={`${_compact ? 'text-xs' : 'text-sm'} font-medium`}>{option}</span>
                             </div>
-                            <span className="text-sm text-muted-foreground">
-                                {percentage.toFixed(1)}%
-                            </span>
+                            <span className={`${_compact ? 'text-xs' : 'text-sm'} font-medium`}>{percentage}%</span>
                         </div>
-                        <Progress 
-                            value={percentage} 
-                            className={cn(
-                                "h-3 rounded-full bg-gradient-to-r from-primary to-accent", // Added gradient
-                                " [&>div]:bg-black" // Kept this part for consistency; adjust as needed for gradient
-                            )}
-                            style={{transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'}} // Added animation
-                        />
+                        <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                            <div 
+                                className={`h-full ${getOptionColor(index)}`}
+                                style={{ width: `${percentage}%` }}
+                            ></div>
+                        </div>
                     </div>
                 );
             })}
