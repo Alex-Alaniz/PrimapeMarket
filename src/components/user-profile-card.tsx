@@ -88,22 +88,19 @@ export function UserProfileCard() {
 
       <CardContent className="pt-16 pb-6 text-center">
         {account ? (
+          <AccountProvider address={account.address} client={client}>
             <div>
               <h2 className="text-xl font-bold">
-                <AccountProvider address={account.address} client={client}>
-                  <AccountName 
-                    loadingComponent={<span>{shortenAddress(account.address)}</span>} 
-                    fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
-                  />
-                </AccountProvider>
+                <AccountName 
+                  loadingComponent={<span>{shortenAddress(account.address)}</span>} 
+                  fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
+                />
               </h2>
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>
-                  <AccountProvider address={account.address} client={client}>
-                    <AccountAddress 
-                      formatFn={thirdwebShortenAddress}
-                    />
-                  </AccountProvider>
+                  <AccountAddress 
+                    formatFn={thirdwebShortenAddress}
+                  />
                 </span>
                 <button
                   onClick={() => copyToClipboard(account.address)}
@@ -122,11 +119,7 @@ export function UserProfileCard() {
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
-                  {account ? (
-                    <BalanceDisplay address={account.address} />
-                  ) : (
-                    <span className="font-semibold text-sm">{balance} APE</span>
-                  )}
+                  <BalanceDisplay address={account.address} />
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">
