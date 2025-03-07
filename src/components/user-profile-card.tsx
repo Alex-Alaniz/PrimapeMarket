@@ -18,7 +18,6 @@ import {
   Check,
   Twitter as TwitterIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useUserBalance } from "@/hooks/useUserBalance";
 
