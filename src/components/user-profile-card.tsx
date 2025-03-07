@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
   AccountProvider,
-  AccountBalance,
-  type AccountBalanceInfo
+  AccountBalance
 } from "thirdweb/react";
+import type { GetWalletBalanceResult } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
 import {
@@ -94,11 +94,11 @@ export function UserProfileCard() {
                           loadingComponent={
                             <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
                           }
-                          formatFn={(props: AccountBalanceInfo) => {
-                            if (props.balance === undefined || props.symbol === undefined) {
+                          formatFn={(props: GetWalletBalanceResult) => {
+                            if (!props || props.displayValue === undefined || props.symbol === undefined) {
                               return "Loading...";
                             }
-                            return `${(Math.ceil(props.balance * 100) / 100).toFixed(2)} ${props.symbol}`;
+                            return `${(Math.ceil(parseFloat(props.displayValue) * 100) / 100).toFixed(2)} ${props.symbol}`;
                           }}
                         />
                       </AccountProvider>
