@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
-  useWalletBalance
+  useWalletBalance,
+  AccountBlobbie
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -64,11 +65,9 @@ export function UserProfileCard() {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden">
             {account ? (
-              <Image
-                src={`https://api.dicebear.com/7.x/personas/svg?seed=${account.address}`}
-                alt="Profile"
-                width={96}
-                height={96}
+              <AccountBlobbie 
+                address={account.address}
+                className="h-full w-full" 
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
