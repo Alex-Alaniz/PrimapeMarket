@@ -118,6 +118,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             width={400}
                             height={200}
                             className="w-full h-32 object-cover"
+                            priority={featured}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                         />
                         {/* Probability badge - Polymarket style */}
                         <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 text-xs font-bold text-white">

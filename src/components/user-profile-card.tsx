@@ -69,14 +69,14 @@ export function UserProfileCard() {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden">
             {account ? (
-              <AccountProvider
-                address={account.address}
-                client={client}
-              >
-                <div className="h-full w-full bg-primary/20 flex items-center justify-center">
-                  <AccountAvatar className="h-full w-full" loadingComponent={<AccountBlobbie className="h-full w-full" />} fallbackComponent={<AccountBlobbie className="h-full w-full" />} />
-                </div>
-              </AccountProvider>
+              <div className="h-full w-full bg-primary/20 flex items-center justify-center">
+                <AccountProvider
+                  address={account.address}
+                  client={client}
+                >
+                  <AccountAvatar className="h-full w-full" loadingComponent={<div className="h-full w-full bg-primary/40"></div>} fallbackComponent={<div className="h-full w-full bg-primary/40"></div>} />
+                </AccountProvider>
+              </div>
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
                 <span className="text-2xl">?</span>
@@ -88,29 +88,34 @@ export function UserProfileCard() {
 
       <CardContent className="pt-16 pb-6 text-center">
         {account ? (
-          <AccountProvider address={account.address} client={client}>
-            <h2 className="text-xl font-bold">
-              <AccountName 
-                loadingComponent={<span>{shortenAddress(account.address)}</span>} 
-                fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
-              />
-            </h2>
-            <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <span>
-                <AccountAddress 
-                  formatFn={thirdwebShortenAddress}
-                />
-              </span>
-              <button
-                onClick={() => copyToClipboard(account.address)}
-                className="rounded-full p-1 hover:bg-muted"
-              >
-                {copied ? (
-                  <Check className="h-3 w-3 text-green-500" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-              </button>
+            <div>
+              <h2 className="text-xl font-bold">
+                <AccountProvider address={account.address} client={client}>
+                  <AccountName 
+                    loadingComponent={<span>{shortenAddress(account.address)}</span>} 
+                    fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
+                  />
+                </AccountProvider>
+              </h2>
+              <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  <AccountProvider address={account.address} client={client}>
+                    <AccountAddress 
+                      formatFn={thirdwebShortenAddress}
+                    />
+                  </AccountProvider>
+                </span>
+                <button
+                  onClick={() => copyToClipboard(account.address)}
+                  className="rounded-full p-1 hover:bg-muted"
+                >
+                  {copied ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="mt-6 space-y-4">
