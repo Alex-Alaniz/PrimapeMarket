@@ -8,17 +8,18 @@ import { MarketResolved } from "./market-resolved";
 import { MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
-import { Market, MarketFilter } from "@/types/prediction-market";
+import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";
 
 interface MarketCardProps {
     index: number;
     filter: MarketFilter;
+    category?: string;
     featured?: boolean;
     compact?: boolean;
 }
 
-export function MarketCard({ index, filter, featured = false, compact = false }: MarketCardProps) {
+export function MarketCard({ index, filter, category = 'all', featured = false, compact = false }: MarketCardProps) {
     const account = useActiveAccount();
 
     // Get market info
@@ -78,6 +79,13 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
     const shouldShow = () => {
         if (!market) return false;
         
+        // Category filter
+        const marketCategory = MARKET_CATEGORIES[index] || 'all';
+        const categoryMatch = category === 'all' || marketCategory === category;
+        
+        if (!categoryMatch) return false;
+        
+        // Status filter
         switch (filter) {
             case 'active':
                 return !market.resolved;

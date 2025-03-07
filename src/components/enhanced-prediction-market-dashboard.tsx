@@ -156,6 +156,7 @@ export function EnhancedPredictionMarketDashboard() {
                                 key={index} 
                                 index={index} 
                                 filter="all" 
+                                category={activeCategory}
                                 compact={true}
                             />
                         ))
@@ -184,7 +185,8 @@ export function EnhancedPredictionMarketDashboard() {
                                         <MarketCard 
                                             key={index} 
                                             index={index} 
-                                            filter="active"
+                                            filter="active" 
+                                            category={activeCategory}
                                             compact={true}
                                         />
                                     ))}
@@ -196,8 +198,9 @@ export function EnhancedPredictionMarketDashboard() {
                                     {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
-                                            index={index}
-                                            filter="pending"
+                                            index={index} 
+                                            filter="pending" 
+                                            category={activeCategory}
                                             compact={true}
                                         />
                                     ))}
@@ -209,8 +212,9 @@ export function EnhancedPredictionMarketDashboard() {
                                     {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
-                                            index={index}
-                                            filter="resolved"
+                                            index={index} 
+                                            filter="resolved" 
+                                            category={activeCategory}
                                             compact={true}
                                         />
                                     ))}
