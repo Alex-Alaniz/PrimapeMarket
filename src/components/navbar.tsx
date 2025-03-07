@@ -41,17 +41,17 @@ export function Navbar() {
     const account = useActiveAccount();
     
     return (
-        <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
+        <div className="flex justify-between items-center mb-8 py-3 px-4 -mx-4 backdrop-blur-sm bg-background/80 border-b border-border/30 sticky top-0 z-10">
+            <div className="flex items-center gap-3">
                 <Image
                     src="/images/pm.PNG"
                     alt="Primape Logo"
-                    width={32}
-                    height={32}
-                    className="h-8 w-auto"
+                    width={36}
+                    height={36}
+                    className="h-9 w-auto"
                 />
-                <h1 className="text-2xl font-bold">Primape Markets</h1>
-                <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-semibold">BETA</span>
+                <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Primape Markets</h1>
+                <span className="bg-primary/20 text-primary text-xs px-2.5 py-1 rounded-full font-bold border border-primary/30">BETA</span>
             </div>
             <div className="flex items-center space-x-4">
                 <ThemeToggle />

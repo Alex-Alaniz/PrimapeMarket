@@ -84,29 +84,30 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
     }
 
     return (
-        <Card key={index} className={`flex flex-col ${featured ? 'border-0 shadow-none' : ''}`}>
+        <Card key={index} className={`flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg ${featured ? 'border-0 shadow-md' : 'border border-border/40 hover:border-primary/30'}`}>
             {isLoadingMarketInfo ? (
                 <MarketCardSkeleton />
             ) : (
                 <>
-                    <CardHeader className={`relative flex flex-col gap-2 ${compact ? 'p-4 pb-2' : ''}`}>
+                    <CardHeader className={`relative flex flex-col gap-2 ${compact ? 'p-4 pb-2' : 'p-5'} ${featured ? 'bg-gradient-to-br from-primary/10 to-accent/5' : ''}`}>
                         <div className="flex justify-between items-start gap-4">
                             <div className="flex-1">
                                 {market && (
-                                    <div className={`${compact ? 'text-sm' : ''}`}>
+                                    <div className={`${compact ? 'text-sm' : ''} flex items-center gap-2`}>
+                                        <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                                         <MarketTime endTime={market.endTime} />
                                     </div>
                                 )}
-                                <CardTitle className={`mt-2 ${compact ? 'text-xl' : 'text-2xl'}`}>
+                                <CardTitle className={`mt-2 ${compact ? 'text-xl' : 'text-2xl'} font-bold text-foreground`}>
                                     {market?.question}
                                 </CardTitle>
                             </div>
                             <Image 
                                 src={market?.image || '/images/default-market.jpg'}
                                 alt={market?.question || "Market"}
-                                width={80}
-                                height={80}
-                                className="rounded-lg object-cover shadow-sm"
+                                width={compact ? 70 : 90}
+                                height={compact ? 70 : 90}
+                                className="rounded-lg object-cover shadow-md ring-1 ring-white/10"
                             />
                         </div>
                     </CardHeader>

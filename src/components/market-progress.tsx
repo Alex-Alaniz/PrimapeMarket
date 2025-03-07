@@ -29,7 +29,7 @@ export function MarketProgress({ options, totalShares, _compact = false }: Marke
                 return BigInt(0);
             }
         });
-        
+
         setProcessedShares(shares);
     }, [totalShares, options]);
 
@@ -60,9 +60,10 @@ export function MarketProgress({ options, totalShares, _compact = false }: Marke
                         <Progress 
                             value={percentage} 
                             className={cn(
-                                "h-3",
-                                "bg-black/10 [&>div]:bg-black"
+                                "h-3 rounded-full bg-gradient-to-r from-primary to-accent", // Added gradient
+                                " [&>div]:bg-black" // Kept this part for consistency; adjust as needed for gradient
                             )}
+                            style={{transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)'}} // Added animation
                         />
                     </div>
                 );
