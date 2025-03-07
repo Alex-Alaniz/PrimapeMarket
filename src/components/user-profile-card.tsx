@@ -97,8 +97,8 @@ export function UserProfileCard() {
           <AccountProvider address={account.address} client={client}>
             <h2 className="text-xl font-bold">
               <AccountName 
-                loadingComponent={shortenAddress(account.address)} 
-                fallbackComponent={shortenAddress(account.address)} 
+                loadingComponent={<span>{shortenAddress(account.address)}</span>} 
+                fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
               />
             </h2>
           </AccountProvider>
@@ -113,8 +113,8 @@ export function UserProfileCard() {
                 <span>
                   <AccountAddress 
                     formatFn={thirdwebShortenAddress} 
-                    loadingComponent={shortenAddress(account.address)}
-                    fallbackComponent={shortenAddress(account.address)}
+                    loadingComponent={<span>{shortenAddress(account.address)}</span>}
+                    fallbackComponent={<span>{shortenAddress(account.address)}</span>}
                   />
                 </span>
               </AccountProvider>
