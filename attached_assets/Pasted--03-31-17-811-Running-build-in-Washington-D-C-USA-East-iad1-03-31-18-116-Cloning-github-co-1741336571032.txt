@@ -1,0 +1,37 @@
+[03:31:17.811] Running build in Washington, D.C., USA (East) – iad1
+[03:31:18.116] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 406b294)
+[03:31:19.555] Cloning completed: 1.438s
+[03:31:24.598] Restored build cache from previous deployment (6kniasMTNm1rcYRL41jwton5FghG)
+[03:31:24.682] Running "vercel build"
+[03:31:25.286] Vercel CLI 41.2.2
+[03:31:26.543] Installing dependencies...
+[03:31:28.454] 
+[03:31:28.454] up to date in 2s
+[03:31:28.455] 
+[03:31:28.455] 204 packages are looking for funding
+[03:31:28.455]   run `npm fund` for details
+[03:31:28.493] Detected Next.js version: 15.0.1
+[03:31:28.497] Running "npm run build"
+[03:31:28.608] 
+[03:31:28.608] > simplepredictionmarket@0.1.0 build
+[03:31:28.608] > next build
+[03:31:28.608] 
+[03:31:29.260]   ▲ Next.js 15.0.1
+[03:31:29.261] 
+[03:31:29.285]    Creating an optimized production build ...
+[03:32:05.477]  ✓ Compiled successfully
+[03:32:05.481]    Linting and checking validity of types ...
+[03:32:14.451] Failed to compile.
+[03:32:14.452] 
+[03:32:14.452] ./src/components/enhanced-prediction-market-dashboard.tsx:61:26
+[03:32:14.452] Type error: 'marketCount' is possibly 'undefined'.
+[03:32:14.452] 
+[03:32:14.452] [0m [90m 59 |[39m                         [33m<[39m[33m/[39m[33mh2[39m[33m>[39m[0m
+[03:32:14.452] [0m [90m 60 |[39m                         [33m<[39m[33mp[39m className[33m=[39m[32m"text-muted-foreground mb-6"[39m[33m>[39m[33mJoin[39m thousands [36mof[39m traders predicting market outcomes[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[03:32:14.452] [0m[31m[1m>[22m[39m[90m 61 |[39m                         {marketCount [33m>[39m [35m0[39m [33m&&[39m ([0m
+[03:32:14.452] [0m [90m    |[39m                          [31m[1m^[22m[39m[0m
+[03:32:14.453] [0m [90m 62 |[39m                             [33m<[39m[33mMarketCard[39m index[33m=[39m{[35m0[39m} filter[33m=[39m[32m"all"[39m featured[33m=[39m{[36mtrue[39m} [33m/[39m[33m>[39m[0m
+[03:32:14.453] [0m [90m 63 |[39m                         )}[0m
+[03:32:14.453] [0m [90m 64 |[39m                     [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[03:32:14.504] Error: Command "npm run build" exited with 1
+[03:32:14.895] 
