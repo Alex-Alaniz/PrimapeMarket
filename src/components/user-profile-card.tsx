@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
   useWalletBalance,
-  AccountBlobbie
+  AccountBlobbie,
+  AccountProvider
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -65,10 +66,14 @@ export function UserProfileCard() {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden">
             {account ? (
-              <AccountBlobbie 
+              <AccountProvider
                 address={account.address}
-                className="h-full w-full" 
-              />
+                client={client}
+              >
+                <AccountBlobbie 
+                  className="h-full w-full" 
+                />
+              </AccountProvider>
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
                 <span className="text-2xl">?</span>
