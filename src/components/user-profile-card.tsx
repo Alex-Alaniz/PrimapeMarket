@@ -112,9 +112,7 @@ export function UserProfileCard() {
               <AccountProvider address={account.address} client={client}>
                 <span>
                   <AccountAddress 
-                    formatFn={thirdwebShortenAddress} 
-                    loadingComponent={<span>{shortenAddress(account.address)}</span>}
-                    fallbackComponent={<span>{shortenAddress(account.address)}</span>}
+                    formatFn={thirdwebShortenAddress}
                   />
                 </span>
               </AccountProvider>
