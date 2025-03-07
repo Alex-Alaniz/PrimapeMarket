@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -48,7 +49,7 @@ function BalanceDisplay({ address }: { address: string }) {
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { portfolio, pnl } = useUserBalance();
+  const { balance, portfolio, pnl } = useUserBalance();
   
   // Log user data for debugging
   useEffect(() => {
