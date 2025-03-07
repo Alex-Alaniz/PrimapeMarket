@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
   useWalletBalance,
-  AccountBlobbie,
   AccountAvatar,
   AccountName,
   AccountAddress,
@@ -49,7 +48,7 @@ function BalanceDisplay({ address }: { address: string }) {
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { balance, portfolio, pnl } = useUserBalance();
+  const { portfolio, pnl } = useUserBalance();
   
   // Log user data for debugging
   useEffect(() => {
