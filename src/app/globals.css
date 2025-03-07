@@ -9,29 +9,15 @@ body {
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --foreground: 240 10% 3.9%;
+
+    /* Leaderboard specific colors */
+    --leaderboard-bg: 0 0% 0%;
+    --leaderboard-card-bg: 240 4% 11%;
+    --leaderboard-row-odd: 240 5% 6%;
+    --leaderboard-row-even: 240 5% 4%;
+    --leaderboard-border: 240 5% 20%;
+    --leaderboard-highlight: 215 100% 10%;
     --radius: 0.5rem;
   }
   .dark {
@@ -59,6 +45,14 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /*Dark mode Leaderboard specific colors -  Need to define these based on design*/
+    --leaderboard-bg: #111; /* Placeholder */
+    --leaderboard-card-bg: #222; /* Placeholder */
+    --leaderboard-row-odd: #333; /* Placeholder */
+    --leaderboard-row-even: #444; /* Placeholder */
+    --leaderboard-border: #555; /* Placeholder */
+    --leaderboard-highlight: #FFD700; /* Placeholder */
   }
 }
 
@@ -93,3 +87,20 @@ body {
     @apply relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg;
     min-height: 200px;
 }
+
+
+/* Placeholder for Leaderboard Component */
+.leaderboard {
+  /* Styles for the leaderboard component will go here */
+  background-color: var(--leaderboard-bg);
+  padding: 2rem;
+}
+
+.leaderboard-entry {
+  background-color: var(--leaderboard-card-bg);
+  border: 1px solid var(--leaderboard-border);
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+/*Further Development needed here:  Add React components for Leaderboard, fetching data from PrimapePrediction.sol, and integrating with the navbar.*/

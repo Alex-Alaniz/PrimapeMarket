@@ -56,6 +56,12 @@ export function Navbar() {
             <div className="flex items-center space-x-4">
                 <ThemeToggle />
                 
+                <Link href="/leaderboard">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                        <span>Leaderboard</span>
+                    </Button>
+                </Link>
+                
                 {account && (
                     <Link href="/profile">
                         <Button variant="ghost" size="sm" className="gap-2">
