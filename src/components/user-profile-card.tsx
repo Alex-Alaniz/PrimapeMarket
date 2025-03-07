@@ -9,9 +9,11 @@ import {
   AccountBlobbie,
   AccountAvatar,
   AccountName,
+  AccountAddress,
   AccountProvider
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
+import { shortenAddress as thirdwebShortenAddress } from "thirdweb/utils";
 import { client } from "@/app/client";
 import {
   Copy,
@@ -109,8 +111,8 @@ export function UserProfileCard() {
             <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <AccountProvider address={account.address} client={client}>
                 <span>
-                  <AccountName 
-                    socialType="ens" 
+                  <AccountAddress 
+                    formatFn={thirdwebShortenAddress} 
                     loadingComponent={shortenAddress(account.address)}
                     fallbackComponent={shortenAddress(account.address)}
                   />
