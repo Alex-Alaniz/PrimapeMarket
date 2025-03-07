@@ -7,6 +7,7 @@ import {
   useActiveAccount,
   useWalletBalance,
   AccountBlobbie,
+  AccountAvatar,
   AccountProvider
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
@@ -70,8 +71,14 @@ export function UserProfileCard() {
                 address={account.address}
                 client={client}
               >
-                <AccountBlobbie 
+                <AccountAvatar 
                   className="h-full w-full" 
+                  loadingComponent={
+                    <AccountBlobbie className="h-full w-full" />
+                  }
+                  fallbackComponent={
+                    <AccountBlobbie className="h-full w-full" />
+                  }
                 />
               </AccountProvider>
             ) : (
