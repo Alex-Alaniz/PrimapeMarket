@@ -27,21 +27,21 @@ import { useUserBalance } from "@/hooks/useUserBalance";
 // Component to display wallet balance using the useWalletBalance hook
 function BalanceDisplay({ address }: { address: string }) {
   const chain = defineChain(33139); // ApeChain
-  
+
   const { data, isLoading } = useWalletBalance({
     chain,
     address,
     client,
   });
-  
+
   if (isLoading) {
     return <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>;
   }
-  
+
   if (!data || data.displayValue === undefined || data.symbol === undefined) {
     return <span className="font-semibold text-sm">Error loading</span>;
   }
-  
+
   const formattedValue = `${(Math.ceil(parseFloat(data.displayValue) * 100) / 100).toFixed(2)} ${data.symbol}`;
   return <span className="font-semibold text-sm">{formattedValue}</span>;
 }
@@ -73,15 +73,9 @@ export function UserProfileCard() {
                 address={account.address}
                 client={client}
               >
-                <AccountAvatar 
-                  className="h-full w-full" 
-                  loadingComponent={
-                    <AccountBlobbie className="h-full w-full" />
-                  }
-                  fallbackComponent={
-                    <AccountBlobbie className="h-full w-full" />
-                  }
-                />
+                <div className="h-full w-full bg-primary/20 flex items-center justify-center">
+                  <AccountAvatar className="h-full w-full" loadingComponent={<AccountBlobbie className="h-full w-full" />} fallbackComponent={<AccountBlobbie className="h-full w-full" />} />
+                </div>
               </AccountProvider>
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
@@ -101,21 +95,12 @@ export function UserProfileCard() {
                 fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
               />
             </h2>
-          </AccountProvider>
-        ) : (
-          <h2 className="text-xl font-bold">Not Connected</h2>
-        )}
-
-        {account && (
-          <>
             <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <AccountProvider address={account.address} client={client}>
-                <span>
-                  <AccountAddress 
-                    formatFn={thirdwebShortenAddress}
-                  />
-                </span>
-              </AccountProvider>
+              <span>
+                <AccountAddress 
+                  formatFn={thirdwebShortenAddress}
+                />
+              </span>
               <button
                 onClick={() => copyToClipboard(account.address)}
                 className="rounded-full p-1 hover:bg-muted"
@@ -182,7 +167,9 @@ export function UserProfileCard() {
                 </div>
               </div>
             </div>
-          </>
+          </AccountProvider>
+        ) : (
+          <h2 className="text-xl font-bold">Not Connected</h2>
         )}
       </CardContent>
     </Card>
