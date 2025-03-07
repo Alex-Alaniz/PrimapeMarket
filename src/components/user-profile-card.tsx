@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +50,41 @@ export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
   const { balance, portfolio, pnl } = useUserBalance();
+  
+  // Log user data for debugging
+  useEffect(() => {
+    if (account) {
+      console.log("Active Account:", account);
+      
+      // Log the user data structure provided
+      const userData = {
+        "linkedAccounts": [
+          {
+            "type": "google",
+            "details": {
+              "email": "ahmed.waseem@thecherrybyte.com",
+              "id": "108612178025215719662",
+              "name": "ahmed waseem",
+              "picture": "https://lh3.googleusercontent.com/a/ACg8ocKQyK3zEVBDAWaKZhmGCuyN-ykIaE05hUCpAiAblZq-CWW1xA=s96-c",
+              "givenName": "ahmed",
+              "familyName": "waseem",
+              "emailVerified": true
+            }
+          }
+        ],
+        "wallets": [
+          {
+            "address": "0xe96bba3BbfEc7412FcA7EE5A5A582D56bFc7EC33",
+            "createdAt": "2025-03-07T08:50:19.227Z",
+            "type": "enclave"
+          }
+        ],
+        "id": "3bd8273b-3e93-4257-bcba-de640329722f"
+      };
+      
+      console.log("User Profile Data:", userData);
+    }
+  }, [account]);
 
   const shortenAddress = (address: string) => {
     if (!address) return "";
