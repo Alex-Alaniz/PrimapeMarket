@@ -5,10 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
-  AccountProvider,
-  AccountBalance
+  useWalletBalance
 } from "thirdweb/react";
-import type { GetWalletBalanceResult } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
 import {
@@ -20,6 +18,28 @@ import {
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useUserBalance } from "@/hooks/useUserBalance";
+
+// Component to display wallet balance using the useWalletBalance hook
+function BalanceDisplay({ address }: { address: string }) {
+  const chain = defineChain(33139); // ApeChain
+  
+  const { data, isLoading } = useWalletBalance({
+    chain,
+    address,
+    client,
+  });
+  
+  if (isLoading) {
+    return <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>;
+  }
+  
+  if (!data || data.displayValue === undefined || data.symbol === undefined) {
+    return <span className="font-semibold text-sm">Error loading</span>;
+  }
+  
+  const formattedValue = `${(Math.ceil(parseFloat(data.displayValue) * 100) / 100).toFixed(2)} ${data.symbol}`;
+  return <span className="font-semibold text-sm">{formattedValue}</span>;
+}
 
 export function UserProfileCard() {
   const account = useActiveAccount();
@@ -85,26 +105,10 @@ export function UserProfileCard() {
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
                   {account ? (
-                      <AccountProvider
-                        address={account.address}
-                        client={client}
-                      >
-                        <AccountBalance
-                          chain={defineChain(33139)} // ApeChain 
-                          loadingComponent={
-                            <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>
-                          }
-                          formatFn={(props: GetWalletBalanceResult) => {
-                            if (!props || props.displayValue === undefined || props.symbol === undefined) {
-                              return "Loading...";
-                            }
-                            return `${(Math.ceil(parseFloat(props.displayValue) * 100) / 100).toFixed(2)} ${props.symbol}`;
-                          }}
-                        />
-                      </AccountProvider>
-                    ) : (
-                      <span className="font-semibold text-sm">{balance} APE</span>
-                    )}
+                    <BalanceDisplay address={account.address} />
+                  ) : (
+                    <span className="font-semibold text-sm">{balance} APE</span>
+                  )}
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">
