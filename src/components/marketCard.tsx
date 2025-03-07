@@ -156,13 +156,11 @@ export function MarketCard({ index, filter, featured = false, compact = false }:
                         ) : isExpired ? (
                             <MarketPending _compact={true} />
                         ) : (
-                            <div className="w-full">
-                                <MarketBuyInterface 
-                                    marketId={index}
-                                    market={market!}
-                                    _compact={true}
-                                />
-                            </div>
+                            <MarketBuyInterface 
+                                marketId={index}
+                                market={market!}
+                                _compact={true}
+                            />
                         )}
                     </CardContent>
                     
