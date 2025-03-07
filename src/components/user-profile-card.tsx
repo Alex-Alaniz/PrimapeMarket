@@ -8,7 +8,7 @@ import {
   AccountProvider,
   AccountBalance
 } from "thirdweb/react";
-import type { GetWalletBalanceResult } from "thirdweb";
+import type { GetWalletBalanceResult } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
 import {
