@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { market } from "@/constants/testData";
-import { useActiveAccount, useWriteContract } from "thirdweb/react";
+import { useActiveAccount, useSendAndConfirmTransaction } from "thirdweb/react";
+import { prepareContractCall } from "thirdweb";
 import { contract } from "@/constants/contract";
 import { Market } from "@/types/prediction-market";
 import { parseEther } from "thirdweb/utils";
@@ -17,22 +18,14 @@ interface MarketBuyInterfaceProps {
 export function MarketBuyInterface({ marketId, market, _compact = false }: MarketBuyInterfaceProps) {
     const account = useActiveAccount();
     const { toast } = useToast();
+    const { mutateAsync: sendTransaction, isLoading } = useSendAndConfirmTransaction();
 
     // State for amount
     const [amount, setAmount] = useState<string>("");
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
-    // Contract write hook
-    const { mutate: buyShares, isLoading } = useWriteContract({
-        contract,
-        account,
-        method: "function buyShares(uint256 _marketId, uint256 _optionIndex)",
-        params: [BigInt(marketId), selectedOption !== null ? BigInt(selectedOption) : BigInt(0)],
-        value: amount ? parseEther(amount) : BigInt(0)
-    });
-
     // Handle buying shares
-    const handleBuy = (optionIndex: number) => {
+    const handleBuy = async (optionIndex: number) => {
         if (!account) {
             toast({
                 title: "Wallet not connected",
@@ -52,55 +45,63 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
         }
 
         setSelectedOption(optionIndex);
-
-        buyShares({
-            contract,
-            account,
-            method: "function buyShares(uint256 _marketId, uint256 _optionIndex)",
-            params: [BigInt(marketId), BigInt(optionIndex)],
-            value: parseEther(amount)
-        })
-            .then(() => {
-                toast({
-                    title: "Shares purchased!",
-                    description: `You bought ${amount} APCH of ${market.options[optionIndex]}`,
-                    variant: "default"
-                });
-                setAmount("");
-            })
-            .catch((error) => {
-                toast({
-                    title: "Failed to buy shares",
-                    description: error.message,
-                    variant: "destructive"
-                });
+        
+        try {
+            const transaction = prepareContractCall({
+                contract,
+                method: "function buyShares(uint256 _marketId, uint256 _optionIndex)",
+                params: [BigInt(marketId), BigInt(optionIndex)],
+                value: parseEther(amount)
             });
+            
+            await sendTransaction({ transaction, account });
+            
+            toast({
+                title: "Purchase successful",
+                description: `You purchased shares in the "${market.options[optionIndex]}" option`,
+                variant: "default"
+            });
+            
+            setAmount("");
+        } catch (error) {
+            console.error("Transaction error:", error);
+            toast({
+                title: "Transaction failed",
+                description: "There was an error processing your transaction",
+                variant: "destructive"
+            });
+        }
     };
 
     return (
         <>
-            <div className="market-card-buttons">
+            <div className="market-card-buttons"> {/* Changed this line */}
                 {market.options.map((option, index) => (
                     <Button 
                         key={index}
-                        className="market-buy-button w-full"
+                        className="market-buy-button w-full" {/* Added class here */}
                         onClick={() => handleBuy(index)}
+                        variant="outline"
                         disabled={isLoading}
-                        variant={selectedOption === index ? "default" : "outline"}
-                        size={_compact ? "sm" : "default"}
                     >
-                        {option}
+                        {isLoading && selectedOption === index ? (
+                            <span className="flex items-center gap-2">
+                                <span className="animate-spin">⟳</span> Processing...
+                            </span>
+                        ) : (
+                            option
+                        )}
                     </Button>
                 ))}
             </div>
-
-            <div className="mt-3">
+            
+            <div className="mt-2">
                 <Input
                     type="number"
-                    placeholder="Amount in APCH"
+                    placeholder="Amount (APE)"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="text-center"
+                    className="w-full"
                     disabled={isLoading}
                 />
             </div>

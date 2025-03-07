@@ -34,7 +34,7 @@ export function EnhancedPredictionMarketDashboard() {
 
     // Modified auto-scroll effect with pause functionality
     useEffect(() => {
-        if (!marketCount || Number(marketCount) === 0 || isPaused) {
+        if (!marketCount || marketCount <=0 || isPaused) {
             return
         }
 
