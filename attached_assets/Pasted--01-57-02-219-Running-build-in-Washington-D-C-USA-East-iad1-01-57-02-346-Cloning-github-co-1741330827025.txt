@@ -1,0 +1,37 @@
+[01:57:02.219] Running build in Washington, D.C., USA (East) – iad1
+[01:57:02.346] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 4b64ea0)
+[01:57:03.953] Cloning completed: 1.606s
+[01:57:10.157] Restored build cache from previous deployment (7hvNq6h3rYQ51UEaCMYTkckvGDwx)
+[01:57:10.242] Running "vercel build"
+[01:57:11.102] Vercel CLI 41.2.2
+[01:57:11.450] Installing dependencies...
+[01:57:13.487] 
+[01:57:13.488] up to date in 2s
+[01:57:13.489] 
+[01:57:13.489] 204 packages are looking for funding
+[01:57:13.489]   run `npm fund` for details
+[01:57:13.524] Detected Next.js version: 15.0.1
+[01:57:13.529] Running "npm run build"
+[01:57:14.520] 
+[01:57:14.520] > simplepredictionmarket@0.1.0 build
+[01:57:14.520] > next build
+[01:57:14.520] 
+[01:57:15.185]   ▲ Next.js 15.0.1
+[01:57:15.186] 
+[01:57:15.211]    Creating an optimized production build ...
+[01:57:33.324]  ✓ Compiled successfully
+[01:57:33.329]    Linting and checking validity of types ...
+[01:57:42.343] Failed to compile.
+[01:57:42.344] 
+[01:57:42.344] ./src/components/user-profile-card.tsx:100:17
+[01:57:42.344] Type error: Type 'string' is not assignable to type 'ReactElement<any, any>'.
+[01:57:42.344] 
+[01:57:42.344] [0m [90m  98 |[39m             [33m<[39m[33mh2[39m className[33m=[39m[32m"text-xl font-bold"[39m[33m>[39m[0m
+[01:57:42.344] [0m [90m  99 |[39m               [33m<[39m[33mAccountName[39m [0m
+[01:57:42.345] [0m[31m[1m>[22m[39m[90m 100 |[39m                 loadingComponent[33m=[39m{shortenAddress(account[33m.[39maddress)} [0m
+[01:57:42.345] [0m [90m     |[39m                 [31m[1m^[22m[39m[0m
+[01:57:42.345] [0m [90m 101 |[39m                 fallbackComponent[33m=[39m{shortenAddress(account[33m.[39maddress)} [0m
+[01:57:42.345] [0m [90m 102 |[39m               [33m/[39m[33m>[39m[0m
+[01:57:42.345] [0m [90m 103 |[39m             [33m<[39m[33m/[39m[33mh2[39m[33m>[39m[0m
+[01:57:42.395] Error: Command "npm run build" exited with 1
+[01:57:44.041] 
