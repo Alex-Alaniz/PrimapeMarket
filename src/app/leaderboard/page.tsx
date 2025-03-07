@@ -13,28 +13,28 @@ export default function LeaderboardPage() {
   const account = useActiveAccount();
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
+    <div className="flex min-h-screen flex-col">
       <div className="container py-4">
         <Navbar />
         
         <div className="mt-8">
           <h1 className="text-3xl font-bold mb-2">Leaderboard</h1>
-          <p className="text-gray-400 mb-6">Earn $APE by winning predictions in markets.</p>
+          <p className="text-muted-foreground mb-6">Earn $APE by winning predictions in markets.</p>
           
-          <div className="rounded-lg bg-zinc-900 text-white shadow-sm overflow-hidden">
+          <div className="rounded-lg border shadow-sm overflow-hidden">
             <Tabs defaultValue="szn1" className="w-full" onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-                <TabsList className="bg-zinc-800">
-                  <TabsTrigger value="szn1" className="data-[state=active]:bg-white data-[state=active]:text-black">SZN 1</TabsTrigger>
-                  <TabsTrigger value="pre-szn" className="data-[state=active]:bg-white data-[state=active]:text-black">PRE-SZN</TabsTrigger>
+              <div className="flex items-center justify-between p-4 border-b">
+                <TabsList>
+                  <TabsTrigger value="szn1">SZN 1</TabsTrigger>
+                  <TabsTrigger value="pre-szn">PRE-SZN</TabsTrigger>
                 </TabsList>
               </div>
               
-              <TabsContent value="szn1">
+              <TabsContent value="szn1" className="p-4">
                 <Leaderboard season="szn1" activeUser={account?.address} />
               </TabsContent>
               
-              <TabsContent value="pre-szn">
+              <TabsContent value="pre-szn" className="p-4">
                 <Leaderboard season="pre-szn" activeUser={account?.address} />
               </TabsContent>
             </Tabs>
