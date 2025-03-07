@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
   AccountProvider,
-  AccountAddress,
   AccountBalance,
   type AccountBalanceInfo
 } from "thirdweb/react";
