@@ -66,7 +66,7 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
                 description: `You bought ${amount} ${market.options[selectedOptionIndex]} shares`,
                 duration: 5000,
             });
-            
+
             handleCancel();
         } catch (error: unknown) {
             const txError = error as TransactionError;
@@ -84,11 +84,11 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
 
     return (
         <>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="market-card-buttons"> {/* Changed this line */}
                 {market.options.map((option, index) => (
                     <Button 
                         key={index}
-                        className="w-full"
+                        className="market-buy-button w-full" {/* Added class here */}
                         onClick={() => handleBuy(index)}
                         aria-label={`Vote ${option} for "${market.question}"`}
                         disabled={!account}
@@ -127,7 +127,7 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
                         <p className="text-sm text-gray-500">
                             You are buying shares in: {market.options[selectedOptionIndex!]}
                         </p>
-                        
+
                         {amount > 0 && (
                             <div className="border-t pt-4">
                                 <FeeCalculator amount={amount} />
