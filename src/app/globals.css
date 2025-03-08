@@ -1,10 +1,14 @@
 
-/* No transition utility class */
+/* No transition utility class - Stronger version to force immediate changes */
 .no-transition,
 .no-transition *,
 .no-transition *:before,
 .no-transition *:after {
   transition: none !important;
+  animation: none !important;
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
 }
 
 

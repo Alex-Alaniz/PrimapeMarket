@@ -2,10 +2,11 @@
 "use client";
 
 import * as React from "react";
+import { Moon, Sun, Banana } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Banana, Moon, Sun } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -14,35 +15,26 @@ import {
 
 export function ThemeToggle() {
   const { setTheme, theme, resolvedTheme } = useTheme();
-
-  // Add a state to keep track of the current theme
   const [currentTheme, setCurrentTheme] = React.useState<string | undefined>(undefined);
-  
-  // Force theme change when component mounts if theme is stored in local storage
+  const [themeChanging, setThemeChanging] = React.useState(false);
+
+  // Initialize the theme on mount
   React.useEffect(() => {
-    // Initialize currentTheme with the active theme
-    setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
-    
-    // Apply no-transition class initially to prevent flashing
-    document.documentElement.classList.add('no-transition');
-    
-    // Clean up the no-transition class after a short delay
-    const timeoutId = setTimeout(() => {
-      document.documentElement.classList.remove('no-transition');
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [theme, resolvedTheme]);
-  
-  // Update current theme whenever the theme or resolvedTheme changes
-  React.useEffect(() => {
+    // Set the current theme based on what's active
     setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
   }, [theme, resolvedTheme]);
-  
-  // Function to safely change theme with no-transition class
-  const safelySetTheme = (newTheme: string) => {
-    // Add no-transition class to prevent flickering
+
+  // Function to handle theme changes with improved transition handling
+  const handleThemeChange = (newTheme: string) => {
+    // Mark that we're changing themes to prevent flickering
+    setThemeChanging(true);
+    
+    // Apply no-transition class to prevent jarring transitions
     document.documentElement.classList.add('no-transition');
+    
+    // Force a browser reflow to ensure the no-transition class takes effect
+    // This is critical for transitions from Ape mode
+    void document.documentElement.offsetHeight;
     
     // Set the theme
     setTheme(newTheme);
@@ -50,11 +42,17 @@ export function ThemeToggle() {
     // Update the current theme state immediately for UI consistency
     setCurrentTheme(newTheme);
     
-    // Remove the no-transition class after a small delay
+    // Remove the no-transition class after a delay to allow the DOM to update
     setTimeout(() => {
-      requestAnimationFrame(() => {
-        document.documentElement.classList.remove('no-transition');
-      });
+      document.documentElement.classList.remove('no-transition');
+      setThemeChanging(false);
+      
+      // If switching from Ape mode, force a class list refresh
+      if (theme === 'ape') {
+        document.documentElement.classList.remove('ape');
+        void document.documentElement.offsetHeight; // Force reflow
+        document.documentElement.classList.add(newTheme);
+      }
     }, 100);
   };
 
@@ -65,6 +63,7 @@ export function ThemeToggle() {
           variant={currentTheme === "ape" ? "default" : "outline"} 
           size="icon"
           className={currentTheme === "ape" ? "bg-[hsl(290,100%,75%)] hover:bg-[hsl(290,100%,65%)]" : ""}
+          disabled={themeChanging}
         >
           {currentTheme === "light" ? (
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
@@ -76,13 +75,13 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => safelySetTheme("light")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => safelySetTheme("dark")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => safelySetTheme("ape")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("ape")}>
           Ape
         </DropdownMenuItem>
       </DropdownMenuContent>
