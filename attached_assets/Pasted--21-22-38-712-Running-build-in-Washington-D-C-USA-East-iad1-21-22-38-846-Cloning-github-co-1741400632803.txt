@@ -1,0 +1,45 @@
+[21:22:38.712] Running build in Washington, D.C., USA (East) – iad1
+[21:22:38.846] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 9ca3dbb)
+[21:22:40.393] Cloning completed: 1.543s
+[21:22:49.096] Restored build cache from previous deployment (9jpfq3usmrfkYhtGr8M3w2xkXAVa)
+[21:22:49.171] Running "vercel build"
+[21:22:50.286] Vercel CLI 41.2.2
+[21:22:51.567] Installing dependencies...
+[21:22:57.678] 
+[21:22:57.678] up to date in 2s
+[21:22:57.679] 
+[21:22:57.679] 223 packages are looking for funding
+[21:22:57.679]   run `npm fund` for details
+[21:22:57.711] Detected Next.js version: 15.0.1
+[21:22:57.718] Running "npm run build"
+[21:22:57.829] 
+[21:22:57.829] > simplepredictionmarket@0.1.0 build
+[21:22:57.829] > next build
+[21:22:57.830] 
+[21:22:58.924]   ▲ Next.js 15.0.1
+[21:22:58.925] 
+[21:22:58.951]    Creating an optimized production build ...
+[21:22:59.265] > [PWA] Compile server
+[21:22:59.266] > [PWA] Compile server
+[21:22:59.266] > [PWA] Compile client (static)
+[21:22:59.267] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[21:22:59.267] > [PWA] Service worker: /vercel/path0/public/sw.js
+[21:22:59.267] > [PWA]   url: /sw.js
+[21:22:59.267] > [PWA]   scope: /
+[21:23:19.570]  ✓ Compiled successfully
+[21:23:19.581]    Linting and checking validity of types ...
+[21:23:24.486] 
+[21:23:24.488] Failed to compile.
+[21:23:24.489] 
+[21:23:24.493] ./src/components/market-buy-interface.tsx
+[21:23:24.494] 106:15  Error: 'getGridLayout' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:23:24.494] 114:15  Error: 'getButtonSize' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:23:24.494] 
+[21:23:24.494] ./src/components/marketCard.tsx
+[21:23:24.494] 9:10  Error: 'MarketProgress' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:23:24.494] 12:10  Error: 'MarketResolved' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:23:24.495] 13:10  Error: 'MarketPending' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:23:24.495] 
+[21:23:24.495] info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+[21:23:24.689] Error: Command "npm run build" exited with 1
+[21:23:25.417] 
