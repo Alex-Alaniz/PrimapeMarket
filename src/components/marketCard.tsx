@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { contract } from "@/constants/contract";
@@ -12,6 +11,7 @@ import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import { useRef } from "react";
 
 interface MarketCardProps {
     index: number;
@@ -23,6 +23,7 @@ interface MarketCardProps {
 
 export function MarketCard({ index, filter, category = 'all', featured = false, compact = false }: MarketCardProps) {
     const account = useActiveAccount();
+    const buyInterfaceRef = useRef<BuyInterfaceHandle>(null);
 
     // Get market info
     const { data: marketInfo, isLoading: isLoadingMarketInfo } = useReadContract({
@@ -69,10 +70,10 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
     // Calculate probability percentage for the first option (if available)
     const calculateProbabilityPercentage = () => {
         if (!market || !market.totalSharesPerOption || market.totalSharesPerOption.length === 0) return 0;
-        
+
         const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
         if (totalPool === BigInt(0)) return 0;
-        
+
         const firstOptionShares = market.totalSharesPerOption[0];
         return Math.round(Number(firstOptionShares * BigInt(100)) / Number(totalPool));
     };
@@ -80,13 +81,13 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
     // Filter logic
     const shouldShow = () => {
         if (!market) return false;
-        
+
         // Category filter
         const marketCategory = MARKET_CATEGORIES[index] || 'all';
         const categoryMatch = category === 'all' || marketCategory === category;
-        
+
         if (!categoryMatch) return false;
-        
+
         // Status filter
         switch (filter) {
             case 'active':
@@ -103,7 +104,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
     if (!shouldShow()) {
         return null;
     }
-    
+
     // Probability percentage for first option 
     const probabilityPercentage = calculateProbabilityPercentage();
 
@@ -128,7 +129,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             {probabilityPercentage}%
                         </div>
                     </div>
-                    
+
                     <CardHeader className={`${compact ? 'p-3 pb-2' : 'p-4 pb-3'}`}>
                         <div className="flex items-start gap-2">
                             <div className="flex-1">
@@ -144,7 +145,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             </div>
                         </div>
                     </CardHeader>
-                    
+
                     <CardContent className={`${compact ? 'px-3 py-1' : 'px-4 py-2'} flex-grow`}>
                         {market && market.options && market.totalSharesPerOption && (
                             <div className="mb-3">
@@ -155,7 +156,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                         const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
                                         const percentage = totalPool === BigInt(0) ? 0 : 
                                             Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
-                                        
+
                                         return (
                                             <div key={idx} className="flex items-center justify-between text-sm py-0.5 gap-1">
                                                 <span className="truncate flex-grow">{option}</span>
@@ -166,12 +167,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                             size="sm" 
                                                             variant={market.options.length <= 2 ? (idx % 2 === 0 ? "default" : "destructive") : "outline"}
                                                             className={market.options.length <= 2 ? "h-6 px-2 text-xs font-medium" : "h-7 px-3 font-medium"}
-                                                            onClick={() => {
-                                                                const buyInterface = document.getElementById(`buyInterface-${index}-${idx}`);
-                                                                if (buyInterface) {
-                                                                    buyInterface.click();
-                                                                }
-                                                            }}
+                                                            onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
                                                         >
                                                             Buy
                                                         </Button>
@@ -183,41 +179,16 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                 </div>
                             </div>
                         )}
-                        
+
                         {/* Hidden elements for handling buys */}
-                        <div className="hidden">
-                            {market?.resolved ? (
-                                <MarketResolved 
-                                    marketId={index}
-                                    winningOptionIndex={market.winningOptionIndex}
-                                    options={market.options}
-                                    totalShares={[...market.totalSharesPerOption]}
-                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                    _compact={true}
-                                />
-                            ) : isExpired ? (
-                                <MarketPending _compact={true} />
-                            ) : (
-                                <MarketBuyInterface 
-                                    marketId={index}
-                                    market={market!}
-                                    _compact={true}
-                                    ref={(element) => {
-                                        if (element && market) {
-                                            market.options.forEach((_, idx) => {
-                                                const buyBtn = document.createElement('button');
-                                                buyBtn.id = `buyInterface-${index}-${idx}`;
-                                                buyBtn.style.display = 'none';
-                                                buyBtn.onclick = () => element.handleBuy(idx);
-                                                document.body.appendChild(buyBtn);
-                                            });
-                                        }
-                                    }}
-                                />
-                            )}
-                        </div>
+                        <MarketBuyInterface 
+                            marketId={index}
+                            market={market!}
+                            _compact={true}
+                            ref={buyInterfaceRef}
+                        />
                     </CardContent>
-                    
+
                     {account && (
                         <CardFooter className={`${compact ? 'p-3 pt-1' : 'p-4 pt-2'} border-t border-border/30`}>
                             {market && (
