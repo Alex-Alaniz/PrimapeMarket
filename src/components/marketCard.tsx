@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 import { useRef } from "react";
@@ -169,18 +168,18 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                         <span className="truncate">{option}</span>
                                                         <span className="text-muted-foreground font-medium">{percentage}%</span>
                                                     </div>
-                                                    <div className={`w-4 h-4 rounded-sm ${idx % 2 === 0 ? 'bg-primary' : 'bg-destructive'}`}></div>
+                                                    <div className={`w-4 h-4 rounded-sm ${idx === 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                                 </div>
                                             );
                                         })}
-                                        
+
                                         {/* Large buy buttons at the bottom for 2 or fewer options */}
                                         {!market.resolved && !isExpired && account && (
                                             <div className="grid grid-cols-2 gap-2 mt-3">
                                                 {market.options.map((option, idx) => (
                                                     <Button 
                                                         key={idx}
-                                                        variant={idx % 2 === 0 ? "default" : "destructive"}
+                                                        variant={idx === 0 ? "default" : "destructive"}
                                                         onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
                                                         className="w-full"
                                                         size="sm"
