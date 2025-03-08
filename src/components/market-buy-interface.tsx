@@ -82,16 +82,34 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
         }
     };
 
+    // Determine the grid layout based on number of options
+    const getGridLayout = () => {
+        const optionCount = market.options.length;
+        if (optionCount <= 2) return "grid-cols-2";
+        if (optionCount <= 4) return "grid-cols-2";
+        return "grid-cols-2 sm:grid-cols-3";
+    };
+
+    // Determine button size based on number of options
+    const getButtonSize = () => {
+        const optionCount = market.options.length;
+        if (optionCount <= 2) return "h-10";
+        if (optionCount <= 4) return "h-9 text-sm";
+        return "h-8 text-xs py-1";
+    };
+
     return (
         <>
-            <div className="grid grid-cols-2 gap-2">
+            <div className={`grid ${getGridLayout()} gap-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
                 {market.options.map((option, index) => (
                     <Button 
                         key={index}
-                        className="w-full"
+                        className={`w-full ${getButtonSize()} truncate`}
+                        variant={market.options.length > 4 ? "outline" : "default"}
                         onClick={() => handleBuy(index)}
                         aria-label={`Vote ${option} for "${market.question}"`}
                         disabled={!account}
+                        title={option}
                     >
                         {option}
                     </Button>

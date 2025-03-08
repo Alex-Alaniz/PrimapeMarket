@@ -145,7 +145,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     
                     <CardContent className={`${compact ? 'px-3 py-1' : 'px-4 py-2'} flex-grow`}>
                         {market && market.options && market.totalSharesPerOption && (
-                            <div className="mb-3">
+                            <div className={`mb-3 ${market.options.length > 3 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
                                 <MarketProgress 
                                     options={market.options}
                                     totalShares={market.totalSharesPerOption}
