@@ -1,0 +1,48 @@
+[22:06:54.060] Running build in Washington, D.C., USA (East) – iad1
+[22:06:54.181] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 37aacd5)
+[22:06:55.639] Cloning completed: 1.457s
+[22:07:05.754] Restored build cache from previous deployment (9jpfq3usmrfkYhtGr8M3w2xkXAVa)
+[22:07:05.814] Running "vercel build"
+[22:07:06.949] Vercel CLI 41.2.2
+[22:07:08.657] Installing dependencies...
+[22:07:14.525] 
+[22:07:14.526] up to date in 5s
+[22:07:14.526] 
+[22:07:14.526] 223 packages are looking for funding
+[22:07:14.527]   run `npm fund` for details
+[22:07:14.560] Detected Next.js version: 15.0.1
+[22:07:14.566] Running "npm run build"
+[22:07:14.820] 
+[22:07:14.823] > simplepredictionmarket@0.1.0 build
+[22:07:14.823] > next build
+[22:07:14.823] 
+[22:07:17.012]  ⚠ Invalid next.config.ts options detected: 
+[22:07:17.018]  ⚠     Unrecognized key(s) in object: 'memoryUsageWarningThreshold' at "experimental"
+[22:07:17.018]  ⚠     Unrecognized key(s) in object: 'swcMinify'
+[22:07:17.018]  ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+[22:07:17.119]   ▲ Next.js 15.0.1
+[22:07:17.120] 
+[22:07:17.452]    Creating an optimized production build ...
+[22:07:17.936] > [PWA] Compile server
+[22:07:17.937] > [PWA] Compile server
+[22:07:17.937] > [PWA] Compile client (static)
+[22:07:17.938] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[22:07:17.938] > [PWA] Service worker: /vercel/path0/public/sw.js
+[22:07:17.938] > [PWA]   url: /sw.js
+[22:07:17.939] > [PWA]   scope: /
+[22:08:02.762]  ✓ Compiled successfully
+[22:08:02.776]    Linting and checking validity of types ...
+[22:08:12.443] Failed to compile.
+[22:08:12.443] 
+[22:08:12.443] ./next.config.ts:43:5
+[22:08:12.443] Type error: Object literal may only specify known properties, and 'memoryUsageWarningThreshold' does not exist in type 'ExperimentalConfig'.
+[22:08:12.443] 
+[22:08:12.443] [0m [90m 41 |[39m   [90m// Increase memory limit for builds[39m[0m
+[22:08:12.443] [0m [90m 42 |[39m   experimental[33m:[39m {[0m
+[22:08:12.443] [0m[31m[1m>[22m[39m[90m 43 |[39m     memoryUsageWarningThreshold[33m:[39m [35m1024[39m [33m*[39m [35m1024[39m [33m*[39m [35m1024[39m[33m,[39m [90m// 1GB[39m[0m
+[22:08:12.443] [0m [90m    |[39m     [31m[1m^[22m[39m[0m
+[22:08:12.443] [0m [90m 44 |[39m   }[33m,[39m[0m
+[22:08:12.443] [0m [90m 45 |[39m }[33m;[39m[0m
+[22:08:12.443] [0m [90m 46 |[39m[0m
+[22:08:12.577] Error: Command "npm run build" exited with 1
+[22:08:13.007] 
