@@ -20,6 +20,9 @@ const ThirdwebComponents = dynamic(
   { ssr: false }
 );
 
+// Destructure AccountProvider for easier use
+const { AccountProvider } = ThirdwebComponents;
+
 const { shortenAddress: thirdwebShortenAddress } = dynamic(
   () => import("thirdweb/utils").then((mod) => ({ 
     shortenAddress: mod.shortenAddress 

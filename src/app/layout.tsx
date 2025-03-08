@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import dynamic from "next/dynamic";
-
-// Dynamically import ThirdwebProvider to avoid chunk loading issues
-const ThirdwebProvider = dynamic(
-  () => import("thirdweb/react").then((mod) => mod.ThirdwebProvider),
-  { ssr: false }
-);
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import ClientThirdwebProvider from "@/components/client-thirdweb-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -51,9 +45,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <ThirdwebProvider>
+          <ClientThirdwebProvider>
             {children}
-          </ThirdwebProvider>
+          </ClientThirdwebProvider>
         </ThemeProvider>
         <Toaster />
       </body>
