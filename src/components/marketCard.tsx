@@ -181,7 +181,13 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                         key={idx}
                                                         variant="outline"
                                                         onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
-                                                        className={`w-full ${idx === 0 ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"}`}
+                                                        className={`w-full ${
+                                                            market.options.length <= 2 
+                                                                ? (idx === 0 
+                                                                    ? "bg-green-500 hover:bg-green-600 text-white" 
+                                                                    : "bg-red-500 hover:bg-red-600 text-white")
+                                                                : "bg-green-500 hover:bg-green-600 text-white"
+                                                        }`}
                                                         size="sm"
                                                     >
                                                         Buy
@@ -208,7 +214,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                             <Button
                                                                 size="sm" 
                                                                 variant="outline"
-                                                                className="h-7 px-3 font-medium opacity-70 group-hover:opacity-100"
+                                                                className="h-7 px-3 font-medium opacity-70 group-hover:opacity-100 bg-green-500 hover:bg-green-600 text-white"
                                                                 onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
                                                             >
                                                                 Buy

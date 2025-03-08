@@ -170,7 +170,13 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
                                 <Button
                                     onClick={handleConfirm}
                                     disabled={isConfirming || amount <= 0}
-                                    className={`w-32 ${market.options[selectedOptionIndex!]?.toLowerCase() === "yes" ? "bg-green-500 hover:bg-green-600" : market.options[selectedOptionIndex!]?.toLowerCase() === "no" ? "bg-red-500 hover:bg-red-600" : ""}`}
+                                    className={`w-32 ${
+                                        market.options.length <= 2 
+                                            ? (selectedOptionIndex === 0
+                                                ? "bg-green-500 hover:bg-green-600"
+                                                : "bg-red-500 hover:bg-red-600")
+                                            : "bg-green-500 hover:bg-green-600"
+                                    }`}
                                 >
                                     {isConfirming ? (
                                         <>

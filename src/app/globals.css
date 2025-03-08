@@ -79,6 +79,7 @@ body {
 
 @layer base {
   :root {
+    /* Light Mode - Based on ApeChain palette */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
 
@@ -88,16 +89,16 @@ body {
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
     
-    --primary: 220 70% 50%;
+    --primary: 220 85% 57%; /* ApeChain Blue */
     --primary-foreground: 0 0% 98%;
     
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 196 100% 47%; /* ApeChain Light Blue instead of pink */
+    --secondary-foreground: 0 0% 98%;
     
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
     
-    --accent: 330 65% 55%;
+    --accent: 144 70% 61%; /* ApeChain Green/Mint */
     --accent-foreground: 0 0% 98%;
     
     --destructive: 0 84.2% 60.2%;
@@ -107,11 +108,11 @@ body {
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
     
-    --chart-1: 220 70% 55%;
-    --chart-2: 160 70% 50%;
-    --chart-3: 30 85% 60%;
+    --chart-1: 220 85% 57%; /* ApeChain Blue */
+    --chart-2: 161 98% 41%; /* ApeChain Green */
+    --chart-3: 37 100% 50%; /* ApeChain Yellow */
     --chart-4: 280 75% 65%;
-    --chart-5: 340 80% 60%;
+    --chart-5: 0 82% 58%; /* ApeChain Red */
 
     /* Leaderboard specific colors */
     --leaderboard-bg: 0 0% 0%;
@@ -123,30 +124,68 @@ body {
     --radius: 0.5rem;
   }
   .dark {
+    /* Dark Mode - Based on ApeChain palette */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 222 47% 14%;
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 220 70% 50%;
+    --primary: 220 85% 57%; /* ApeChain Blue */
     --primary-foreground: 210 40% 98%;
-    --secondary: 217 32% 17%;
+    --secondary: 196 100% 47%; /* ApeChain Light Blue instead of pink */
     --secondary-foreground: 210 40% 98%;
     --muted: 217 32% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 330 65% 55%;
+    --accent: 144 70% 61%; /* ApeChain Green/Mint */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 32% 20%;
     --input: 217 32% 20%;
     --ring: 224 76% 48%;
-    --chart-1: 220 80% 65%;
-    --chart-2: 160 80% 55%;
-    --chart-3: 30 90% 65%;
+    --chart-1: 220 85% 57%; /* ApeChain Blue */
+    --chart-2: 161 98% 41%; /* ApeChain Green */
+    --chart-3: 37 100% 50%; /* ApeChain Yellow */
     --chart-4: 280 85% 70%;
-    --chart-5: 340 85% 65%;
+    --chart-5: 0 82% 58%; /* ApeChain Red */
+  }
+  
+  /* Ape Mode - Fun mode with ApeChain colors */
+  .ape {
+    --background: 0 0% 0%; /* Black background */
+    --foreground: 0 0% 100%; /* White text */
+    
+    --card: 220 13% 18%; /* Dark blue-gray */
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 220 13% 18%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 37 100% 50%; /* ApeChain Yellow */
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 220 85% 57%; /* ApeChain Blue */
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 220 13% 28%;
+    --muted-foreground: 220 10% 70%;
+    
+    --accent: 161 98% 41%; /* ApeChain Green */
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 82% 58%; /* ApeChain Red */
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 13% 28%;
+    --input: 220 13% 28%;
+    --ring: 37 100% 50%; /* ApeChain Yellow */
+    
+    --chart-1: 220 85% 57%; /* ApeChain Blue */
+    --chart-2: 161 98% 41%; /* ApeChain Green */
+    --chart-3: 37 100% 50%; /* ApeChain Yellow */
+    --chart-4: 196 100% 47%; /* ApeChain Light Blue */
+    --chart-5: 0 82% 58%; /* ApeChain Red */
 
     /* Dark mode Leaderboard specific colors */
     --leaderboard-bg: 222 47% 11%;
