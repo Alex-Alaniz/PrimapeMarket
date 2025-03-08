@@ -71,7 +71,7 @@ export function MarketBuyInterface({ marketId, market, _compact = false, ref }: 
                 description: `You bought ${amount} ${market.options[selectedOptionIndex]} shares`,
                 duration: 5000,
             });
-            
+
             handleCancel();
         } catch (error: unknown) {
             const txError = error as TransactionError;
@@ -150,7 +150,7 @@ export function MarketBuyInterface({ marketId, market, _compact = false, ref }: 
                         <p className="text-sm text-gray-500">
                             You are buying shares in: {market.options[selectedOptionIndex!]}
                         </p>
-                        
+
                         {amount > 0 && (
                             <div className="border-t pt-4">
                                 <FeeCalculator amount={amount} />

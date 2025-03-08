@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { contract } from "@/constants/contract";
@@ -10,6 +11,7 @@ import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";
+import { Button } from "./ui/button";
 
 interface MarketCardProps {
     index: number;
@@ -155,15 +157,15 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                             Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
                                         
                                         return (
-                                            <div key={idx} className="flex items-center justify-between text-sm py-0.5">
-                                                <span className="truncate mr-2" title={option}>{option}</span>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
-                                                    <span className="text-muted-foreground w-9 text-right">{percentage}%</span>
+                                            <div key={idx} className="flex items-center justify-between text-sm py-0.5 gap-1">
+                                                <span className="truncate flex-grow">{option}</span>
+                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                    <span className="text-muted-foreground w-8 text-center">{percentage}%</span>
                                                     {!market.resolved && !isExpired && account && (
                                                         <Button
                                                             size="sm" 
-                                                            variant="outline"
-                                                            className="h-7 px-3 font-medium"
+                                                            variant={idx % 2 === 0 ? "default" : "destructive"}
+                                                            className="h-6 px-2 text-xs font-medium"
                                                             onClick={() => {
                                                                 const buyInterface = document.getElementById(`buyInterface-${index}-${idx}`);
                                                                 if (buyInterface) {
@@ -171,7 +173,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                                 }
                                                             }}
                                                         >
-                                                            Buy
+                                                            {idx % 2 === 0 ? 'Yes' : 'No'}
                                                         </Button>
                                                     )}
                                                 </div>
