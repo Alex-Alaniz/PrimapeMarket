@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { contract } from "@/constants/contract";
@@ -150,37 +151,78 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                         {market && market.options && market.totalSharesPerOption && (
                             <div className="mb-3">
                                 {/* Options with percentages and buy buttons - Polymarket style */}
-                                <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''} ${market.options.length <= 2 ? 'px-1' : ''}`}>
-                                    {market.options.map((option, idx) => {
-                                        // Calculate probability percentage for each option
-                                        const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
-                                        const percentage = totalPool === BigInt(0) ? 0 : 
-                                            Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
+                                {market.options.length <= 2 ? (
+                                    // For 2 or fewer options - Display as in left side of the reference image
+                                    <div className="space-y-2">
+                                        {market.options.map((option, idx) => {
+                                            // Calculate probability percentage for each option
+                                            const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
+                                            const percentage = totalPool === BigInt(0) ? 0 : 
+                                                Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
 
-                                        return (
-                                            <div key={idx} className="flex items-center justify-between text-sm py-0.5 gap-1">
-                                                <span className="truncate flex-grow">{option}</span>
-                                                <div className="flex items-center gap-1 flex-shrink-0">
-                                                    <span className="text-muted-foreground w-8 text-center">{percentage}%</span>
-                                                    {!market.resolved && !isExpired && account && (
-                                                        <Button
-                                                            size="sm" 
-                                                            variant={market.options.length <= 2 ? (idx % 2 === 0 ? "default" : "destructive") : "outline"}
-                                                            className={market.options.length <= 2 ? "h-6 px-2 text-xs font-medium" : "h-7 px-3 font-medium"}
-                                                            onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
-                                                        >
-                                                            Buy
-                                                        </Button>
+                                            return (
+                                                <div key={idx} className="flex items-center justify-between text-sm py-0.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="truncate">{option}</span>
+                                                        <span className="text-muted-foreground">{percentage}%</span>
+                                                    </div>
+                                                    {!market.resolved && !isExpired && (
+                                                        <span className={`w-6 h-6 rounded-sm ${idx % 2 === 0 ? 'bg-primary' : 'bg-destructive'}`}></span>
                                                     )}
                                                 </div>
+                                            );
+                                        })}
+                                        
+                                        {/* Large buy buttons at the bottom for 2 or fewer options */}
+                                        {!market.resolved && !isExpired && account && (
+                                            <div className="grid grid-cols-2 gap-2 mt-4">
+                                                {market.options.map((option, idx) => (
+                                                    <Button 
+                                                        key={idx}
+                                                        variant={idx % 2 === 0 ? "default" : "destructive"}
+                                                        onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
+                                                        className="w-full"
+                                                    >
+                                                        Buy
+                                                    </Button>
+                                                ))}
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    // For 3 or more options - Display as in right side of the reference image
+                                    <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
+                                        {market.options.map((option, idx) => {
+                                            // Calculate probability percentage for each option
+                                            const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
+                                            const percentage = totalPool === BigInt(0) ? 0 : 
+                                                Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
+
+                                            return (
+                                                <div key={idx} className="polymarket-option">
+                                                    <span className="polymarket-option-text">{option}</span>
+                                                    <div className="polymarket-option-right">
+                                                        <span className="text-muted-foreground">{percentage}%</span>
+                                                        {!market.resolved && !isExpired && account && (
+                                                            <Button
+                                                                size="sm" 
+                                                                variant="outline"
+                                                                className="h-7 px-3 font-medium"
+                                                                onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
+                                                            >
+                                                                Buy
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
 
-                        {/* Hidden elements for handling buys */}
+                        {/* Hidden component for handling buys */}
                         <MarketBuyInterface 
                             marketId={index}
                             market={market!}
