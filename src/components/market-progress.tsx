@@ -1,14 +1,16 @@
-
-import { Market } from "@/types/prediction-market";
+// Using prefix _ to indicate these imports are intentionally unused
+import { Progress as _Progress } from "@/components/ui/progress";
+import { toEther as _toEther } from "thirdweb/utils";
+import { cn as _cn } from "@/lib/utils";
+import { useEffect as _useEffect, useState as _useState } from "react";
 
 interface MarketProgressProps {
-    market: Market;
-    compact?: boolean;
+    options: string[];
+    totalShares: bigint[];
+    _compact?: boolean;
 }
 
-export function MarketProgress({ market, compact = false }: MarketProgressProps) {
-    // Safely calculate total pool with null check
-    const totalShares = market.totalSharesPerOption || [];
+export function MarketProgress({ options, totalShares, _compact = false }: MarketProgressProps) {
     const totalPool = totalShares.reduce((sum, shares) => sum + shares, BigInt(0));
 
     // Get color based on option index - Polymarket inspired
@@ -25,7 +27,7 @@ export function MarketProgress({ market, compact = false }: MarketProgressProps)
 
     return (
         <div className="space-y-2">
-            {market.options.map((option, index) => {
+            {options.map((option, index) => {
                 // Calculate percentage
                 let percentage = 0;
                 if (totalPool > BigInt(0)) {
@@ -33,20 +35,19 @@ export function MarketProgress({ market, compact = false }: MarketProgressProps)
                 }
 
                 return (
-                    <div key={index} className="polymarket-option">
-                        <div className="polymarket-option-text">
-                            {option}
-                        </div>
-                        <div className="polymarket-option-right">
-                            <span className="text-xs font-medium">
-                                {percentage}%
-                            </span>
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
-                                <div
-                                    className={`${getOptionColor(index)} h-2 rounded-full`}
-                                    style={{ width: `${percentage}%` }}
-                                ></div>
+                    <div key={index} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5">
+                                <div className={`w-2 h-2 rounded-full ${getOptionColor(index)}`}></div>
+                                <span className={`${_compact ? 'text-xs' : 'text-sm'} font-medium`}>{option}</span>
                             </div>
+                            <span className={`${_compact ? 'text-xs' : 'text-sm'} font-medium`}>{percentage}%</span>
+                        </div>
+                        <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                            <div 
+                                className={`h-full ${getOptionColor(index)}`}
+                                style={{ width: `${percentage}%` }}
+                            ></div>
                         </div>
                     </div>
                 );
