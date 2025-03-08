@@ -4,31 +4,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useActiveAccount } from "thirdweb/react";
+import {
+  useActiveAccount,
+  useWalletBalance,
+  AccountAvatar,
+  AccountName,
+  AccountAddress,
+  AccountProvider
+} from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
-import dynamic from "next/dynamic";
-
-// Dynamically import ThirdWeb components to prevent chunk loading errors
-const ThirdwebComponents = dynamic(
-  () => import("thirdweb/react").then((mod) => ({
-    useWalletBalance: mod.useWalletBalance,
-    AccountAvatar: mod.AccountAvatar,
-    AccountName: mod.AccountName, 
-    AccountAddress: mod.AccountAddress,
-    AccountProvider: mod.AccountProvider
-  })),
-  { ssr: false }
-);
-
-// Destructure AccountProvider for easier use
-const { AccountProvider } = ThirdwebComponents;
-
-const { shortenAddress: thirdwebShortenAddress } = dynamic(
-  () => import("thirdweb/utils").then((mod) => ({ 
-    shortenAddress: mod.shortenAddress 
-  })),
-  { ssr: false }
-);
+import { shortenAddress as thirdwebShortenAddress } from "thirdweb/utils";
 import { client } from "@/app/client";
 import {
   Copy,
@@ -43,7 +28,7 @@ import { useUserBalance } from "@/hooks/useUserBalance";
 function BalanceDisplay({ address }: { address: string }) {
   const chain = defineChain(33139); // ApeChain
 
-  const { data, isLoading } = ThirdwebComponents.useWalletBalance({
+  const { data, isLoading } = useWalletBalance({
     chain,
     address,
     client,
@@ -120,12 +105,12 @@ export function UserProfileCard() {
           <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden">
             {account ? (
               <div className="h-full w-full bg-primary/20 flex items-center justify-center">
-                <ThirdwebComponents.AccountProvider
+                <AccountProvider
                   address={account.address}
                   client={client}
                 >
-                  <ThirdwebComponents.AccountAvatar className="h-full w-full" loadingComponent={<div className="h-full w-full bg-primary/40"></div>} fallbackComponent={<div className="h-full w-full bg-primary/40"></div>} />
-                </ThirdwebComponents.AccountProvider>
+                  <AccountAvatar className="h-full w-full" loadingComponent={<div className="h-full w-full bg-primary/40"></div>} fallbackComponent={<div className="h-full w-full bg-primary/40"></div>} />
+                </AccountProvider>
               </div>
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
@@ -138,17 +123,17 @@ export function UserProfileCard() {
 
       <CardContent className="pt-16 pb-6 text-center">
         {account ? (
-          <ThirdwebComponents.AccountProvider address={account.address} client={client}>
+          <AccountProvider address={account.address} client={client}>
             <div>
               <h2 className="text-xl font-bold">
-                <ThirdwebComponents.AccountName 
+                <AccountName 
                   loadingComponent={<span>{shortenAddress(account.address)}</span>} 
                   fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
                 />
               </h2>
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>
-                  <ThirdwebComponents.AccountAddress 
+                  <AccountAddress 
                     formatFn={thirdwebShortenAddress}
                   />
                 </span>

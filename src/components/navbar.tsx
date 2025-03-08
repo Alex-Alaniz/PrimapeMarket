@@ -1,17 +1,7 @@
 import { ConnectButton, lightTheme, useActiveAccount } from "thirdweb/react";
 import { client } from "@/app/client";
 import { defineChain } from "thirdweb/chains";
-import type { WalletConfig } from "thirdweb/wallets";
-import dynamic from "next/dynamic";
-
-// Dynamically import wallet functions to avoid chunk loading issues
-const { inAppWallet, createWallet } = dynamic(
-  () => import("thirdweb/wallets").then((mod) => ({
-    inAppWallet: mod.inAppWallet,
-    createWallet: mod.createWallet,
-  })),
-  { ssr: false }
-) as { inAppWallet: any; createWallet: any };
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 import Image from 'next/image';
 import { ThemeToggle } from "./theme-toggle";
 import Link from "next/link";
