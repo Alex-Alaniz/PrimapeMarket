@@ -1,3 +1,4 @@
+
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
 import { Market } from "@/types/prediction-market";
