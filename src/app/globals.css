@@ -61,13 +61,13 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Hide scrollbar for IE, Edge and Firefox */
   .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -85,29 +85,29 @@ body {
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    
+
     --primary: 220 85% 57%; /* ApeChain Blue */
     --primary-foreground: 0 0% 98%;
-    
-    --secondary: 196 100% 47%; /* ApeChain Light Blue instead of pink */
+
+    --secondary: 220 100% 45%; /* ApeChain Light Blue instead of pink */
     --secondary-foreground: 0 0% 98%;
-    
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    
+
     --accent: 144 70% 61%; /* ApeChain Green/Mint */
     --accent-foreground: 0 0% 98%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
-    
+
     --chart-1: 220 85% 57%; /* ApeChain Blue */
     --chart-2: 161 98% 41%; /* ApeChain Green */
     --chart-3: 37 100% 50%; /* ApeChain Yellow */
@@ -133,7 +133,7 @@ body {
     --popover-foreground: 210 40% 98%;
     --primary: 220 85% 57%; /* ApeChain Blue */
     --primary-foreground: 210 40% 98%;
-    --secondary: 196 100% 47%; /* ApeChain Light Blue instead of pink */
+    --secondary: 220 100% 45%; /* ApeChain Light Blue instead of pink */
     --secondary-foreground: 210 40% 98%;
     --muted: 217 32% 17%;
     --muted-foreground: 215 20% 65%;
@@ -150,41 +150,41 @@ body {
     --chart-4: 280 85% 70%;
     --chart-5: 0 82% 58%; /* ApeChain Red */
   }
-  
+
   /* Ape Mode - Fun mode with ApeChain colors */
   .ape {
     --background: 0 0% 0%; /* Black background */
     --foreground: 0 0% 100%; /* White text */
-    
-    --card: 220 13% 18%; /* Dark blue-gray */
+
+    --card: 220 70% 15%; /* Dark blue-gray */
     --card-foreground: 0 0% 100%;
-    
-    --popover: 220 13% 18%;
+
+    --popover: 220 70% 15%;
     --popover-foreground: 0 0% 100%;
-    
-    --primary: 37 100% 50%; /* ApeChain Yellow */
+
+    --primary: 220 100% 45%; /* ApeChain Yellow */
     --primary-foreground: 0 0% 0%;
-    
-    --secondary: 220 85% 57%; /* ApeChain Blue */
+
+    --secondary: 220 80% 30%; /* ApeChain Blue */
     --secondary-foreground: 0 0% 100%;
-    
-    --muted: 220 13% 28%;
-    --muted-foreground: 220 10% 70%;
-    
-    --accent: 161 98% 41%; /* ApeChain Green */
+
+    --muted: 220 40% 20%;
+    --muted-foreground: 220 20% 70%;
+
+    --accent: 158 93% 86%; /* ApeChain Green */
     --accent-foreground: 0 0% 0%;
-    
+
     --destructive: 0 82% 58%; /* ApeChain Red */
     --destructive-foreground: 0 0% 100%;
-    
-    --border: 220 13% 28%;
-    --input: 220 13% 28%;
-    --ring: 37 100% 50%; /* ApeChain Yellow */
-    
-    --chart-1: 220 85% 57%; /* ApeChain Blue */
-    --chart-2: 161 98% 41%; /* ApeChain Green */
-    --chart-3: 37 100% 50%; /* ApeChain Yellow */
-    --chart-4: 196 100% 47%; /* ApeChain Light Blue */
+
+    --border: 220 50% 25%;
+    --input: 220 50% 25%;
+    --ring: 220 100% 45%; /* ApeChain Yellow */
+
+    --chart-1: 220 100% 45%; /* ApeChain Blue */
+    --chart-2: 220 80% 30%; /* ApeChain Green */
+    --chart-3: 158 93% 86%; /* ApeChain Yellow */
+    --chart-4: 220 100% 62%; /* ApeChain Light Blue */
     --chart-5: 0 82% 58%; /* ApeChain Red */
 
     /* Dark mode Leaderboard specific colors */
