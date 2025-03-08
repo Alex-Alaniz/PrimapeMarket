@@ -79,40 +79,40 @@ body {
 
 @layer base {
   :root {
-    /* Light Mode - Based on ApeChain palette */
+    /* Light Mode - ApeCoin Colors */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 222 70% 12%; /* Based on ApeCoin Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 70% 12%; /* Based on ApeCoin Black */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 70% 12%; /* Based on ApeCoin Black */
 
-    --primary: 220 85% 57%; /* ApeChain Blue */
-    --primary-foreground: 0 0% 98%;
+    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 100% 45%; /* ApeChain Light Blue instead of pink */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 225 100% 18%; /* OG Blue #00195f */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 226 70% 90%;
+    --muted-foreground: 225 100% 18%; /* OG Blue */
 
-    --accent: 144 70% 61%; /* ApeChain Green/Mint */
-    --accent-foreground: 0 0% 98%;
+    --accent: 227 100% 90%; /* GM Blue #CED1FF */
+    --accent-foreground: 225 100% 18%; /* OG Blue */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%; /* Keep for consistency with market cards */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 226 70% 90%;
+    --input: 226 70% 90%;
+    --ring: 223 100% 50%; /* ApeCoin Blue */
 
-    --chart-1: 220 85% 57%; /* ApeChain Blue */
-    --chart-2: 161 98% 41%; /* ApeChain Green */
-    --chart-3: 37 100% 50%; /* ApeChain Yellow */
-    --chart-4: 280 75% 65%;
-    --chart-5: 0 82% 58%; /* ApeChain Red */
+    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --chart-2: 225 100% 18%; /* OG Blue #00195f */
+    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
+    --chart-4: 222 70% 12%; /* ApeCoin Black #060A1A */
+    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
     /* Leaderboard specific colors */
     --leaderboard-bg: 0 0% 0%;
@@ -124,68 +124,68 @@ body {
     --radius: 0.5rem;
   }
   .dark {
-    /* Dark Mode - Based on ApeChain palette */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 14%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 14%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 220 85% 57%; /* ApeChain Blue */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 220 100% 45%; /* ApeChain Light Blue instead of pink */
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 144 70% 61%; /* ApeChain Green/Mint */
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 40.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 32% 20%;
-    --input: 217 32% 20%;
-    --ring: 224 76% 48%;
-    --chart-1: 220 85% 57%; /* ApeChain Blue */
-    --chart-2: 161 98% 41%; /* ApeChain Green */
-    --chart-3: 37 100% 50%; /* ApeChain Yellow */
-    --chart-4: 280 85% 70%;
-    --chart-5: 0 82% 58%; /* ApeChain Red */
+    /* Dark Mode - ApeCoin Colors */
+    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
+    --foreground: 0 0% 100%;
+    --card: 225 100% 18%; /* OG Blue #00195f */
+    --card-foreground: 0 0% 100%;
+    --popover: 225 100% 18%; /* OG Blue #00195f */
+    --popover-foreground: 0 0% 100%;
+    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
+    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
+    --muted: 224 70% 30%;
+    --muted-foreground: 227 100% 90%; /* GM Blue */
+    --accent: 223 100% 50%; /* ApeCoin Blue */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 40.6%; /* Keep for consistency with market cards */
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 70% 30%;
+    --input: 224 70% 30%;
+    --ring: 223 100% 50%; /* ApeCoin Blue */
+    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --chart-2: 225 100% 18%; /* OG Blue #00195f */
+    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
+    --chart-4: 222 70% 12%; /* ApeCoin Black */
+    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
   }
 
-  /* Ape Mode - Fun mode with ApeChain colors */
+  /* Ape Mode - Using ApeCoin official colors */
   .ape {
-    --background: 0 0% 0%; /* Black background */
+    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
     --foreground: 0 0% 100%; /* White text */
 
-    --card: 220 70% 15%; /* Dark blue-gray */
+    --card: 225 100% 18%; /* OG Blue #00195f */
     --card-foreground: 0 0% 100%;
 
-    --popover: 220 70% 15%;
+    --popover: 225 100% 18%; /* OG Blue #00195f */
     --popover-foreground: 0 0% 100%;
 
-    --primary: 220 100% 45%; /* ApeChain Yellow */
-    --primary-foreground: 0 0% 0%;
+    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 80% 30%; /* ApeChain Blue */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
+    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
 
-    --muted: 220 40% 20%;
-    --muted-foreground: 220 20% 70%;
+    --muted: 224 70% 30%;
+    --muted-foreground: 227 100% 90%; /* GM Blue */
 
-    --accent: 158 93% 86%; /* ApeChain Green */
-    --accent-foreground: 0 0% 0%;
+    --accent: 223 100% 50%; /* ApeCoin Blue */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 82% 58%; /* ApeChain Red */
+    --destructive: 0 82% 58%; /* Keep red for consistency with market cards */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 50% 25%;
-    --input: 220 50% 25%;
-    --ring: 220 100% 45%; /* ApeChain Yellow */
+    --border: 224 70% 25%;
+    --input: 224 70% 25%;
+    --ring: 223 100% 50%; /* ApeCoin Blue */
 
-    --chart-1: 220 100% 45%; /* ApeChain Blue */
-    --chart-2: 220 80% 30%; /* ApeChain Green */
-    --chart-3: 158 93% 86%; /* ApeChain Yellow */
-    --chart-4: 220 100% 62%; /* ApeChain Light Blue */
-    --chart-5: 0 82% 58%; /* ApeChain Red */
+    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --chart-2: 225 100% 18%; /* OG Blue #00195f */
+    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
+    --chart-4: 222 70% 12%; /* ApeCoin Black */
+    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
     /* Dark mode Leaderboard specific colors */
     --leaderboard-bg: 222 47% 11%;
