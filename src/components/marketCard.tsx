@@ -9,10 +9,10 @@ import { contract } from "@/constants/contract";
 import { MarketTime } from "./market-time";
 import { MarketCardSkeleton } from "./market-card-skeleton";
 import { MarketBuyInterface } from "./market-buy-interface";
-// Prefix unused imports with _ to avoid ESLint errors
-import { _MarketProgress as MarketProgress } from "./market-progress";
-import { _MarketResolved as MarketResolved } from "./market-resolved";
-import { _MarketPending as MarketPending } from "./market-pending";
+// Import but don't use these components, prefixed with _
+import type { _MarketProgress } from "./market-progress";
+import type { _MarketResolved } from "./market-resolved";
+import type { _MarketPending } from "./market-pending";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";

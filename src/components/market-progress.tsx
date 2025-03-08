@@ -10,7 +10,8 @@ interface MarketProgressProps {
     _compact?: boolean;
 }
 
-export function _MarketProgress({ options, totalShares, _compact = false }: MarketProgressProps) {
+// Renamed back to uppercase as React components should start with uppercase letter
+export function MarketProgress({ options, totalShares, _compact = false }: MarketProgressProps) {
     const totalPool = totalShares.reduce((sum, shares) => sum + shares, BigInt(0));
 
     // Get color based on option index - Polymarket inspired

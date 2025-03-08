@@ -20,7 +20,8 @@ interface MarketResolvedProps {
     _compact?: boolean;
 }
 
-export function _MarketResolved({ 
+// Renamed back to uppercase as React components must start with uppercase letter when using hooks
+export function MarketResolved({ 
     marketId,
     winningOptionIndex,
     options,
