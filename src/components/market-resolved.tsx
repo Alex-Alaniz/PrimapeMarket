@@ -20,7 +20,7 @@ interface MarketResolvedProps {
     _compact?: boolean;
 }
 
-export function _MarketResolved({ 
+export function MarketResolved({ 
     marketId,
     winningOptionIndex,
     options,
@@ -31,14 +31,14 @@ export function _MarketResolved({
     const { mutate: sendTransaction } = useSendTransaction();
     const { toast } = useToast();
     const [isClaiming, setIsClaiming] = useState(false);
-    
+
     // Calculate potential winnings
     const winningShares = Number(userShares[winningOptionIndex]);
     const totalWinningShares = Number(totalShares[winningOptionIndex]);
     const totalLosingShares = totalShares.reduce((sum, shares, index) => 
         index !== winningOptionIndex ? sum + Number(shares) : sum, 0
     );
-    
+
     const potentialWinnings = winningShares > 0 && totalWinningShares > 0
         ? winningShares + (winningShares * totalLosingShares) / totalWinningShares
         : 0;
@@ -62,7 +62,7 @@ export function _MarketResolved({
             });
 
             await sendTransaction(transaction);
-            
+
             toast({
                 title: "Success!",
                 description: `Claimed ${potentialWinnings.toFixed(4)} APE successfully.`,
