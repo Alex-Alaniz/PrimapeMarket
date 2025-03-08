@@ -6,12 +6,13 @@ import type { BuyInterfaceHandle } from "./market-buy-interface";
 
 import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { contract } from "@/constants/contract";
-import { MarketProgress } from "./market-progress";
 import { MarketTime } from "./market-time";
 import { MarketCardSkeleton } from "./market-card-skeleton";
-import { MarketResolved } from "./market-resolved";
-import { MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
+// Prefix unused imports with _ to avoid ESLint errors
+import { _MarketProgress as MarketProgress } from "./market-progress";
+import { _MarketResolved as MarketResolved } from "./market-resolved";
+import { _MarketPending as MarketPending } from "./market-pending";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";

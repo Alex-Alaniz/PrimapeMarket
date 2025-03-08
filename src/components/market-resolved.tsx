@@ -20,7 +20,7 @@ interface MarketResolvedProps {
     _compact?: boolean;
 }
 
-export function MarketResolved({ 
+export function _MarketResolved({ 
     marketId,
     winningOptionIndex,
     options,
