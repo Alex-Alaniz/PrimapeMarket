@@ -39,13 +39,37 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => {
+          document.documentElement.classList.add('no-transition');
+          setTimeout(() => {
+            setTheme("light");
+            requestAnimationFrame(() => {
+              document.documentElement.classList.remove('no-transition');
+            });
+          }, 0);
+        }}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => {
+          document.documentElement.classList.add('no-transition');
+          setTimeout(() => {
+            setTheme("dark");
+            requestAnimationFrame(() => {
+              document.documentElement.classList.remove('no-transition');
+            });
+          }, 0);
+        }}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("ape")}>
+        <DropdownMenuItem onClick={() => {
+          document.documentElement.classList.add('no-transition');
+          setTimeout(() => {
+            setTheme("ape");
+            requestAnimationFrame(() => {
+              document.documentElement.classList.remove('no-transition');
+            });
+          }, 0);
+        }}>
           Ape
         </DropdownMenuItem>
       </DropdownMenuContent>

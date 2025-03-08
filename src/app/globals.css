@@ -78,6 +78,21 @@ body {
 }
 
 @layer base {
+  /* Add smooth transitions between themes */
+  html,
+  body,
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 300ms;
+    transition-timing-function: ease;
+  }
+  
+  /* Disable transitions for elements where it might cause issues */
+  .no-transition,
+  .no-transition * {
+    transition: none !important;
+  }
+  
   :root {
     /* Light Mode - ApeCoin Colors */
     --background: 0 0% 100%;
@@ -151,41 +166,41 @@ body {
     --chart-5: 0 82% 58%; /* Keep existing red for consistency */
   }
 
-  /* Ape Mode - Using ApeCoin official colors */
+  /* Ape Mode - Creative and colorful version of ApeCoin colors */
   .ape {
-    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
+    --background: 223 90% 8%; /* Darker ApeCoin Black with blue tint */
     --foreground: 0 0% 100%; /* White text */
 
-    --card: 225 100% 18%; /* OG Blue #00195f */
-    --card-foreground: 0 0% 100%;
+    --card: 220 85% 22%; /* Vibrant blue card */
+    --card-foreground: 60 100% 95%; /* Slightly off-white text with yellow tint */
 
-    --popover: 225 100% 18%; /* OG Blue #00195f */
-    --popover-foreground: 0 0% 100%;
+    --popover: 220 85% 22%; /* Vibrant blue popover */
+    --popover-foreground: 60 100% 95%; /* Slightly off-white with yellow tint */
 
-    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
+    --primary: 223 100% 60%; /* Brighter ApeCoin Blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
-    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
+    --secondary: 270 100% 75%; /* Vibrant purple secondary */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 224 70% 30%;
-    --muted-foreground: 227 100% 90%; /* GM Blue */
+    --muted: 224 85% 45%;
+    --muted-foreground: 60 100% 95%; /* Slightly off-white with yellow tint */
 
-    --accent: 223 100% 50%; /* ApeCoin Blue */
+    --accent: 320 80% 65%; /* Vibrant pink accent */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 82% 58%; /* Keep red for consistency with market cards */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 224 70% 25%;
-    --input: 224 70% 25%;
-    --ring: 223 100% 50%; /* ApeCoin Blue */
+    --border: 223 100% 50%; /* ApeCoin Blue border */
+    --input: 223 100% 50%; /* ApeCoin Blue input */
+    --ring: 320 80% 65%; /* Pink ring matching accent */
 
-    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
-    --chart-2: 225 100% 18%; /* OG Blue #00195f */
-    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
-    --chart-4: 222 70% 12%; /* ApeCoin Black */
-    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
+    --chart-1: 223 100% 60%; /* Brighter ApeCoin Blue */
+    --chart-2: 270 100% 75%; /* Vibrant purple */
+    --chart-3: 320 80% 65%; /* Vibrant pink */
+    --chart-4: 170 80% 60%; /* Vibrant teal */
+    --chart-5: 35 90% 60%; /* Vibrant orange */
 
     /* Dark mode Leaderboard specific colors */
     --leaderboard-bg: 222 47% 11%;
