@@ -179,9 +179,9 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                 {market.options.map((option, idx) => (
                                                     <Button 
                                                         key={idx}
-                                                        variant={idx === 0 ? "default" : "destructive"}
+                                                        variant="outline"
                                                         onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
-                                                        className="w-full"
+                                                        className={`w-full ${idx === 0 ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"}`}
                                                         size="sm"
                                                     >
                                                         Buy
