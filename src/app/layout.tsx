@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ThirdwebProvider } from "thirdweb/react";
+import dynamic from "next/dynamic";
+
+// Dynamically import ThirdwebProvider to avoid chunk loading issues
+const ThirdwebProvider = dynamic(
+  () => import("thirdweb/react").then((mod) => mod.ThirdwebProvider),
+  { ssr: false }
+);
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 
