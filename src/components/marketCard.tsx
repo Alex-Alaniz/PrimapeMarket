@@ -179,8 +179,8 @@ export function MarketCard({ index, filter = "all", category = "all", compact = 
                 {/* User Shares Display if they have invested */}
                 {account && userShares && userShares.some(share => share > BigInt(0)) && (
                     <MarketSharesDisplay
-                        options={market.options}
-                        shares={userShares}
+                        market={market}
+                        userShares={userShares}
                         compact={compact}
                     />
                 )}
