@@ -2,7 +2,7 @@ interface MarketPendingProps {
     _compact?: boolean;
 }
 
-export function MarketPending({ _compact = false }: MarketPendingProps) {
+export function _MarketPending({ _compact = false }: MarketPendingProps) {
     return (
         <div className="flex flex-col gap-2">
             <div className="mb-2 bg-yellow-100 p-3 rounded-md text-center">
