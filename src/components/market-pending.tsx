@@ -2,7 +2,6 @@ interface MarketPendingProps {
     _compact?: boolean;
 }
 
-// Renamed back to uppercase as React components should start with uppercase letter
 export function MarketPending({ _compact = false }: MarketPendingProps) {
     return (
         <div className="flex flex-col gap-2">

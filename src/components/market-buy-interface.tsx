@@ -103,7 +103,7 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
         };
 
         // Determine the grid layout based on number of options
-        const _getGridLayout = () => {
+        const getGridLayout = () => {
             const optionCount = market.options.length;
             if (optionCount <= 2) return "grid-cols-2";
             if (optionCount <= 4) return "grid-cols-2";
@@ -111,7 +111,7 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
         };
 
         // Determine button size based on number of options
-        const _getButtonSize = () => {
+        const getButtonSize = () => {
             const optionCount = market.options.length;
             if (optionCount <= 2) return "h-10";
             if (optionCount <= 4) return "h-9 text-sm";
