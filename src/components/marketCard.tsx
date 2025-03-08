@@ -116,8 +116,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             src={market?.image || '/images/default-market.jpg'}
                             alt={market?.question || "Market"}
                             width={400}
-                            height={200}
-                            className="w-full h-32 object-cover"
+                            height={100}
+                            className="w-full h-24 object-cover"
                             priority={featured}
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                         />
@@ -145,33 +145,75 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     
                     <CardContent className={`${compact ? 'px-3 py-1' : 'px-4 py-2'} flex-grow`}>
                         {market && market.options && market.totalSharesPerOption && (
-                            <div className={`mb-3 ${market.options.length > 3 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
-                                <MarketProgress 
-                                    options={market.options}
-                                    totalShares={market.totalSharesPerOption}
-                                    _compact={true}
-                                />
+                            <div className="mb-3">
+                                {/* Options with percentages and buy buttons - Polymarket style */}
+                                <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
+                                    {market.options.map((option, idx) => {
+                                        // Calculate probability percentage for each option
+                                        const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
+                                        const percentage = totalPool === BigInt(0) ? 0 : 
+                                            Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
+                                        
+                                        return (
+                                            <div key={idx} className="flex items-center justify-between text-sm py-0.5">
+                                                <span className="truncate mr-2" title={option}>{option}</span>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <span className="text-muted-foreground w-9 text-right">{percentage}%</span>
+                                                    {!market.resolved && !isExpired && account && (
+                                                        <Button
+                                                            size="sm" 
+                                                            variant="outline"
+                                                            className="h-7 px-3 font-medium"
+                                                            onClick={() => {
+                                                                const buyInterface = document.getElementById(`buyInterface-${index}-${idx}`);
+                                                                if (buyInterface) {
+                                                                    buyInterface.click();
+                                                                }
+                                                            }}
+                                                        >
+                                                            Buy
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
                         
-                        {market?.resolved ? (
-                            <MarketResolved 
-                                marketId={index}
-                                winningOptionIndex={market.winningOptionIndex}
-                                options={market.options}
-                                totalShares={[...market.totalSharesPerOption]}
-                                userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                _compact={true}
-                            />
-                        ) : isExpired ? (
-                            <MarketPending _compact={true} />
-                        ) : (
-                            <MarketBuyInterface 
-                                marketId={index}
-                                market={market!}
-                                _compact={true}
-                            />
-                        )}
+                        {/* Hidden elements for handling buys */}
+                        <div className="hidden">
+                            {market?.resolved ? (
+                                <MarketResolved 
+                                    marketId={index}
+                                    winningOptionIndex={market.winningOptionIndex}
+                                    options={market.options}
+                                    totalShares={[...market.totalSharesPerOption]}
+                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
+                                    _compact={true}
+                                />
+                            ) : isExpired ? (
+                                <MarketPending _compact={true} />
+                            ) : (
+                                <MarketBuyInterface 
+                                    marketId={index}
+                                    market={market!}
+                                    _compact={true}
+                                    ref={(element) => {
+                                        if (element && market) {
+                                            market.options.forEach((_, idx) => {
+                                                const buyBtn = document.createElement('button');
+                                                buyBtn.id = `buyInterface-${index}-${idx}`;
+                                                buyBtn.style.display = 'none';
+                                                buyBtn.onclick = () => element.handleBuy(idx);
+                                                document.body.appendChild(buyBtn);
+                                            });
+                                        }
+                                    }}
+                                />
+                            )}
+                        </div>
                     </CardContent>
                     
                     {account && (

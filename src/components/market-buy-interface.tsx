@@ -21,7 +21,7 @@ type TransactionError = {
     [key: string]: unknown;
 };
 
-export function MarketBuyInterface({ marketId, market, _compact = false }: MarketBuyInterfaceProps) {
+export function MarketBuyInterface({ marketId, market, _compact = false, ref }: MarketBuyInterfaceProps & { ref?: any }) {
     const account = useActiveAccount();
     const { mutateAsync: mutateTransaction } = useSendAndConfirmTransaction();
     const { toast } = useToast();
@@ -36,6 +36,11 @@ export function MarketBuyInterface({ marketId, market, _compact = false }: Marke
         setSelectedOptionIndex(optionIndex);
         setIsModalOpen(true);
     };
+
+    // Make the handleBuy function available to the ref
+    if (ref) {
+        ref.handleBuy = handleBuy;
+    }
 
     const handleCancel = () => {
         setIsModalOpen(false);
