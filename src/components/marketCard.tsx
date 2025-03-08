@@ -16,7 +16,6 @@ import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { useRef } from "react";
 
 interface MarketCardProps {
     index: number;
