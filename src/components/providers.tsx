@@ -11,7 +11,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       attribute="class"
       defaultTheme="dark"
       enableSystem={false}
-      disableTransitionOnChange={false}
+      storageKey="apechain-theme"
+      forcedTheme={undefined}
+      enableColorScheme={true}
       value={{
         light: "light",
         dark: "dark",
