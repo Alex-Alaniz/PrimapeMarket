@@ -149,7 +149,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                         {market && market.options && market.totalSharesPerOption && (
                             <div className="mb-3">
                                 {/* Options with percentages and buy buttons - Polymarket style */}
-                                <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
+                                <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''} ${market.options.length <= 2 ? 'px-1' : ''}`}>
                                     {market.options.map((option, idx) => {
                                         // Calculate probability percentage for each option
                                         const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
@@ -164,8 +164,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                     {!market.resolved && !isExpired && account && (
                                                         <Button
                                                             size="sm" 
-                                                            variant={idx % 2 === 0 ? "default" : "destructive"}
-                                                            className="h-6 px-2 text-xs font-medium"
+                                                            variant={market.options.length <= 2 ? (idx % 2 === 0 ? "default" : "destructive") : "outline"}
+                                                            className={market.options.length <= 2 ? "h-6 px-2 text-xs font-medium" : "h-7 px-3 font-medium"}
                                                             onClick={() => {
                                                                 const buyInterface = document.getElementById(`buyInterface-${index}-${idx}`);
                                                                 if (buyInterface) {
@@ -173,7 +173,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                                 }
                                                             }}
                                                         >
-                                                            {idx % 2 === 0 ? 'Yes' : 'No'}
+                                                            Buy
                                                         </Button>
                                                     )}
                                                 </div>
