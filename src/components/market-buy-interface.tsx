@@ -120,21 +120,8 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
 
         return (
             <>
-                <div className={`grid ${getGridLayout()} gap-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
-                    {market.options.map((option, index) => (
-                        <Button 
-                            key={index}
-                            className={`w-full ${getButtonSize()} truncate`}
-                            variant={market.options.length <= 2 ? (index % 2 === 0 ? "default" : "destructive") : "outline"}
-                            onClick={() => handleBuy(index)}
-                            aria-label={`Vote ${option} for "${market.question}"`}
-                            disabled={!account}
-                            title={option}
-                        >
-                            {market.options.length <= 2 ? "Buy" : option}
-                        </Button>
-                    ))}
-                </div>
+                {/* We don't need the buttons here anymore as they're in the MarketCard component */}
+                {/* This component now only handles the buy modal logic */}
 
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogContent className="sm:max-w-[425px]">

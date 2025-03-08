@@ -146,8 +146,8 @@ export function EnhancedPredictionMarketDashboard() {
                     </Button>
                 </div>
 
-                {/* Market Cards in Compact Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+                {/* Market Cards in Compact Layout - Polymarket style */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
                     {isLoadingMarketCount ? (
                         skeletonCards
                     ) : (
@@ -158,17 +158,18 @@ export function EnhancedPredictionMarketDashboard() {
                                 filter="all" 
                                 category={activeCategory}
                                 compact={true}
+                                featured={index === 0}
                             />
                         ))
                     )}
                 </div>
 
-                {/* Market Categories Tabs */}
+                {/* Market Categories Tabs - Polymarket style */}
                 <Tabs defaultValue="active" className="w-full mb-8">
-                    <TabsList className="grid w-full grid-cols-3 mb-4">
-                        <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="pending">Pending Resolution</TabsTrigger>
-                        <TabsTrigger value="resolved">Resolved</TabsTrigger>
+                    <TabsList className="w-full flex mb-4 p-1 bg-muted/50 overflow-x-auto no-scrollbar">
+                        <TabsTrigger value="active" className="flex-1">Active</TabsTrigger>
+                        <TabsTrigger value="pending" className="flex-1">Pending</TabsTrigger>
+                        <TabsTrigger value="resolved" className="flex-1">Resolved</TabsTrigger>
                     </TabsList>
 
                     {isLoadingMarketCount ? (
@@ -180,7 +181,7 @@ export function EnhancedPredictionMarketDashboard() {
                     ) : (
                         <>
                             <TabsContent value="active">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                     {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
@@ -194,7 +195,7 @@ export function EnhancedPredictionMarketDashboard() {
                             </TabsContent>
 
                             <TabsContent value="pending">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                     {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 
@@ -208,7 +209,7 @@ export function EnhancedPredictionMarketDashboard() {
                             </TabsContent>
 
                             <TabsContent value="resolved">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                     {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
                                         <MarketCard 
                                             key={index} 

@@ -155,7 +155,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             <div className="mb-3">
                                 {/* Options with percentages and buy buttons - Polymarket style */}
                                 {market.options.length <= 2 ? (
-                                    // For 2 or fewer options - Display as in left side of the reference image
+                                    // For 2 or fewer options - Display as in left side of the reference image (Yes/No style)
                                     <div className="space-y-2">
                                         {market.options.map((option, idx) => {
                                             // Calculate probability percentage for each option
@@ -167,24 +167,23 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                 <div key={idx} className="flex items-center justify-between text-sm py-0.5">
                                                     <div className="flex items-center gap-2">
                                                         <span className="truncate">{option}</span>
-                                                        <span className="text-muted-foreground">{percentage}%</span>
+                                                        <span className="text-muted-foreground font-medium">{percentage}%</span>
                                                     </div>
-                                                    {!market.resolved && !isExpired && (
-                                                        <span className={`w-6 h-6 rounded-sm ${idx % 2 === 0 ? 'bg-primary' : 'bg-destructive'}`}></span>
-                                                    )}
+                                                    <div className={`w-4 h-4 rounded-sm ${idx % 2 === 0 ? 'bg-primary' : 'bg-destructive'}`}></div>
                                                 </div>
                                             );
                                         })}
                                         
                                         {/* Large buy buttons at the bottom for 2 or fewer options */}
                                         {!market.resolved && !isExpired && account && (
-                                            <div className="grid grid-cols-2 gap-2 mt-4">
+                                            <div className="grid grid-cols-2 gap-2 mt-3">
                                                 {market.options.map((option, idx) => (
                                                     <Button 
                                                         key={idx}
                                                         variant={idx % 2 === 0 ? "default" : "destructive"}
                                                         onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
                                                         className="w-full"
+                                                        size="sm"
                                                     >
                                                         Buy
                                                     </Button>
@@ -202,15 +201,15 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                 Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
 
                                             return (
-                                                <div key={idx} className="polymarket-option">
-                                                    <span className="polymarket-option-text">{option}</span>
-                                                    <div className="polymarket-option-right">
-                                                        <span className="text-muted-foreground">{percentage}%</span>
+                                                <div key={idx} className="flex items-center justify-between py-1 group">
+                                                    <span className="truncate text-sm">{option}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm text-muted-foreground font-medium">{percentage}%</span>
                                                         {!market.resolved && !isExpired && account && (
                                                             <Button
                                                                 size="sm" 
                                                                 variant="outline"
-                                                                className="h-7 px-3 font-medium"
+                                                                className="h-7 px-3 font-medium opacity-70 group-hover:opacity-100"
                                                                 onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
                                                             >
                                                                 Buy
