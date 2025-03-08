@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ThirdwebProvider } from "thirdweb/react";
+import ClientThirdwebProvider from "@/components/client-thirdweb-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -45,9 +45,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <ThirdwebProvider>
+          <ClientThirdwebProvider>
             {children}
-          </ThirdwebProvider>
+          </ClientThirdwebProvider>
         </ThemeProvider>
         <Toaster />
       </body>

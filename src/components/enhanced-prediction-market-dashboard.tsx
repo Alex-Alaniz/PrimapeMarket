@@ -82,6 +82,8 @@ export function EnhancedPredictionMarketDashboard() {
                             src="/images/markets/1.jpg"
                             alt="Global Trade Wars"
                             fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            priority
                             className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
                         />
                         <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
@@ -102,6 +104,7 @@ export function EnhancedPredictionMarketDashboard() {
                             src="/images/markets/2.jpg"
                             alt="Race to AGI"
                             fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
                             className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
                         />
                         <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
@@ -122,6 +125,7 @@ export function EnhancedPredictionMarketDashboard() {
                             src="/images/markets/3.jpg"
                             alt="First 100 days"
                             fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
                             className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
                         />
                         <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
