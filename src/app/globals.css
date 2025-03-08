@@ -1,3 +1,13 @@
+
+/* No transition utility class */
+.no-transition,
+.no-transition *,
+.no-transition *:before,
+.no-transition *:after {
+  transition: none !important;
+}
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
