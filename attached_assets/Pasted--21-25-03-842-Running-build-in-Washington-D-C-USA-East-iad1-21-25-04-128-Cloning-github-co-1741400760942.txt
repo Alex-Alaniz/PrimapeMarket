@@ -1,0 +1,46 @@
+[21:25:03.842] Running build in Washington, D.C., USA (East) – iad1
+[21:25:04.128] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 2e9aa89)
+[21:25:05.343] Cloning completed: 1.215s
+[21:25:14.628] Restored build cache from previous deployment (9jpfq3usmrfkYhtGr8M3w2xkXAVa)
+[21:25:14.760] Running "vercel build"
+[21:25:15.777] Vercel CLI 41.2.2
+[21:25:17.909] Installing dependencies...
+[21:25:21.077] 
+[21:25:21.078] up to date in 3s
+[21:25:21.078] 
+[21:25:21.078] 223 packages are looking for funding
+[21:25:21.079]   run `npm fund` for details
+[21:25:21.113] Detected Next.js version: 15.0.1
+[21:25:21.118] Running "npm run build"
+[21:25:21.226] 
+[21:25:21.226] > simplepredictionmarket@0.1.0 build
+[21:25:21.226] > next build
+[21:25:21.227] 
+[21:25:22.271]   ▲ Next.js 15.0.1
+[21:25:22.272] 
+[21:25:22.295]    Creating an optimized production build ...
+[21:25:22.594] > [PWA] Compile server
+[21:25:22.596] > [PWA] Compile server
+[21:25:22.596] > [PWA] Compile client (static)
+[21:25:22.597] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[21:25:22.597] > [PWA] Service worker: /vercel/path0/public/sw.js
+[21:25:22.597] > [PWA]   url: /sw.js
+[21:25:22.597] > [PWA]   scope: /
+[21:25:42.335]  ✓ Compiled successfully
+[21:25:42.345]    Linting and checking validity of types ...
+[21:25:47.236] 
+[21:25:47.237] Failed to compile.
+[21:25:47.237] 
+[21:25:47.240] ./src/components/market-resolved.tsx
+[21:25:47.241] 31:41  Error: React Hook "useSendTransaction" is called in function "_MarketResolved" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use".  react-hooks/rules-of-hooks
+[21:25:47.241] 32:23  Error: React Hook "useToast" is called in function "_MarketResolved" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use".  react-hooks/rules-of-hooks
+[21:25:47.241] 33:41  Error: React Hook "useState" is called in function "_MarketResolved" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use".  react-hooks/rules-of-hooks
+[21:25:47.241] 
+[21:25:47.242] ./src/components/marketCard.tsx
+[21:25:47.242] 13:29  Error: 'MarketProgress' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:25:47.242] 14:29  Error: 'MarketResolved' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:25:47.245] 15:28  Error: 'MarketPending' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+[21:25:47.246] 
+[21:25:47.246] info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+[21:25:47.363] Error: Command "npm run build" exited with 1
+[21:25:48.078] 
