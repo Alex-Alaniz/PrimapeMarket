@@ -39,6 +39,15 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
         const [error, setError] = useState<string | null>(null);
 
         const handleBuy = (optionIndex: number) => {
+            if (!account) {
+                toast({
+                    title: "Not connected",
+                    description: "Please connect your wallet first",
+                    variant: "destructive",
+                });
+                return;
+            }
+            
             setSelectedOptionIndex(optionIndex);
             setIsModalOpen(true);
         };

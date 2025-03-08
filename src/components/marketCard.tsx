@@ -1,5 +1,9 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
+
+import { useRef } from "react";
+import type { BuyInterfaceHandle } from "./market-buy-interface";
+
 import { useActiveAccount, useReadContract } from "thirdweb/react";
 import { contract } from "@/constants/contract";
 import { MarketProgress } from "./market-progress";

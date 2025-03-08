@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Polymarket options styling */
+.polymarket-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+}
+
+.polymarket-option:hover {
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+.polymarket-option-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.polymarket-option-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .polymarket-option-right {
+    gap: 0.5rem;
+  }
+}
+
 /* Custom scrollbar styling */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
