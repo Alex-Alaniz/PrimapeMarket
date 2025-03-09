@@ -1,0 +1,44 @@
+[19:28:19.447] Running build in Washington, D.C., USA (East) – iad1
+[19:28:19.566] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 14d5488)
+[19:28:20.965] Cloning completed: 1.399s
+[19:28:29.050] Restored build cache from previous deployment (6e4z6ZFmsecpEbYQYJq8AadQaozD)
+[19:28:29.157] Running "vercel build"
+[19:28:30.303] Vercel CLI 41.2.2
+[19:28:32.310] Installing dependencies...
+[19:28:37.007] 
+[19:28:37.008] added 21 packages, removed 1 package, and changed 4 packages in 3s
+[19:28:37.008] 
+[19:28:37.008] 223 packages are looking for funding
+[19:28:37.008]   run `npm fund` for details
+[19:28:38.306] Detected Next.js version: 15.0.1
+[19:28:38.313] Running "npm run build"
+[19:28:38.426] 
+[19:28:38.427] > simplepredictionmarket@0.1.0 build
+[19:28:38.427] > next build
+[19:28:38.427] 
+[19:28:39.593]   ▲ Next.js 15.0.1
+[19:28:39.594] 
+[19:28:39.620]    Creating an optimized production build ...
+[19:28:39.943] > [PWA] Compile server
+[19:28:39.944] > [PWA] Compile server
+[19:28:39.945] > [PWA] Compile client (static)
+[19:28:39.946] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[19:28:39.946] > [PWA] Service worker: /vercel/path0/public/sw.js
+[19:28:39.946] > [PWA]   url: /sw.js
+[19:28:39.946] > [PWA]   scope: /
+[19:29:25.274]  ✓ Compiled successfully
+[19:29:25.325]    Linting and checking validity of types ...
+[19:29:35.708] Failed to compile.
+[19:29:35.708] 
+[19:29:35.709] ./src/components/providers.tsx:4:28
+[19:29:35.709] Type error: Module '"thirdweb/react"' has no exported member 'defineChain'.
+[19:29:35.709] 
+[19:29:35.709] [0m [90m 2 |[39m[0m
+[19:29:35.709] [0m [90m 3 |[39m [36mimport[39m { [33mThemeProvider[39m [36mas[39m [33mThemeProviderNextThemes[39m } [36mfrom[39m [32m"next-themes"[39m[33m;[39m[0m
+[19:29:35.709] [0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mThirdwebProvider[39m[33m,[39m defineChain } [36mfrom[39m [32m"thirdweb/react"[39m[33m;[39m[0m
+[19:29:35.709] [0m [90m   |[39m                            [31m[1m^[22m[39m[0m
+[19:29:35.709] [0m [90m 5 |[39m [36mimport[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m[0m
+[19:29:35.709] [0m [90m 6 |[39m[0m
+[19:29:35.709] [0m [90m 7 |[39m [36mexport[39m [36mfunction[39m [33mProviders[39m({ children }[33m:[39m { children[33m:[39m [33mReact[39m[33m.[39m[33mReactNode[39m }) {[0m
+[19:29:35.970] Error: Command "npm run build" exited with 1
+[19:29:36.406] 
