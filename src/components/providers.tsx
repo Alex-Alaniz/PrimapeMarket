@@ -1,8 +1,7 @@
 "use client";
 
 import { ThemeProvider as ThemeProviderNextThemes } from "next-themes";
-import { ThirdwebProvider } from "thirdweb/react";
-import { ApeChain } from "@thirdweb-dev/chains";
+import { ThirdwebProvider, defineChain } from "thirdweb/react";
 import { useState, useEffect } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -36,9 +35,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       forcedTheme={typeof window !== "undefined" && window.localStorage.getItem("theme") === "ape" ? "ape" : undefined}
     >
       <ThirdwebProvider
-        activeChain={ApeChain}
+        activeChain={defineChain(33139)} // ApeChain
         clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
-        supportedWallets={[]}
+        locale="en-US"
       >
         {children}
       </ThirdwebProvider>
