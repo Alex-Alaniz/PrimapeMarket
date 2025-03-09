@@ -2,9 +2,7 @@
 "use client";
 
 import { ThemeProvider as ThemeProviderNextThemes } from "next-themes";
-import { ThirdwebProvider } from "thirdweb/react";
 import { useState, useEffect } from 'react';
-import { client } from "@/app/client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
@@ -36,11 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       value={{ "light": "light", "dark": "dark", "ape": "ape" }}
       forcedTheme={typeof window !== "undefined" && window.localStorage.getItem("theme") === "ape" ? "ape" : undefined}
     >
-      <ThirdwebProvider
-        client={client}
-      >
-        {children}
-      </ThirdwebProvider>
+      {children}
     </ThemeProviderNextThemes>
   )
 }
