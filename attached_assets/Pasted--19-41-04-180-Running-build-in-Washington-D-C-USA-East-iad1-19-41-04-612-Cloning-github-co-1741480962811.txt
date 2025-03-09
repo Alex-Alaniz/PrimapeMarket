@@ -1,0 +1,45 @@
+[19:41:04.180] Running build in Washington, D.C., USA (East) – iad1
+[19:41:04.612] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 8ba1cb5)
+[19:41:06.785] Cloning completed: 2.175s
+[19:41:14.276] Restored build cache from previous deployment (6e4z6ZFmsecpEbYQYJq8AadQaozD)
+[19:41:14.387] Running "vercel build"
+[19:41:15.101] Vercel CLI 41.2.2
+[19:41:16.195] Installing dependencies...
+[19:41:20.573] 
+[19:41:20.573] added 21 packages, removed 1 package, and changed 4 packages in 3s
+[19:41:20.573] 
+[19:41:20.573] 223 packages are looking for funding
+[19:41:20.573]   run `npm fund` for details
+[19:41:20.908] Detected Next.js version: 15.0.1
+[19:41:20.914] Running "npm run build"
+[19:41:21.069] 
+[19:41:21.070] > simplepredictionmarket@0.1.0 build
+[19:41:21.070] > next build
+[19:41:21.070] 
+[19:41:22.176]   ▲ Next.js 15.0.1
+[19:41:22.178] 
+[19:41:22.202]    Creating an optimized production build ...
+[19:41:22.550] > [PWA] Compile server
+[19:41:22.551] > [PWA] Compile server
+[19:41:22.552] > [PWA] Compile client (static)
+[19:41:22.553] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[19:41:22.553] > [PWA] Service worker: /vercel/path0/public/sw.js
+[19:41:22.553] > [PWA]   url: /sw.js
+[19:41:22.553] > [PWA]   scope: /
+[19:42:07.669]  ✓ Compiled successfully
+[19:42:07.683]    Linting and checking validity of types ...
+[19:42:17.553] Failed to compile.
+[19:42:17.554] 
+[19:42:17.554] ./src/components/providers.tsx:39:9
+[19:42:17.560] Type error: Type '{ children: ReactNode; supportedChains: Readonly<ChainOptions & { rpc: string; }>[]; activeChain: number; clientId: string | undefined; locale: string; }' is not assignable to type 'IntrinsicAttributes & { connectionManager?: { activeWalletStore: Store<Wallet | undefined>; activeAccountStore: Store<Account | undefined>; ... 11 more ...; defineChains: (chains: Readonly<...>[]) => void; } | undefined; } & { ...; }'.
+[19:42:17.565]   Property 'supportedChains' does not exist on type 'IntrinsicAttributes & { connectionManager?: { activeWalletStore: Store<Wallet | undefined>; activeAccountStore: Store<Account | undefined>; ... 11 more ...; defineChains: (chains: Readonly<...>[]) => void; } | undefined; } & { ...; }'.
+[19:42:17.565] 
+[19:42:17.565] [0m [90m 37 |[39m     [33m>[39m[0m
+[19:42:17.566] [0m [90m 38 |[39m       [33m<[39m[33mThirdwebProvider[39m[0m
+[19:42:17.566] [0m[31m[1m>[22m[39m[90m 39 |[39m         supportedChains[33m=[39m{[defineChain([35m33139[39m)]} [90m// ApeChain[39m[0m
+[19:42:17.566] [0m [90m    |[39m         [31m[1m^[22m[39m[0m
+[19:42:17.566] [0m [90m 40 |[39m         activeChain[33m=[39m{[35m33139[39m}[0m
+[19:42:17.567] [0m [90m 41 |[39m         clientId[33m=[39m{process[33m.[39menv[33m.[39m[33mNEXT_PUBLIC_THIRDWEB_CLIENT_ID[39m}[0m
+[19:42:17.567] [0m [90m 42 |[39m         locale[33m=[39m[32m"en-US"[39m[0m
+[19:42:17.685] Error: Command "npm run build" exited with 1
+[19:42:18.087] 
