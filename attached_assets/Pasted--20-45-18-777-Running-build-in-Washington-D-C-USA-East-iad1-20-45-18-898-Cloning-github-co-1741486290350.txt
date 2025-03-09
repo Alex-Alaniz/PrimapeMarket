@@ -1,0 +1,45 @@
+[20:45:18.777] Running build in Washington, D.C., USA (East) – iad1
+[20:45:18.898] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 38bd62e)
+[20:45:19.769] Cloning completed: 868.000ms
+[20:45:28.497] Restored build cache from previous deployment (6e4z6ZFmsecpEbYQYJq8AadQaozD)
+[20:45:28.590] Running "vercel build"
+[20:45:29.485] Vercel CLI 41.2.2
+[20:45:32.767] Installing dependencies...
+[20:45:37.129] 
+[20:45:37.130] added 21 packages, removed 1 package, and changed 4 packages in 3s
+[20:45:37.130] 
+[20:45:37.130] 223 packages are looking for funding
+[20:45:37.130]   run `npm fund` for details
+[20:45:37.377] Detected Next.js version: 15.0.1
+[20:45:37.383] Running "npm run build"
+[20:45:37.520] 
+[20:45:37.520] > simplepredictionmarket@0.1.0 build
+[20:45:37.520] > next build
+[20:45:37.520] 
+[20:45:40.633]   ▲ Next.js 15.0.1
+[20:45:40.633] 
+[20:45:40.658]    Creating an optimized production build ...
+[20:45:40.981] > [PWA] Compile server
+[20:45:40.982] > [PWA] Compile server
+[20:45:40.983] > [PWA] Compile client (static)
+[20:45:40.983] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[20:45:40.984] > [PWA] Service worker: /vercel/path0/public/sw.js
+[20:45:40.984] > [PWA]   url: /sw.js
+[20:45:40.984] > [PWA]   scope: /
+[20:46:26.583]  ✓ Compiled successfully
+[20:46:26.595]    Linting and checking validity of types ...
+[20:46:36.489] Failed to compile.
+[20:46:36.490] 
+[20:46:36.490] ./src/components/theme-toggle.tsx:28:37
+[20:46:36.490] Type error: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+[20:46:36.490]   Type 'undefined' is not assignable to type 'string'.
+[20:46:36.491] 
+[20:46:36.491] [0m [90m 26 |[39m     [90m// Store the current theme in localStorage for persistence across refreshes[39m[0m
+[20:46:36.491] [0m [90m 27 |[39m     [36mif[39m (theme [33m!==[39m [32m'system'[39m) {[0m
+[20:46:36.492] [0m[31m[1m>[22m[39m[90m 28 |[39m       localStorage[33m.[39msetItem([32m'theme'[39m[33m,[39m theme)[33m;[39m[0m
+[20:46:36.492] [0m [90m    |[39m                                     [31m[1m^[22m[39m[0m
+[20:46:36.493] [0m [90m 29 |[39m     } [36melse[39m [36mif[39m (resolvedTheme) {[0m
+[20:46:36.493] [0m [90m 30 |[39m       localStorage[33m.[39msetItem([32m'theme'[39m[33m,[39m resolvedTheme)[33m;[39m[0m
+[20:46:36.493] [0m [90m 31 |[39m     }[0m
+[20:46:36.626] Error: Command "npm run build" exited with 1
+[20:46:37.113] 
