@@ -1,7 +1,8 @@
 "use client";
 
 import { ThemeProvider as ThemeProviderNextThemes } from "next-themes";
-import { ThirdwebProvider, defineChain } from "thirdweb/react";
+import { ThirdwebProvider } from "thirdweb/react";
+import { defineChain } from "thirdweb/chains";
 import { useState, useEffect } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
