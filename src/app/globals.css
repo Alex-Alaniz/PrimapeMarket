@@ -1,4 +1,3 @@
-
 /* No transition utility class - Stronger version to force immediate changes */
 .no-transition,
 .no-transition *,
@@ -96,66 +95,87 @@ body {
   :root {
     color-scheme: light;
   }
-  
+
   .dark {
     color-scheme: dark;
   }
-  
+
   .ape {
     color-scheme: dark;
   }
-  
+
   html {
     transition: background-color 0.5s ease, color 0.5s ease;
   }
-  
+
   body,
   body * {
     transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
     transition-duration: 0.3s;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   /* Disable transitions for specific elements */
   .no-transition,
   .no-transition * {
     transition: none !important;
   }
-  
+
   :root {
-    /* Light Mode - ApeCoin Colors */
-    --background: 0 0% 100%;
-    --foreground: 222 70% 12%; /* Based on ApeCoin Black */
+    /* Light Mode - White with ApeCoin Blue accents */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 0%; /* Black text */
+    --card: 210 100% 95%; /* GM Blue #E2F0FF */
+    --card-foreground: 0 0% 0%; /* Black text */
+    --popover: 210 100% 95%; /* GM Blue #E2F0FF */
+    --popover-foreground: 0 0% 0%; /* Black text */
+    --primary: 223 100% 50%; /* ApeCoin Blue #0054FA */
+    --primary-foreground: 0 0% 100%; /* White text */
+    --secondary: 224 100% 26%; /* GN Blue #002787 */
+    --secondary-foreground: 0 0% 100%; /* White text */
+    --muted: 223 30% 90%; /* Very light blue */
+    --muted-foreground: 223 100% 40%; /* Darker ApeCoin Blue */
+    --accent: 223 100% 50%; /* ApeCoin Blue */
+    --accent-foreground: 0 0% 100%; /* White text */
+    --destructive: 0 84.2% 60.2%; /* Keep for market card consistency */
+    --destructive-foreground: 0 0% 100%; /* White text */
+    --border: 223 60% 80%; /* Light ApeCoin Blue for borders */
+    --input: 223 60% 80%; /* Light ApeCoin Blue for inputs */
+    --ring: 223 100% 50%; /* ApeCoin Blue */
+    --radius: 0.5rem;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 70% 12%; /* Based on ApeCoin Black */
+    /* Chart Colors */
+    --chart-1: 223 100% 50%; /* ApeCoin Blue #0054FA */
+    --chart-2: 224 100% 26%; /* GN Blue #002787 */
+    --chart-3: 210 100% 95%; /* GM Blue #E2F0FF */
+    --chart-4: 223 80% 75%; /* ApeCoin Blue lighter */
+    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 70% 12%; /* Based on ApeCoin Black */
 
+    /* Dark Mode - ApeCoin Colors */
+    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
+    --foreground: 0 0% 100%;
+    --card: 225 100% 18%; /* OG Blue #00195f */
+    --card-foreground: 0 0% 100%;
+    --popover: 225 100% 18%; /* OG Blue #00195f */
+    --popover-foreground: 0 0% 100%;
     --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 225 100% 18%; /* OG Blue #00195f */
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 226 70% 90%;
-    --muted-foreground: 225 100% 18%; /* OG Blue */
-
-    --accent: 227 100% 90%; /* GM Blue #CED1FF */
-    --accent-foreground: 225 100% 18%; /* OG Blue */
-
-    --destructive: 0 84.2% 60.2%; /* Keep for consistency with market cards */
+    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
+    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
+    --muted: 224 70% 30%;
+    --muted-foreground: 227 100% 90%; /* GM Blue */
+    --accent: 223 100% 50%; /* ApeCoin Blue */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 40.6%; /* Keep for consistency with market cards */
     --destructive-foreground: 0 0% 100%;
-
-    --border: 226 70% 90%;
-    --input: 226 70% 90%;
+    --border: 224 70% 30%;
+    --input: 224 70% 30%;
     --ring: 223 100% 50%; /* ApeCoin Blue */
-
     --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
     --chart-2: 225 100% 18%; /* OG Blue #00195f */
     --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
-    --chart-4: 222 70% 12%; /* ApeCoin Black #060A1A */
+    --chart-4: 222 70% 12%; /* ApeCoin Black */
     --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
     /* Leaderboard specific colors */
