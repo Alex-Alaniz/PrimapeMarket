@@ -36,7 +36,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       forcedTheme={typeof window !== "undefined" && window.localStorage.getItem("theme") === "ape" ? "ape" : undefined}
     >
       <ThirdwebProvider
-        chain={defineChain(33139)} // ApeChain
+        supportedChains={[defineChain(33139)]} // ApeChain
+        activeChain={33139}
         clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
         locale="en-US"
       >
