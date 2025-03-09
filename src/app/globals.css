@@ -91,58 +91,35 @@ body {
 }
 
 @layer base {
-  /* Add smooth transitions between themes */
-  :root {
-    color-scheme: light;
-  }
-
-  .dark {
-    color-scheme: dark;
-  }
-
-  .ape {
-    color-scheme: dark;
-  }
-
-  html {
-    transition: background-color 0.5s ease, color 0.5s ease;
-  }
-
-  body,
-  body * {
-    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-    transition-duration: 0.3s;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Disable transitions for specific elements */
-  .no-transition,
-  .no-transition * {
-    transition: none !important;
-  }
-
   :root {
     /* Light Mode - White with ApeCoin Blue accents */
-    --background: 0 0% 100%; /* White */
+    --background: 0 0% 100%; /* Pure white background */
     --foreground: 0 0% 0%; /* Black text */
-    --card: 210 100% 95%; /* GM Blue #E2F0FF */
+
+    --card: 210 100% 98%; /* Very light blue */
     --card-foreground: 0 0% 0%; /* Black text */
-    --popover: 210 100% 95%; /* GM Blue #E2F0FF */
+
+    --popover: 210 100% 98%; /* Very light blue */
     --popover-foreground: 0 0% 0%; /* Black text */
+
     --primary: 223 100% 50%; /* ApeCoin Blue #0054FA */
     --primary-foreground: 0 0% 100%; /* White text */
+
     --secondary: 224 100% 26%; /* GN Blue #002787 */
     --secondary-foreground: 0 0% 100%; /* White text */
+
     --muted: 223 30% 90%; /* Very light blue */
-    --muted-foreground: 223 100% 40%; /* Darker ApeCoin Blue */
+    --muted-foreground: 224 100% 26%; /* GN Blue */
+
     --accent: 223 100% 50%; /* ApeCoin Blue */
     --accent-foreground: 0 0% 100%; /* White text */
+
     --destructive: 0 84.2% 60.2%; /* Keep for market card consistency */
     --destructive-foreground: 0 0% 100%; /* White text */
+
     --border: 223 60% 80%; /* Light ApeCoin Blue for borders */
     --input: 223 60% 80%; /* Light ApeCoin Blue for inputs */
     --ring: 223 100% 50%; /* ApeCoin Blue */
-    --radius: 0.5rem;
 
     /* Chart Colors */
     --chart-1: 223 100% 50%; /* ApeCoin Blue #0054FA */
@@ -151,31 +128,52 @@ body {
     --chart-4: 223 80% 75%; /* ApeCoin Blue lighter */
     --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
+    /* Leaderboard specific colors */
+    --leaderboard-bg: 210 100% 98%;
+    --leaderboard-card-bg: 210 30% 95%;
+    --leaderboard-row-odd: 210 30% 98%;
+    --leaderboard-row-even: 210 30% 96%;
+    --leaderboard-border: 223 60% 80%;
+    --leaderboard-highlight: 223 100% 95%;
 
-    /* Dark Mode - ApeCoin Colors */
-    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
-    --foreground: 0 0% 100%;
-    --card: 225 100% 18%; /* OG Blue #00195f */
-    --card-foreground: 0 0% 100%;
-    --popover: 225 100% 18%; /* OG Blue #00195f */
-    --popover-foreground: 0 0% 100%;
-    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
-    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
-    --muted: 224 70% 30%;
-    --muted-foreground: 227 100% 90%; /* GM Blue */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode - Anchor Black with ApeCoin Blue accents */
+    --background: 0 0% 0%; /* Anchor Black #000000 */
+    --foreground: 0 0% 100%; /* White text */
+
+    --card: 222 70% 10%; /* Very dark blue-black */
+    --card-foreground: 0 0% 100%; /* White text */
+
+    --popover: 222 70% 10%; /* Very dark blue-black */
+    --popover-foreground: 0 0% 100%; /* White text */
+
+    --primary: 223 100% 50%; /* ApeCoin Blue #0054FA */
+    --primary-foreground: 0 0% 100%; /* White text */
+
+    --secondary: 224 100% 26%; /* GN Blue #002787 */
+    --secondary-foreground: 0 0% 100%; /* White text */
+
+    --muted: 224 30% 20%; /* Dark muted blue */
+    --muted-foreground: 210 100% 85%; /* Light blue for muted text */
+
     --accent: 223 100% 50%; /* ApeCoin Blue */
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 0 0% 100%; /* White text */
+
     --destructive: 0 62.8% 40.6%; /* Keep for consistency with market cards */
-    --destructive-foreground: 0 0% 100%;
-    --border: 224 70% 30%;
-    --input: 224 70% 30%;
+    --destructive-foreground: 0 0% 100%; /* White text */
+
+    --border: 224 30% 25%; /* Dark blue border */
+    --input: 224 30% 25%; /* Dark blue input */
     --ring: 223 100% 50%; /* ApeCoin Blue */
-    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
-    --chart-2: 225 100% 18%; /* OG Blue #00195f */
-    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
-    --chart-4: 222 70% 12%; /* ApeCoin Black */
+
+    /* Chart Colors */
+    --chart-1: 223 100% 50%; /* ApeCoin Blue #0054FA */
+    --chart-2: 224 100% 26%; /* GN Blue #002787 */
+    --chart-3: 210 100% 95%; /* GM Blue #E2F0FF */
+    --chart-4: 0 0% 15%; /* Dark gray */
     --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
     /* Leaderboard specific colors */
@@ -184,115 +182,85 @@ body {
     --leaderboard-row-odd: 240 5% 6%;
     --leaderboard-row-even: 240 5% 4%;
     --leaderboard-border: 240 5% 20%;
-    --leaderboard-highlight: 215 100% 10%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    /* Dark Mode - ApeCoin Colors */
-    --background: 222 70% 12%; /* ApeCoin Black #060A1A */
-    --foreground: 0 0% 100%;
-    --card: 225 100% 18%; /* OG Blue #00195f */
-    --card-foreground: 0 0% 100%;
-    --popover: 225 100% 18%; /* OG Blue #00195f */
-    --popover-foreground: 0 0% 100%;
-    --primary: 223 100% 50%; /* ApeCoin Blue #0063FF */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 227 100% 90%; /* GM Blue #CED1FF */
-    --secondary-foreground: 222 70% 12%; /* ApeCoin Black */
-    --muted: 224 70% 30%;
-    --muted-foreground: 227 100% 90%; /* GM Blue */
-    --accent: 223 100% 50%; /* ApeCoin Blue */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 40.6%; /* Keep for consistency with market cards */
-    --destructive-foreground: 0 0% 100%;
-    --border: 224 70% 30%;
-    --input: 224 70% 30%;
-    --ring: 223 100% 50%; /* ApeCoin Blue */
-    --chart-1: 223 100% 50%; /* ApeCoin Blue #0063FF */
-    --chart-2: 225 100% 18%; /* OG Blue #00195f */
-    --chart-3: 227 100% 90%; /* GM Blue #CED1FF */
-    --chart-4: 222 70% 12%; /* ApeCoin Black */
-    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
+    --leaderboard-highlight: 223 100% 10%;
   }
 
-  /* Ape Mode - Much more colorful and distinctive from Dark Mode */
   .ape {
-    --background: 265 80% 12%; /* Deep purple background - completely different from Dark Mode */
-    --foreground: 35 100% 95%; /* Slightly warm white text */
+    /* Ape Mode - ApeCoin Blue with white accents */
+    --background: 223 100% 50%; /* ApeCoin Blue #0054FA as background */
+    --foreground: 0 0% 100%; /* White text */
 
-    --card: 220 90% 25%; /* Vibrant blue card */
-    --card-foreground: 60 100% 95%; /* Slightly golden text */
+    --card: 224 100% 26%; /* GN Blue #002787 */
+    --card-foreground: 0 0% 100%; /* White text */
 
-    --popover: 220 90% 25%; /* Vibrant blue popover */
-    --popover-foreground: 60 100% 95%; /* Slightly golden text */
+    --popover: 224 100% 26%; /* GN Blue #002787 */
+    --popover-foreground: 0 0% 100%; /* White text */
 
-    --primary: 223 100% 65%; /* Much brighter ApeCoin Blue */
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 100%; /* White as primary */
+    --primary-foreground: 223 100% 50%; /* ApeCoin Blue text */
 
-    --secondary: 290 100% 75%; /* Bold purple secondary */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 210 100% 98%; /* GM Blue #E2F0FF */
+    --secondary-foreground: 223 100% 50%; /* ApeCoin Blue text */
 
-    --muted: 224 70% 50%;
-    --muted-foreground: 60 100% 95%; /* Slightly golden text */
+    --muted: 224 60% 40%; /* Muted blue */
+    --muted-foreground: 210 100% 95%; /* Light blue text */
 
-    --accent: 320 90% 65%; /* Bright magenta accent */
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 100% 98%; /* GM Blue as accent */
+    --accent-foreground: 223 100% 50%; /* ApeCoin Blue text */
 
-    --destructive: 0 82% 58%; /* Keep red for consistency with market cards */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%; /* Keep for market card consistency */
+    --destructive-foreground: 0 0% 100%; /* White text */
 
-    --border: 290 100% 60%; /* Purple border */
-    --input: 290 100% 60%; /* Purple input */
-    --ring: 320 90% 65%; /* Pink ring matching accent */
+    --border: 224 60% 60%; /* Medium blue border */
+    --input: 224 60% 60%; /* Medium blue input */
+    --ring: 210 100% 98%; /* GM Blue */
 
-    --chart-1: 223 100% 65%; /* Brighter ApeCoin Blue */
-    --chart-2: 290 100% 75%; /* Bold purple */
-    --chart-3: 320 90% 65%; /* Bright magenta */
-    --chart-4: 170 90% 60%; /* Bright teal */
-    --chart-5: 35 100% 60%; /* Bright orange */
+    /* Chart Colors */
+    --chart-1: 0 0% 100%; /* White */
+    --chart-2: 210 100% 95%; /* GM Blue #E2F0FF */
+    --chart-3: 224 100% 26%; /* GN Blue #002787 */
+    --chart-4: 223 80% 75%; /* Light blue */
+    --chart-5: 0 82% 58%; /* Keep existing red for consistency */
 
-    /* Dark mode Leaderboard specific colors */
-    --leaderboard-bg: 222 47% 11%;
-    --leaderboard-card-bg: 222 47% 14%;
-    --leaderboard-row-odd: 223 47% 16%;
-    --leaderboard-row-even: 223 47% 14%;
-    --leaderboard-border: 220 32% 20%;
-    --leaderboard-highlight: 220 70% 50%;
+    /* Leaderboard specific colors */
+    --leaderboard-bg: 223 100% 50%;
+    --leaderboard-card-bg: 224 100% 26%;
+    --leaderboard-row-odd: 223 100% 46%;
+    --leaderboard-row-even: 223 100% 42%;
+    --leaderboard-border: 210 100% 85%;
+    --leaderboard-highlight: 210 100% 95%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+* {
+  @apply border-border;
+}
+body {
+  @apply bg-background text-foreground;
 }
 
 .progress-bar {
-    @apply relative h-3 w-full overflow-hidden rounded-full bg-black/10;
+  @apply relative h-3 w-full overflow-hidden rounded-full bg-black/10;
 }
 
 .progress-bar-indicator {
-    @apply h-full w-full flex-1 bg-black transition-all duration-300 ease-in-out;
+  @apply h-full w-full flex-1 bg-black transition-all duration-300 ease-in-out;
 }
 
 .container {
-    @apply mx-auto px-4;
-    max-width: 1400px;
+  @apply mx-auto px-4;
+  max-width: 1400px;
 }
 
 .market-banner {
-    @apply relative h-[450px] overflow-hidden rounded-xl;
-    min-height: 450px;
+  @apply relative h-[450px] overflow-hidden rounded-xl;
+  min-height: 450px;
 }
 
 .market-card-container {
-    @apply relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg;
-    min-height: 200px;
+  @apply relative bg-white/95 backdrop-blur-sm rounded-lg shadow-lg;
+  min-height: 200px;
 }
-
 
 /* Placeholder for Leaderboard Component */
 .leaderboard {

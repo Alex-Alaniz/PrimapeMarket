@@ -33,7 +33,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableColorScheme={false}
       themes={['light', 'dark', 'ape']}
       value={{ "light": "light", "dark": "dark", "ape": "ape" }}
-      forcedTheme={undefined}
+      forcedTheme={typeof window !== "undefined" && window.localStorage.getItem("theme") === "ape" ? "ape" : undefined}
     >
       <ThirdwebProvider
         activeChain={ApeChain}
