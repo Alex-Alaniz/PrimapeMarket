@@ -24,7 +24,7 @@ export function ThemeToggle() {
     setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
 
     // Store the current theme in localStorage for persistence across refreshes
-    if (theme !== 'system') {
+    if (theme && theme !== 'system') {
       localStorage.setItem('theme', theme);
     } else if (resolvedTheme) {
       localStorage.setItem('theme', resolvedTheme);
@@ -46,7 +46,7 @@ export function ThemeToggle() {
     setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
 
     // Update localStorage when theme changes
-    if (theme !== 'system') {
+    if (theme && theme !== 'system') {
       localStorage.setItem('theme', theme);
     } else if (resolvedTheme) {
       localStorage.setItem('theme', resolvedTheme);
