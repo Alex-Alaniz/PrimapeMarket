@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -50,12 +49,12 @@ export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
   const { portfolio, pnl } = useUserBalance();
-  
+
   // Log user data for debugging
   useEffect(() => {
     if (account) {
       console.log("Active Account:", account);
-      
+
       // Log the user data structure provided
       const userData = {
         "linkedAccounts": [
@@ -81,7 +80,7 @@ export function UserProfileCard() {
         ],
         "id": "3bd8273b-3e93-4257-bcba-de640329722f"
       };
-      
+
       console.log("User Profile Data:", userData);
     }
   }, [account]);
@@ -127,6 +126,7 @@ export function UserProfileCard() {
             <div>
               <h2 className="text-xl font-bold">
                 <AccountName 
+                  socialType="ens"
                   loadingComponent={<span>{shortenAddress(account.address)}</span>} 
                   fallbackComponent={<span>{shortenAddress(account.address)}</span>} 
                 />
