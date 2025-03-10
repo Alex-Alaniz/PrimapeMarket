@@ -1,4 +1,4 @@
-import { ConnectButton, lightTheme, useActiveAccount } from "thirdweb/react";
+import { ConnectButton, lightTheme, useActiveAccount, AccountName, AccountProvider } from "thirdweb/react";
 import { client } from "@/app/client";
 import { defineChain } from "thirdweb/chains";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
@@ -86,7 +86,15 @@ export function Navbar() {
                     <Link href="/profile">
                         <Button variant="ghost" size="sm" className="gap-2">
                             <User className="h-4 w-4" />
-                            <span>Profile</span>
+                            {account && (
+                                <AccountProvider address={account.address} client={client}>
+                                    <AccountName 
+                                        socialType="ens"
+                                        loadingComponent={<span>Profile</span>} 
+                                        fallbackComponent={<span>Profile</span>}
+                                    />
+                                </AccountProvider>
+                            )}
                         </Button>
                     </Link>
                 )}
@@ -129,7 +137,15 @@ export function Navbar() {
                             <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
                                     <User className="h-4 w-4" />
-                                    <span>Profile</span>
+                                    {account && (
+                                        <AccountProvider address={account.address} client={client}>
+                                            <AccountName 
+                                                socialType="ens"
+                                                loadingComponent={<span>Profile</span>} 
+                                                fallbackComponent={<span>Profile</span>}
+                                            />
+                                        </AccountProvider>
+                                    )}
                                 </Button>
                             </Link>
                         )}
