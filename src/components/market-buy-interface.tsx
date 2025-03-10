@@ -141,10 +141,14 @@ export const MarketBuyInterface = forwardRef<BuyInterfaceHandle, MarketBuyInterf
                                 <Input
                                     type="number"
                                     min="0"
-                                    step="0.01"
-                                    value={amount}
-                                    onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                                    step="1"
+                                    value={amount === 0 ? "" : amount}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setAmount(value === "" ? 0 : parseFloat(value) || 0);
+                                    }}
                                     placeholder="Enter amount"
+                                    className="focus:bg-background-50"
                                 />
                             </div>
 
