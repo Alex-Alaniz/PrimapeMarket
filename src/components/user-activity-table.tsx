@@ -1,10 +1,263 @@
 'use client'
 
 import { Button } from '@/components/ui/button';
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount, useReadContract, useSendAndConfirmTransaction } from 'thirdweb/react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserMarkets } from '@/hooks/useUserMarkets';
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { contract } from "@/constants/contract";
+import { prepareContractCall } from "thirdweb";
+import { useToast } from "./ui/use-toast";
+import { format } from "date-fns";
+import { toEther } from "thirdweb";
+
+
+interface ActivityItem {
+  id: number;
+  date: string;
+  question: string;
+  option: string;
+  optionIndex: number;
+  shares: string;
+  probability: string;
+  status: "active" | "past" | "won" | "lost" | "claimed";
+  marketId: number;
+  canClaim: boolean;
+}
+
+interface UserActivityTableProps {
+  type: "current" | "past" | "history";
+}
+
+export function UserActivityTable({ type }: UserActivityTableProps) {
+  const account = useActiveAccount();
+  const { toast } = useToast();
+  const [activityData, setActivityData] = useState<ActivityItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [claimingMarketId, setClaimingMarketId] = useState<number | null>(null);
+
+  const { mutateAsync: sendTransaction } = useSendAndConfirmTransaction();
+
+  // Get total number of markets
+  const { data: marketCount } = useReadContract({
+    contract,
+    method: "function marketCount() view returns (uint256)",
+    params: []
+  });
+
+  // Fetch user activity data from the contract
+  useEffect(() => {
+    if (!account || !marketCount) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchUserActivity = async () => {
+      setIsLoading(true);
+      const activities: ActivityItem[] = [];
+
+      for (let i = 0; i < Number(marketCount); i++) {
+        try {
+          // Get market info
+          const marketInfo = await contract.read.getMarketInfo([BigInt(i)]);
+          const marketOptions = await contract.read.getMarketOptions([BigInt(i)]);
+          const totalShares = await contract.read.getMarketTotalShares([BigInt(i)]);
+          const userShares = await contract.read.getUserShares([BigInt(i), account.address]);
+          const hasClaimed = await contract.read.hasClaimed([BigInt(i), account.address]);
+
+          // Check if user has any shares in this market
+          const userSharesArray = [...userShares];
+          const hasParticipated = userSharesArray.some(shares => shares > BigInt(0));
+
+          if (hasParticipated) {
+            // Find which option the user chose (could be multiple)
+            for (let j = 0; j < userSharesArray.length; j++) {
+              if (userSharesArray[j] > BigInt(0)) {
+                // Calculate probability percentage
+                const totalPoolShares = [...totalShares].reduce((sum, val) => sum + val, BigInt(0));
+                const optionPercentage = totalPoolShares > BigInt(0) 
+                  ? Math.round(Number(totalShares[j] * BigInt(100)) / Number(totalPoolShares)) 
+                  : 0;
+
+                // Determine status
+                let status: ActivityItem['status'];
+                let canClaim = false;
+
+                if (!marketInfo[2]) { // Not resolved
+                  const now = new Date();
+                  const endTime = new Date(Number(marketInfo[1]) * 1000);
+                  status = now > endTime ? "past" : "active";
+                } else {
+                  // Resolved
+                  if (Number(marketInfo[3]) === j) {
+                    // User bet on winning option
+                    status = hasClaimed ? "claimed" : "won";
+                    canClaim = !hasClaimed;
+                  } else {
+                    status = "lost";
+                  }
+                }
+
+                activities.push({
+                  id: i * 100 + j, // Unique ID combining market ID and option index
+                  date: format(new Date(Number(marketInfo[1]) * 1000), "yyyy-MM-dd"),
+                  question: marketInfo[0],
+                  option: marketOptions[j],
+                  optionIndex: j,
+                  shares: parseFloat(toEther(userSharesArray[j])).toFixed(2),
+                  probability: `${optionPercentage}%`,
+                  status,
+                  marketId: i,
+                  canClaim
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching activity for market ${i}:`, error);
+        }
+      }
+
+      setActivityData(activities);
+      setIsLoading(false);
+    };
+
+    fetchUserActivity();
+  }, [account, marketCount]);
+
+  // Filter data based on tab
+  const filteredData = activityData.filter((item) => {
+    if (type === "current") return item.status === "active";
+    if (type === "past") return item.status === "past";
+    if (type === "history") return ["won", "lost", "claimed"].includes(item.status);
+    return true;
+  });
+
+  // Handle claiming winnings
+  const handleClaim = async (marketId: number) => {
+    if (!account) return;
+
+    setClaimingMarketId(marketId);
+
+    try {
+      const transaction = await prepareContractCall({
+        contract,
+        method: "function claimWinnings(uint256 _marketId)",
+        params: [BigInt(marketId)]
+      });
+
+      await sendTransaction(transaction);
+
+      toast({
+        title: "Winnings Claimed!",
+        description: "Your prediction winnings have been claimed successfully.",
+      });
+
+      // Update the status of the claimed market
+      setActivityData(prev => prev.map(item => {
+        if (item.marketId === marketId) {
+          return { ...item, status: "claimed", canClaim: false };
+        }
+        return item;
+      }));
+    } catch (error) {
+      console.error("Error claiming winnings:", error);
+      toast({
+        title: "Claim Failed",
+        description: "Failed to claim your winnings. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setClaimingMarketId(null);
+    }
+  };
+
+  return (
+    <div className="p-4">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredData.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No {type} predictions found.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Question</TableHead>
+                <TableHead>Your Position</TableHead>
+                <TableHead>Shares</TableHead>
+                <TableHead>Probability</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData.map((activity) => (
+                <TableRow key={activity.id}>
+                  <TableCell className="font-medium">{activity.date}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{activity.question}</TableCell>
+                  <TableCell>{activity.option}</TableCell>
+                  <TableCell>{activity.shares} APE</TableCell>
+                  <TableCell>{activity.probability}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        activity.status === "active" ? "outline" :
+                        activity.status === "past" ? "secondary" :
+                        activity.status === "won" ? "default" :
+                        activity.status === "claimed" ? "outline" : "destructive"
+                      }
+                    >
+                      {activity.status === "active" ? "Active" :
+                       activity.status === "past" ? "Pending" :
+                       activity.status === "won" ? "Won" :
+                       activity.status === "claimed" ? "Claimed" : "Lost"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {activity.status === "active" && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(`/market/${activity.marketId}`, '_blank')}>
+                        View
+                      </Button>
+                    )}
+                    {activity.status === "won" && activity.canClaim && (
+                      <Button 
+                        size="sm" 
+                        variant="default"
+                        onClick={() => handleClaim(activity.marketId)}
+                        disabled={claimingMarketId === activity.marketId}
+                      >
+                        {claimingMarketId === activity.marketId ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Claim
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface UserActivityTableProps {
   type: 'current' | 'past' | 'history';

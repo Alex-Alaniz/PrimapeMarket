@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
@@ -19,9 +19,14 @@ import {
   ExternalLink,
   Check,
   Twitter as TwitterIcon,
+  Trophy,
+  BarChart4,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserBalance } from "@/hooks/useUserBalance";
+import { Progress } from "./ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 // Component to display wallet balance using the useWalletBalance hook
 function BalanceDisplay({ address }: { address: string }) {
@@ -48,43 +53,8 @@ function BalanceDisplay({ address }: { address: string }) {
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { portfolio, pnl } = useUserBalance();
-
-  // Log user data for debugging
-  useEffect(() => {
-    if (account) {
-      console.log("Active Account:", account);
-
-      // Log the user data structure provided
-      const userData = {
-        "linkedAccounts": [
-          {
-            "type": "google",
-            "details": {
-              "email": "ahmed.waseem@thecherrybyte.com",
-              "id": "108612178025215719662",
-              "name": "ahmed waseem",
-              "picture": "https://lh3.googleusercontent.com/a/ACg8ocKQyK3zEVBDAWaKZhmGCuyN-ykIaE05hUCpAiAblZq-CWW1xA=s96-c",
-              "givenName": "ahmed",
-              "familyName": "waseem",
-              "emailVerified": true
-            }
-          }
-        ],
-        "wallets": [
-          {
-            "address": "0xe96bba3BbfEc7412FcA7EE5A5A582D56bFc7EC33",
-            "createdAt": "2025-03-07T08:50:19.227Z",
-            "type": "enclave"
-          }
-        ],
-        "id": "3bd8273b-3e93-4257-bcba-de640329722f"
-      };
-
-      console.log("User Profile Data:", userData);
-    }
-  }, [account]);
-
+  const userData = useUserBalance();
+  
   const shortenAddress = (address: string) => {
     if (!address) return "";
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
@@ -120,10 +90,10 @@ export function UserProfileCard() {
         </div>
       </div>
 
-      <CardContent className="pt-16 pb-6 text-center">
+      <CardContent className="pt-16 pb-6">
         {account ? (
           <AccountProvider address={account.address} client={client}>
-            <div>
+            <div className="text-center">
               <h2 className="text-xl font-bold">
                 <AccountName 
                   socialType="ens"
@@ -160,7 +130,7 @@ export function UserProfileCard() {
                   <span className="text-muted-foreground text-xs">
                     Portfolio
                   </span>
-                  <span className="font-semibold text-sm">{portfolio} APE</span>
+                  <span className="font-semibold text-sm">{userData.portfolio}</span>
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">
@@ -169,19 +139,70 @@ export function UserProfileCard() {
                   <span
                     className={cn(
                       "font-semibold text-sm",
-                      pnl.startsWith("+")
+                      userData.pnl.startsWith("+")
                         ? "text-green-600"
-                        : pnl.startsWith("-")
+                        : userData.pnl.startsWith("-")
                           ? "text-red-600"
                           : "",
                     )}
                   >
-                    {pnl} APE
+                    {userData.pnl}
                   </span>
                 </div>
               </div>
 
-              <Button size="sm" variant="outline" className="w-full">
+              {/* Performance Stats */}
+              <div className="mt-4 space-y-3 text-left">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-1">
+                      <Trophy className="h-3.5 w-3.5 text-yellow-500" />
+                      <span>Win Rate</span>
+                    </div>
+                    <span className="font-semibold">{userData.winPercentage}%</span>
+                  </div>
+                  <Progress value={userData.winPercentage} className="h-1.5" />
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-1">
+                      <BarChart4 className="h-3.5 w-3.5 text-blue-500" />
+                      <span>Total Staked</span>
+                    </div>
+                    <span className="font-semibold">{userData.totalStaked} APE</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-1">
+                      <History className="h-3.5 w-3.5 text-purple-500" />
+                      <span>Predictions</span>
+                    </div>
+                    <div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="font-semibold cursor-help">
+                              {userData.activePredictions} active / {userData.resolvedPredictions} resolved
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">
+                              {userData.totalParticipations} total predictions
+                              <br />
+                              {userData.totalWins} wins
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button size="sm" variant="outline" className="w-full mt-3">
                 Edit Profile
               </Button>
             </div>
@@ -202,7 +223,7 @@ export function UserProfileCard() {
             </div>
           </AccountProvider>
         ) : (
-          <h2 className="text-xl font-bold">Not Connected</h2>
+          <h2 className="text-xl font-bold text-center">Not Connected</h2>
         )}
       </CardContent>
     </Card>
