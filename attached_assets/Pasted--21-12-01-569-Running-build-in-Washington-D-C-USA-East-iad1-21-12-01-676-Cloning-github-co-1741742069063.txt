@@ -1,0 +1,44 @@
+[21:12:01.569] Running build in Washington, D.C., USA (East) – iad1
+[21:12:01.676] Cloning github.com/Alex-Alaniz/PrimapeMarket (Branch: production, Commit: 11fecca)
+[21:12:02.608] Cloning completed: 932.000ms
+[21:12:10.501] Restored build cache from previous deployment (C2cJeZ4S6613FoDz8eCZ5ygpFALn)
+[21:12:10.567] Running "vercel build"
+[21:12:11.271] Vercel CLI 41.3.2
+[21:12:13.130] Installing dependencies...
+[21:12:46.735] 
+[21:12:46.736] added 47 packages, removed 60 packages, and changed 51 packages in 32s
+[21:12:46.737] 
+[21:12:46.737] 200 packages are looking for funding
+[21:12:46.737]   run `npm fund` for details
+[21:12:46.802] Detected Next.js version: 15.0.1
+[21:12:46.811] Running "npm run build"
+[21:12:46.925] 
+[21:12:46.925] > simplepredictionmarket@0.1.0 build
+[21:12:46.925] > next build
+[21:12:46.925] 
+[21:12:48.014]   ▲ Next.js 15.0.1
+[21:12:48.015] 
+[21:12:48.043]    Creating an optimized production build ...
+[21:12:48.334] > [PWA] Compile server
+[21:12:48.335] > [PWA] Compile server
+[21:12:48.335] > [PWA] Compile client (static)
+[21:12:48.336] > [PWA] Auto register service worker with: /vercel/path0/node_modules/next-pwa/register.js
+[21:12:48.336] > [PWA] Service worker: /vercel/path0/public/sw.js
+[21:12:48.336] > [PWA]   url: /sw.js
+[21:12:48.337] > [PWA]   scope: /
+[21:13:33.800]  ✓ Compiled successfully
+[21:13:33.811]    Linting and checking validity of types ...
+[21:13:44.416] Failed to compile.
+[21:13:44.416] 
+[21:13:44.417] ./src/app/api/engage/route.ts:54:50
+[21:13:44.417] Type error: Parameter 'entry' implicitly has an 'any' type.
+[21:13:44.417] 
+[21:13:44.417] [0m [90m 52 |[39m     [90m// Clean up old entries (older than 24 hours)[39m[0m
+[21:13:44.417] [0m [90m 53 |[39m     [36mconst[39m oneDayAgo [33m=[39m now [33m-[39m [35m86400[39m[33m;[39m[0m
+[21:13:44.417] [0m[31m[1m>[22m[39m[90m 54 |[39m     [36mconst[39m recentEngagements [33m=[39m userHistory[33m.[39mfilter(entry [33m=>[39m entry[33m.[39mtimestamp [33m>=[39m oneDayAgo)[33m;[39m[0m
+[21:13:44.417] [0m [90m    |[39m                                                  [31m[1m^[22m[39m[0m
+[21:13:44.417] [0m [90m 55 |[39m     userEngagements[33m.[39m[36mset[39m(userKey[33m,[39m recentEngagements)[33m;[39m[0m
+[21:13:44.417] [0m [90m 56 |[39m[0m
+[21:13:44.417] [0m [90m 57 |[39m     [90m// Check daily limit[39m[0m
+[21:13:44.555] Error: Command "npm run build" exited with 1
+[21:13:44.937] 
