@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActiveAccount } from "thirdweb/react";
 import { CreatorCard } from "@/components/earn/creator-card";
+import type { EngagementType } from '@/types/engagement-types';
 import { EngagementHistory } from "@/components/earn/engagement-history";
 import { RewardTier } from "@/components/earn/reward-tier";
 import { useToast } from "@/components/ui/use-toast";
@@ -175,7 +176,10 @@ export default function EarnPage() {
                   creators.map(creator => (
                     <CreatorCard 
                       key={creator.id} 
-                      creator={creator} 
+                      creator={{
+                        ...creator,
+                        engagementTypes: creator.engagementTypes as EngagementType[]
+                      }} 
                       onEngage={handleEngagement}
                     />
                   ))
@@ -189,7 +193,10 @@ export default function EarnPage() {
                 {creators.filter(c => c.category === 'Spaces').map(creator => (
                   <CreatorCard 
                     key={creator.id} 
-                    creator={creator} 
+                    creator={{
+                      ...creator,
+                      engagementTypes: creator.engagementTypes as EngagementType[]
+                    }} 
                     onEngage={handleEngagement}
                   />
                 ))}

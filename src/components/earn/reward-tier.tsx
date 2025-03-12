@@ -2,7 +2,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 
-export function RewardTier({ title, pointsRequired, benefits }) {
+interface RewardTierProps {
+  title: string;
+  pointsRequired: number;
+  benefits: string[];
+}
+
+export function RewardTier({ title, pointsRequired, benefits }: RewardTierProps) {
   return (
     <Card className={`border-2 ${title === 'Gold' ? 'border-yellow-500' : 
                                title === 'Silver' ? 'border-gray-400' : 

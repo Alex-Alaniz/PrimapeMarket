@@ -10,8 +10,18 @@ import {
   TableRow 
 } from "@/components/ui/table";
 
-export function EngagementHistory({ walletAddress }) {
-  const [history, setHistory] = useState([]);
+export function EngagementHistory({ walletAddress }: { walletAddress: string }) {
+  type EngagementHistoryItem = {
+    id: string;
+    creatorName: string;
+    creatorHandle: string;
+    engagementType: string;
+    pointsEarned: number;
+    timestamp: string;
+    status: string;
+  };
+
+  const [history, setHistory] = useState<EngagementHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export function EngagementHistory({ walletAddress }) {
     }
   }, [walletAddress]);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -87,8 +97,8 @@ export function EngagementHistory({ walletAddress }) {
     }).format(date);
   };
 
-  const getEngagementTypeLabel = (type) => {
-    const labels = {
+  const getEngagementTypeLabel = (type: string): string => {
+    const labels: Record<string, string> = {
       'listen': 'Listened to Space',
       'read': 'Read Article',
       'question': 'Asked Question',
