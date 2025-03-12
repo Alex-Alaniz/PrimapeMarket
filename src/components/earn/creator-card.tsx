@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { /* ExternalLink, */ Twitter } from "lucide-react";
+import type { EngagementType } from '@/types/engagement-types';
 
 type Creator = {
   id: string;
@@ -14,7 +15,7 @@ type Creator = {
   description: string;
   category: string;
   points: number;
-  engagementTypes: string[];
+  engagementTypes: EngagementType[];
 };
 
 type OnEngageFunction = (creatorId: string, engagementType: string) => Promise<void>;
@@ -22,7 +23,7 @@ type OnEngageFunction = (creatorId: string, engagementType: string) => Promise<v
 export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage: OnEngageFunction }) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEngagement = async (type: string) => {
+  const handleEngagement = async (type: EngagementType) => {
     setIsLoading(true);
     try {
       await onEngage(creator.id, type);
@@ -31,7 +32,7 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
     }
   };
 
-  const engagementButtons = {
+  const engagementButtons: Record<EngagementType, { label: string; icon: JSX.Element; tooltip: string }> = {
     listen: {
       label: "Listen",
       icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-9.33-5"></path><path d="m6 12-3.47-3.47a6 6 0 0 1 0-8.46"></path><path d="M8 15a6 6 0 0 0 9.33 5"></path><path d="m18 12 3.47 3.47a6 6 0 0 1 0 8.46"></path></svg>,
@@ -118,12 +119,12 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => handleEngagement(type)}
+                  onClick={() => handleEngagement(type as EngagementType)}
                   disabled={isLoading}
                   className="gap-1.5"
                 >
-                  {engagementButtons[type].icon}
-                  <span>{engagementButtons[type].label}</span>
+                  {engagementButtons[type as EngagementType].icon}
+                  <span>{engagementButtons[type as EngagementType].label}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
