@@ -6,10 +6,23 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { /* ExternalLink, */ Twitter } from "lucide-react";
 
-export function CreatorCard({ creator, onEngage }) {
+type Creator = {
+  id: string;
+  name: string;
+  handle: string;
+  avatar: string;
+  description: string;
+  category: string;
+  points: number;
+  engagementTypes: string[];
+};
+
+type OnEngageFunction = (creatorId: string, engagementType: string) => Promise<void>;
+
+export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage: OnEngageFunction }) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEngagement = async (type) => {
+  const handleEngagement = async (type: string) => {
     setIsLoading(true);
     try {
       await onEngage(creator.id, type);
