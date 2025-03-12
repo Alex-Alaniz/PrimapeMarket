@@ -9,9 +9,14 @@ import {
   AccountProvider,
 } from "thirdweb/react";
 import { defineChain } from "thirdweb/chains";
-import { shortenAddress as thirdwebShortenAddress } from "thirdweb/utils";
+// import { shortenAddress } from "thirdweb/utils";
 import { client } from "@/app/client";
-import { Copy, ExternalLink, Check, Twitter as TwitterIcon } from "lucide-react";
+import {
+  Copy,
+  ExternalLink,
+  Check,
+  Twitter as TwitterIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserBalance } from "@/hooks/useUserBalance";
 import { useUserData } from "@/hooks/useUserData";
@@ -111,7 +116,7 @@ export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
   const { portfolio = "0", pnl = "0" } = useUserBalance() || {};
-  const { userData, loading } = useUserData(account?.address);
+  const { userData } = useUserData(account?.address);
   const linkedAccount = Array.isArray(userData?.linkedAccounts) ? userData.linkedAccounts[0] : null;
 
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -143,13 +148,14 @@ export function UserProfileCard() {
   const handleSaveProfile = (updatedProfile: any) => {
     setProfile(updatedProfile);
   };
-  function capitalizeFirstLetter(val) {
-    return String(val)
-      .toLowerCase() // Convert the whole string to lowercase first (optional)
-      .split(" ") // Split the string into words
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
-      .join(" "); // Join them back into a string
+  function formatUsername(name) {
+    if (!name) return "";
+    return name
+      .toLowerCase()        // Convert to lowercase
+      .replace(/\s+/g, '')  // Remove all spaces
+      .replace(/[^a-z0-9]/g, ''); // Remove any character that's not a letter or digit
   }
+
 
   const formattedPnl = pnl ?? "0";
 
@@ -177,7 +183,7 @@ export function UserProfileCard() {
         {account ? (
           <AccountProvider address={account.address} client={client}>
             <div>
-              <h2 className="text-xl font-bold text-center">{capitalizeFirstLetter(profile.name) || shortenAddress(account.address)}</h2>
+              <h2 className="text-xl font-bold text-center">{formatUsername(profile.name) || shortenAddress(account.address)}</h2>
               <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p>
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>
@@ -210,6 +216,21 @@ export function UserProfileCard() {
               <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
                 Edit Profile
               </Button>
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-medium text-sm">Connections</h3>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <TwitterIcon className="h-4 w-4 text-[#1D9BF0]" />
+                    <span>Not connected</span>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 px-2">
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </AccountProvider>
         ) : (

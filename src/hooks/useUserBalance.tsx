@@ -47,9 +47,9 @@ export function useUserBalance() {
         .catch(error => console.error("Error fetching balance:", error));
 
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch balance (Status: ${response.status})`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`Failed to fetch balance (Status: ${response.status})`);
+      // }
 
       const data = await response.json();
 
@@ -58,7 +58,7 @@ export function useUserBalance() {
       }
 
       setBalance(data.result.displayValue);
-    } catch (err: unknown) {
+    } catch (err) {
       console.error('Error fetching balance:', err);
       setError(err.message || 'Failed to fetch balance');// Show snackbar with error message
     } finally {
