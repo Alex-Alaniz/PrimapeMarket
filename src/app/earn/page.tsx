@@ -15,7 +15,16 @@ import { useToast } from "@/components/ui/use-toast";
 export default function EarnPage() {
   const { toast } = useToast();
   const activeAccount = useActiveAccount();
-  const [creators, setCreators] = useState([]);
+  const [creators, setCreators] = useState<{
+    id: string;
+    name: string;
+    handle: string;
+    avatar: string;
+    description: string;
+    category: string;
+    points: number;
+    engagementTypes: string[];
+  }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
