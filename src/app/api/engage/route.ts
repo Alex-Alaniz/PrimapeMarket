@@ -129,7 +129,7 @@ export async function POST(request: Request) {
 
     // Apply position bonus (early engagers get more points)
     const dailyEngagements = userEngagements.get(userKey).filter(
-      e => e.creatorId === creatorId && e.timestamp >= oneDayAgo
+      (e: { creatorId: string; timestamp: number }) => e.creatorId === creatorId && e.timestamp >= oneDayAgo
     ).length;
 
     const positionMultiplier = dailyEngagements === 1 ? 1.2 : // First engagement of the day
