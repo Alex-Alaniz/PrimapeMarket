@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 
     // Clean up old entries (older than 24 hours)
     const oneDayAgo = now - 86400;
-    const recentEngagements = userHistory.filter(entry => entry.timestamp >= oneDayAgo);
+    const recentEngagements = userHistory.filter((entry: { timestamp: number }) => entry.timestamp >= oneDayAgo);
     userEngagements.set(userKey, recentEngagements);
 
     // Check daily limit
