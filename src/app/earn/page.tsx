@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -73,7 +72,7 @@ export default function EarnPage() {
         setIsLoading(false);
       }
     };
-    
+
     fetchCreators();
   }, []);
 
@@ -105,7 +104,7 @@ export default function EarnPage() {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         toast({
           title: "Engagement Recorded!",
@@ -115,10 +114,10 @@ export default function EarnPage() {
         throw new Error(data.message || "Failed to record engagement");
       }
     } catch (error) {
-      console.error("Engagement error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to record engagement";
       toast({
         title: "Error",
-        description: error.message || "Failed to record engagement",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -138,7 +137,7 @@ export default function EarnPage() {
                 exclusive NFTs, and platform features.
               </p>
             </div>
-            
+
             <div className="bg-card p-4 rounded-lg w-full lg:w-auto">
               <div className="flex items-center gap-4">
                 <div className="bg-primary/10 p-3 rounded-full">
@@ -149,7 +148,7 @@ export default function EarnPage() {
                   <div className="text-2xl font-bold">{activeAccount ? "5,230" : "Connect Wallet"}</div>
                 </div>
               </div>
-              
+
               {activeAccount && (
                 <Button variant="outline" className="w-full mt-4" size="sm">
                   Redeem Points
@@ -183,7 +182,7 @@ export default function EarnPage() {
                 )}
               </div>
             </TabsContent>
-            
+
             {/* Other tabs content would filter by category */}
             <TabsContent value="spaces" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -196,7 +195,7 @@ export default function EarnPage() {
                 ))}
               </div>
             </TabsContent>
-            
+
             {/* Similar implementation for other tabs */}
           </Tabs>
 
