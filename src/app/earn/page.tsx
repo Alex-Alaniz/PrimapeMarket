@@ -77,7 +77,7 @@ export default function EarnPage() {
     fetchCreators();
   }, []);
 
-  const handleEngagement = async (creatorId, engagementType) => {
+  const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {
       toast({
         title: "Authentication Required",
