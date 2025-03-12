@@ -1,8 +1,11 @@
 import { /* createAuth */ } from 'thirdweb/auth';
 
 // This would be a real implementation in production that checks with Twitter API
+// Import EngagementType from the module where it's defined (we'll use a relative path)
+import type { EngagementType } from '../types/engagement-types';
+
 export async function verifyTwitterEngagement(
-  engagementType: string,
+  engagementType: EngagementType,
   _twitterAuthToken?: string,
   _creatorId?: string
 ) {

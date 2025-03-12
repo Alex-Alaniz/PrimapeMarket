@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyTwitterEngagement } from '@/lib/twitter-verification';
 
 // In production, you would store this in a database
-const engagementLimits = {
+const engagementLimits: Record<EngagementType, { dailyLimit: number; cooldown: number }> = {
   listen: { dailyLimit: 5, cooldown: 3600 }, // seconds (1 hour)
   question: { dailyLimit: 3, cooldown: 7200 }, // seconds (2 hours)
   comment: { dailyLimit: 10, cooldown: 1800 }, // seconds (30 min)
@@ -14,10 +14,18 @@ const engagementLimits = {
 // In-memory storage for rate limiting (would use Redis in production)
 const userEngagements = new Map();
 
+// Define engagement types as a union type
+type EngagementType = 'listen' | 'question' | 'comment' | 'share' | 'promote' | 'read';
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { creatorId, engagementType, walletAddress, _timestamp } = data;
+    const { creatorId, engagementType, walletAddress, _timestamp } = data as { 
+      creatorId: string;
+      engagementType: EngagementType;
+      walletAddress: string;
+      _timestamp?: number;
+    };
 
     // Validate required fields
     if (!creatorId || !engagementType || !walletAddress) {
@@ -110,7 +118,7 @@ export async function POST(request: Request) {
     });
 
     // Calculate points (in production would be more complex)
-    const basePoints = {
+    const basePoints: Record<EngagementType, number> = {
       listen: 500,
       question: 750,
       comment: 450,
