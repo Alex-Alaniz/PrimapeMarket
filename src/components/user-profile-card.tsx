@@ -18,22 +18,44 @@ import {
   Twitter as TwitterIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUserBalance } from "@/hooks/useUserBalance";
 import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import Image from "next/image";
 
+interface Profile {
+  picture: string;
+  name: string;
+  email: string;
+}
+
+interface EditProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updatedProfile: Profile) => void;
+  initialData: Profile;
+}
+
+interface ImageModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  imageUrl: string;
+}
+
+interface BalanceDisplayProps {
+  address: string;
+}
 
 // Modal Component
-function EditProfileModal({ isOpen, onClose, onSave, initialData }: any) {
+function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileModalProps) {
   const [formData, setFormData] = useState(initialData);
 
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFormData((prev: Profile) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = () => {
@@ -84,14 +106,21 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: any) {
 }
 
 // Image Modal Component
-function ImageModal({ isOpen, onClose, imageUrl }: any) {
+function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
       <div className="relative bg-white p-4 rounded-lg">
-        <img src={imageUrl} alt="Profile" className="w-64 h-64 object-cover rounded-lg" />
-        <button onClick={onClose} className="absolute top-2 right-2 text-white">
+        <div className="w-64 h-64 relative">
+          <Image
+            src={imageUrl}
+            alt="Profile"
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
+        <button onClick={onClose} className="absolute top-2 right-2 text-black">
           ✕
         </button>
       </div>
@@ -100,7 +129,7 @@ function ImageModal({ isOpen, onClose, imageUrl }: any) {
 }
 
 // Balance Display Component
-function BalanceDisplay({ address }: { address: string }) {
+function BalanceDisplay({ address }: BalanceDisplayProps) {
   const chain = defineChain(33139); // ApeChain
   const { data, isLoading } = useWalletBalance({ chain, address, client });
 
@@ -115,7 +144,8 @@ function BalanceDisplay({ address }: { address: string }) {
 export function UserProfileCard() {
   const account = useActiveAccount();
   const [copied, setCopied] = useState(false);
-  const { portfolio = "0", pnl = "0" } = useUserBalance() || {};
+  const portfolio = "0";
+  const pnl = "0";
   const { userData } = useUserData(account?.address);
   const linkedAccount = Array.isArray(userData?.linkedAccounts) ? userData.linkedAccounts[0] : null;
 
@@ -145,10 +175,12 @@ export function UserProfileCard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSaveProfile = (updatedProfile: any) => {
+
+
+  const handleSaveProfile = (updatedProfile: Profile) => {
     setProfile(updatedProfile);
   };
-  function formatUsername(name) {
+  function formatUsername(name: string) {
     if (!name) return "";
     return name
       .toLowerCase()        // Convert to lowercase
@@ -169,8 +201,13 @@ export function UserProfileCard() {
             onClick={() => setImageModalOpen(true)}
           >
             {account && profile.picture ? (
-              <img src={profile.picture} alt="Profile" className="h-full w-full object-cover" />
-            ) : (
+              <Image
+                src={profile.picture}
+                alt="Profile"
+                width={96}
+                height={96}
+                className="h-full w-full object-cover"
+              />) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
                 <span className="text-2xl">?</span>
               </div>

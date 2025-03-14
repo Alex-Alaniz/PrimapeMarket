@@ -1,54 +1,80 @@
-import { useState, useEffect } from "react";
+import useSWR from "swr";
+import { useEffect, useState } from "react";
 
-interface UserData {
-    name: string;
-}
+// interface UserData {
+//     id: string;
+//     linkedAccounts: LinkedAccount[];
+//     wallets: Wallet[];
+// }
+
+// interface LinkedAccount {
+//     id: string;
+//     type: string;
+//     details: AccountDetails;
+// }
+
+// interface AccountDetails {
+//     email: string;
+//     emailVerified: boolean;
+//     familyName: string;
+//     givenName: string;
+//     name: string;
+//     picture: string;
+// }
+
+// interface Wallet {
+//     address: string;
+//     createdAt: string;
+//     type: string;
+// }
+
+const fetcher = async (url: string, token: string, clientId: string) => {
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer embedded-wallet-token:${token}`,
+            "Content-Type": "application/json",
+            Accept: "*/*",
+            Origin: typeof window !== "undefined" ? window.location.origin : "",
+            Referer: typeof window !== "undefined" ? window.location.href : "",
+            "User-Agent": navigator.userAgent,
+            "x-client-id": clientId ?? "",
+            "x-sdk-name": "unified-sdk",
+            "x-sdk-os": "android",
+            "x-sdk-platform": "browser",
+            "x-sdk-version": "5.92.0",
+            "x-thirdweb-client-id": clientId ?? "",
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch user data: ${response.statusText}`);
+    }
+
+    return response.json();
+};
 
 export function useUserData(address?: string) {
-    const [userData, setUserData] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(true);
     const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
-    const walletToken = localStorage.getItem(`walletToken-${clientId}`);
+    const [walletToken, setWalletToken] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!address) return;
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem(`walletToken-${clientId}`);
+            setWalletToken(token);
+        }
+    }, [clientId]);
 
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch(`https://embedded-wallet.thirdweb.com/api/2024-05-05/accounts`, {
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer embedded-wallet-token:${walletToken}`,
-                        "Content-Type": "application/json",
-                        "Accept": "*/*",
-                        "Origin": "http://localhost:3000",
-                        "Referer": "http://localhost:3000/",
-                        "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Mobile Safari/537.36",
-                        "x-client-id": "405c734b26620ebbbedf749f1cc43594",
-                        "x-sdk-name": "unified-sdk",
-                        "x-sdk-os": "android",
-                        "x-sdk-platform": "browser",
-                        "x-sdk-version": "5.92.0",
-                        "x-thirdweb-client-id": "405c734b26620ebbbedf749f1cc43594",
-                    },
-                });
+    const { data: userData, error } = useSWR(
+        address && walletToken
+            ? [`https://embedded-wallet.thirdweb.com/api/2024-05-05/accounts`, walletToken, clientId]
+            : null,
+        ([url, token, id]: [string, string, string]) => fetcher(url, token, id)
+    );
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch user data: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                console.log("Account Details ==> ", data);
-                setUserData(data);
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, [address]);
-
-    return { userData, loading };
+    return {
+        userData,
+        loading: !userData && !error,
+        error,
+    };
 }
