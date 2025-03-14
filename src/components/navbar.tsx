@@ -77,6 +77,11 @@ export function Navbar() {
             {/* Desktop navigation */}
             <div className="hidden md:flex items-center space-x-4">
                 <ThemeToggle />
+                <Link href="/">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                        <span>Markets</span>
+                    </Button>
+                </Link>
                 <Link href="/leaderboard">
                     <Button variant="ghost" size="sm" className="gap-2">
                         <span>Leaderboard</span>
@@ -131,6 +136,11 @@ export function Navbar() {
             {isMenuOpen && (
                 <div className="absolute top-full left-0 right-0 bg-background border-b border-border/30 py-2 px-4 md:hidden z-20">
                     <div className="flex flex-col space-y-3">
+                        <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                            <Button variant="ghost" size="sm" className="w-full justify-start">
+                                <span>Markets</span>
+                            </Button>
+                        </Link>
                         <Link href="/leaderboard" onClick={() => setIsMenuOpen(false)}>
                             <Button variant="ghost" size="sm" className="w-full justify-start">
                                 <span>Leaderboard</span>
