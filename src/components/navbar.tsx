@@ -8,6 +8,8 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { Award } from "lucide-react"; // Added import for Award icon
+
 
 // Define wallets array outside the component
 const wallets = [
@@ -41,7 +43,7 @@ const wallets = [
 export function Navbar() {
     const account = useActiveAccount();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
+
     return (
         <div className="flex justify-between items-center mb-8 py-3 px-4 -mx-4 backdrop-blur-sm bg-background/80 border-b border-border/30 sticky top-0 z-10">
             <div className="flex items-center gap-2 md:gap-3">
@@ -55,7 +57,7 @@ export function Navbar() {
                 <h1 className="text-lg md:text-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Primape</h1>
                 <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-bold border border-primary/30 hidden sm:inline-block">BETA</span>
             </div>
-            
+
             {/* Mobile menu button */}
             <button 
                 className="md:hidden p-2 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
@@ -71,17 +73,24 @@ export function Navbar() {
                     </svg>
                 )}
             </button>
-            
+
             {/* Desktop navigation */}
             <div className="hidden md:flex items-center space-x-4">
                 <ThemeToggle />
-                
+                <Link href="/">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                        <span>Markets</span>
+                    </Button>
+                </Link>
                 <Link href="/leaderboard">
                     <Button variant="ghost" size="sm" className="gap-2">
                         <span>Leaderboard</span>
                     </Button>
                 </Link>
-                
+                <Link href="/earn" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary flex items-center gap-1"> {/* Added Earn link */}
+                    <Award className="h-4 w-4" />
+                    <span>Earn</span>
+                </Link> {/* Added Earn link */}
                 {account && (
                     <Link href="/profile">
                         <Button variant="ghost" size="sm" className="gap-2">
@@ -98,7 +107,7 @@ export function Navbar() {
                         </Button>
                     </Link>
                 )}
-                
+
                 <ConnectButton 
                     client={client} 
                     theme={lightTheme()}
@@ -122,17 +131,25 @@ export function Navbar() {
                     }}
                 />
             </div>
-            
+
             {/* Mobile navigation */}
             {isMenuOpen && (
                 <div className="absolute top-full left-0 right-0 bg-background border-b border-border/30 py-2 px-4 md:hidden z-20">
                     <div className="flex flex-col space-y-3">
+                        <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                            <Button variant="ghost" size="sm" className="w-full justify-start">
+                                <span>Markets</span>
+                            </Button>
+                        </Link>
                         <Link href="/leaderboard" onClick={() => setIsMenuOpen(false)}>
                             <Button variant="ghost" size="sm" className="w-full justify-start">
                                 <span>Leaderboard</span>
                             </Button>
                         </Link>
-                        
+                        <Link href="/earn" onClick={() => setIsMenuOpen(false)} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary flex items-center gap-1"> {/* Added Earn link for mobile */}
+                            <Award className="h-4 w-4" />
+                            <span>Earn</span>
+                        </Link> {/* Added Earn link for mobile */}
                         {account && (
                             <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
@@ -149,7 +166,7 @@ export function Navbar() {
                                 </Button>
                             </Link>
                         )}
-                        
+
                         <div className="flex justify-between items-center">
                             <ThemeToggle />
                             <ConnectButton 
