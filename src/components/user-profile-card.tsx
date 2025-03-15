@@ -129,7 +129,11 @@ export function UserProfileCard() {
 
   useEffect(() => {
     if (linkedAccount?.details) {
-      setProfile(linkedAccount.details);
+      setProfile({
+        picture: linkedAccount.details.picture || "",
+        name: linkedAccount.details.name || "",
+        email: linkedAccount.details.email || "",
+      });
     }
   }, [linkedAccount]);
 
@@ -148,7 +152,7 @@ export function UserProfileCard() {
   const handleSaveProfile = (updatedProfile: any) => {
     setProfile(updatedProfile);
   };
-  function formatUsername(name) {
+  function formatUsername(name: string | undefined) {
     if (!name) return "";
     return name
       .toLowerCase()        // Convert to lowercase

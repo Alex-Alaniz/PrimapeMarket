@@ -2,16 +2,32 @@ import { useState, useEffect } from "react";
 
 interface UserData {
     name: string;
+    linkedAccounts?: Array<{
+        details?: {
+            picture?: string;
+            name?: string;
+            email?: string;
+        };
+    }>;
 }
 
 export function useUserData(address?: string) {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
-    const walletToken = localStorage.getItem(`walletToken-${clientId}`);
+    
+    // Only access localStorage in the browser
+    const [walletToken, setWalletToken] = useState<string | null>(null);
+    
+    // Get the wallet token from localStorage on the client side
+    useEffect(() => {
+        if (typeof window !== 'undefined' && clientId) {
+            setWalletToken(localStorage.getItem(`walletToken-${clientId}`));
+        }
+    }, [clientId]);
 
     useEffect(() => {
-        if (!address) return;
+        if (!address || !walletToken) return;
 
         const fetchUserData = async () => {
             try {
@@ -48,7 +64,8 @@ export function useUserData(address?: string) {
         };
 
         fetchUserData();
-    }, [address]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [address, walletToken]);
 
     return { userData, loading };
 }
