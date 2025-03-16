@@ -242,22 +242,22 @@ setupDatabase().catch((err: any) => {
   console.error('Unhandled error in setupDatabase:', err);
 });
 
-export async function getMarketById(marketId: string): Promise<Record<string, unknown>> {
+export async function getMarketById(_marketId: string): Promise<Record<string, unknown>> {
   //Implementation for getMarketById
   return {} as Record<string, unknown>;
 }
 
-export async function getUserByWallet(walletAddress: string): Promise<Record<string, unknown> | null> {
+export async function getUserByWallet(_walletAddress: string): Promise<Record<string, unknown> | null> {
   //Implementation for getUserByWallet
   return null;
 }
 
-export async function getUserStats(userId: number): Promise<Record<string, unknown> | null> {
+export async function getUserStats(_userId: number): Promise<Record<string, unknown> | null> {
   //Implementation for getUserStats
   return null;
 }
 
-export async function getPredictionsByUserId(userId: number): Promise<Record<string, unknown>[]> {
+export async function getPredictionsByUserId(_userId: number): Promise<Record<string, unknown>[]> {
   //Implementation for getPredictionsByUserId
   return [];
 }
