@@ -1,0 +1,10 @@
+    table_name     
+-------------------
+ users
+ user_emails
+ user_wallets
+ markets
+ wallet_activity
+ users_leaderboard
+(6 rows)
+
