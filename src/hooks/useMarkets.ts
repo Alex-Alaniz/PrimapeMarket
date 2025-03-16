@@ -13,6 +13,18 @@ interface MarketsResponse {
   pagination: Pagination;
 }
 
+interface Prediction {
+  // Add properties based on your prediction data structure
+  id: number;
+  value: string;
+}
+
+interface MarketDetailsResponse {
+  market: Market;
+  predictions: Prediction[];
+}
+
+
 export function useMarkets(
   status: 'all' | 'active' | 'resolved' = 'all',
   limit: number = 10,
@@ -73,7 +85,7 @@ export function useMarkets(
 
 export function useMarket(marketId: string) {
   const [market, setMarket] = useState<Market | null>(null);
-  const [predictions, setPredictions] = useState<any[]>([]); //This line needs to be updated to a more specific type.
+  const [predictions, setPredictions] = useState<Prediction[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -94,7 +106,7 @@ export function useMarket(marketId: string) {
           throw new Error(`API error: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result: MarketDetailsResponse = await response.json();
 
         setMarket(result.market);
         setPredictions(result.predictions || []);
