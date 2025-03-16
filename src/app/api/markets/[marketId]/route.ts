@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
-import { Market } from '@/lib/db-models';
 
 export async function GET(request: NextRequest, { params }: { params: { marketId: string } }) {
   try {
