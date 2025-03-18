@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
-  useWalletBalance,
+  // useWalletBalance,
   AccountProvider,
 } from "thirdweb/react";
-import { defineChain } from "thirdweb/chains";
-// import { shortenAddress } from "thirdweb/utils";
+// import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
 import {
   Copy,
@@ -22,11 +21,25 @@ import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import Image from "next/image";
 
+
 interface Profile {
-  picture: string;
-  name: string;
+  profile_img_url: string;
+  username: string;
   email: string;
+  display_name: string;
 }
+
+// interface UserData {
+//   profile_img_url?: string;
+//   username?: string;
+//   email?: string;
+//   display_name?: string;
+// }
+
+// interface BalanceDisplayProps {
+//   address: string;
+//   userData: Profile | null;
+// }
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -35,19 +48,12 @@ interface EditProfileModalProps {
   initialData: Profile;
 }
 
-interface ImageModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  imageUrl: string;
-}
 
-interface BalanceDisplayProps {
-  address: string;
-}
-
-// Modal Component
+// Edit Profile Modal
 function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileModalProps) {
+  const { setUserData } = useUserData();
   const [formData, setFormData] = useState(initialData);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     setFormData(initialData);
@@ -55,11 +61,39 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: Profile) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    onSave(formData);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && (file.type === "image/png" || file.type === "image/jpeg")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, profile_img_url: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+      // setSelectedFile(file);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("/api/userProfile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        const updatedUser = await response.json();
+        console.log("Profile updated", updatedUser);
+        setUserData(updatedUser);
+        onSave(updatedUser);
+      } else {
+        console.error("Error updating profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile", error);
+    }
     onClose();
   };
 
@@ -72,102 +106,78 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <input
-            type="text"
-            name="picture"
-            placeholder="Profile Image URL"
-            value={formData.picture}
-            onChange={handleChange}
-            className="w-full mb-2 p-2 border rounded"
-          />
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full mb-2 p-2 border rounded"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full mb-4 p-2 border rounded"
-          />
+          <div className="relative w-24 h-24 mx-auto">
+            <Image src={formData.profile_img_url} alt="Profile" width={96} height={96} className="rounded-full object-cover" />
+            <input type="file" accept="image/png, image/jpeg" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+          </div>
+          <input type="text" name="display_name" placeholder="Name" value={formData.display_name} onChange={handleChange} className="w-full mb-2 p-2 border rounded" />
         </div>
         <DialogFooter>
           <Button onClick={handleSubmit}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   );
 }
 
-// Image Modal Component
-function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
+// Image Modal
+function ImageModal({ isOpen, onClose, imageUrl }: { isOpen: boolean, onClose: () => void, imageUrl: string }) {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
       <div className="relative bg-white p-4 rounded-lg">
         <div className="w-64 h-64 relative">
-          <Image
-            src={imageUrl}
-            alt="Profile"
-            fill
-            className="object-cover rounded-lg"
-          />
+          <Image src={imageUrl} alt="Profile" fill className="object-cover rounded-lg" />
         </div>
-        <button onClick={onClose} className="absolute top-2 right-2 text-black">
-          ✕
-        </button>
+        <button onClick={onClose} className="absolute top-2 right-2 text-black">✕</button>
       </div>
     </div>
   );
 }
 
-// Balance Display Component
-function BalanceDisplay({ address }: BalanceDisplayProps) {
-  const chain = defineChain(33139); // ApeChain
-  const { data, isLoading } = useWalletBalance({ chain, address, client });
+// function BalanceDisplay({ userData }: BalanceDisplayProps) {
+//   const linkAccount: Profile | null = userData ? {
+//     profile_img_url: userData.profile_img_url ?? "",
+//     username: userData.username ?? "",
+//     email: userData.email ?? "",
+//     display_name: userData.display_name ?? ""
+//   } : null;
+// }
 
-  if (isLoading) return <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>;
-  if (!data || !data.displayValue || !data.symbol) return <span className="font-semibold text-sm">Error loading</span>;
-
-  const formattedValue = `${(Math.ceil(parseFloat(data.displayValue) * 100) / 100).toFixed(2)} ${data.symbol}`;
-  return <span className="font-semibold text-sm">{formattedValue}</span>;
-}
-
-// User Profile Card Component
+// User Profile Card
 export function UserProfileCard() {
   const account = useActiveAccount();
+  const { userData, loading, setUserData } = useUserData();
+  const linkedAccount: Profile | null = useMemo(() => userData ? {
+    profile_img_url: userData.profile_img_url || "",
+    username: userData.username || "",
+    email: userData.email || "",
+    display_name: userData.display_name || ""
+  } : null, [userData]);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [isImageModalOpen, setImageModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const portfolio = "0";
   const pnl = "0";
-  const { userData } = useUserData(account?.address);
-  const linkedAccount = Array.isArray(userData?.linkedAccounts) ? userData.linkedAccounts[0] : null;
-
-  const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [isImageModalOpen, setImageModalOpen] = useState(false);
   const [profile, setProfile] = useState({
-    picture: linkedAccount?.details?.picture || "",
-    name: linkedAccount?.details?.name || "",
-    email: linkedAccount?.details?.email || "",
+    profile_img_url: linkedAccount?.profile_img_url || "",
+    username: linkedAccount?.username || "",
+    email: linkedAccount?.email || "",
+    display_name: linkedAccount?.display_name || "",
   });
 
+  // clear the userData state when the user logs out 
   useEffect(() => {
-    if (linkedAccount?.details) {
-      setProfile(linkedAccount.details);
+    if (!account) {
+      setUserData(null);
     }
+  }, [account, setUserData]);
+
+  useEffect(() => {
+    if (linkedAccount) setProfile(linkedAccount);
   }, [linkedAccount]);
 
-  const shortenAddress = (address?: string) => {
-    if (!address) return "";
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-  };
-
+  const shortenAddress = (address?: string) => address ? `${address.substring(0, 6)}...${address.substring(address.length - 4)}` : "";
   const copyToClipboard = (text?: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -175,20 +185,8 @@ export function UserProfileCard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-
-
-  const handleSaveProfile = (updatedProfile: Profile) => {
-    setProfile(updatedProfile);
-  };
-  function formatUsername(name: string) {
-    if (!name) return "";
-    return name
-      .toLowerCase()        // Convert to lowercase
-      .replace(/\s+/g, '')  // Remove all spaces
-      .replace(/[^a-z0-9]/g, ''); // Remove any character that's not a letter or digit
-  }
-
-
+  const handleSaveProfile = (updatedProfile: Profile) => setProfile(updatedProfile);
+  const formatUsername = (name: string) => name?.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "") || "";
   const formattedPnl = pnl ?? "0";
 
   return (
@@ -196,18 +194,10 @@ export function UserProfileCard() {
       <div className="relative">
         <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/40"></div>
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-          <div
-            className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden cursor-pointer"
-            onClick={() => setImageModalOpen(true)}
-          >
-            {account && profile.picture ? (
-              <Image
-                src={profile.picture}
-                alt="Profile"
-                width={96}
-                height={96}
-                className="h-full w-full object-cover"
-              />) : (
+          <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden cursor-pointer" onClick={() => setImageModalOpen(true)}>
+            {account && profile.profile_img_url ? (
+              <Image src={profile.profile_img_url} alt="Profile" width={96} height={96} className="h-full w-full object-cover" />
+            ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
                 <span className="text-2xl">?</span>
               </div>
@@ -217,15 +207,14 @@ export function UserProfileCard() {
       </div>
 
       <CardContent className="pt-16 pb-6 text-center">
+        {account && loading ? <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span> : null}
         {account ? (
           <AccountProvider address={account.address} client={client}>
             <div>
-              <h2 className="text-xl font-bold text-center">{formatUsername(profile.name) || shortenAddress(account.address)}</h2>
+              <h2 className="text-xl font-bold text-center">{formatUsername(profile.display_name) || shortenAddress(account.address)}</h2>
               <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p>
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  <span>{shortenAddress(account.address)}</span>
-                </span>
+                <span>{shortenAddress(account.address)}</span>
                 <button onClick={() => copyToClipboard(account.address)} className="rounded-full p-1 hover:bg-muted">
                   {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                 </button>
@@ -235,8 +224,8 @@ export function UserProfileCard() {
             <div className="mt-6 space-y-4">
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
-                  <span className="text-muted-foreground text-xs">Balance</span>
-                  {account.address && <BalanceDisplay address={account.address} />}
+                  {account.address}
+                  {account.address}
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Portfolio</span>
@@ -246,8 +235,7 @@ export function UserProfileCard() {
                   <span className="text-muted-foreground text-xs">Profit/Loss</span>
                   <span className={cn("font-semibold text-sm", formattedPnl.startsWith("+") ? "text-green-600" : formattedPnl.startsWith("-") ? "text-red-600" : "")}>
                     {formattedPnl} APE
-                  </span>
-                </div>
+                  </span>                </div>
               </div>
 
               <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
@@ -257,36 +245,18 @@ export function UserProfileCard() {
 
             <div className="mt-6 border-t pt-4">
               <h3 className="font-medium text-sm">Connections</h3>
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <TwitterIcon className="h-4 w-4 text-[#1D9BF0]" />
-                    <span>Not connected</span>
-                  </div>
-                  <Button size="sm" variant="ghost" className="h-7 px-2">
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between text-sm">
+                <TwitterIcon className="h-4 w-4 text-[#1D9BF0]" />
+                <span>Not connected</span>
+                <Button size="sm" variant="ghost" className="h-7 px-2"><ExternalLink className="h-3 w-3" /></Button>
               </div>
             </div>
           </AccountProvider>
-        ) : (
-          <h2 className="text-xl font-bold">Not Connected</h2>
-        )}
+        ) : <h2 className="text-xl font-bold">Not Connected</h2>}
       </CardContent>
 
-      <EditProfileModal
-        isOpen={isEditModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        onSave={handleSaveProfile}
-        initialData={profile}
-      />
-
-      <ImageModal
-        isOpen={isImageModalOpen}
-        onClose={() => setImageModalOpen(false)}
-        imageUrl={profile.picture}
-      />
+      <EditProfileModal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleSaveProfile} initialData={profile} />
+      <ImageModal isOpen={isImageModalOpen} onClose={() => setImageModalOpen(false)} imageUrl={profile.profile_img_url} />
     </Card>
   );
 }

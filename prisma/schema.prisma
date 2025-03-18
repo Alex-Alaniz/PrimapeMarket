@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model userProfile {
+  wallet_address  String  @id @unique // Primary Key & Unique
+  username        String  @unique
+  email           String  @unique
+  profile_img_url String?
+  display_name    String? // Optional, stores updated username if changed
+}

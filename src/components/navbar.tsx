@@ -41,23 +41,26 @@ const wallets = [
 export function Navbar() {
     const account = useActiveAccount();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
+
     return (
         <div className="flex justify-between items-center mb-8 py-3 px-4 -mx-4 backdrop-blur-sm bg-background/80 border-b border-border/30 sticky top-0 z-10">
-            <div className="flex items-center gap-2 md:gap-3">
-                <Image
-                    src="/images/pm.PNG"
-                    alt="Primape Logo"
-                    width={36}
-                    height={36}
-                    className="h-8 md:h-9 w-auto"
-                />
-                <h1 className="text-lg md:text-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Primape</h1>
-                <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-bold border border-primary/30 hidden sm:inline-block">BETA</span>
-            </div>
-            
+            <Link href="/">
+                <div className="flex items-center gap-2 md:gap-3 cursor-pointer">
+                    <Image
+                        src="/images/pm.PNG"
+                        alt="Primape Logo"
+                        width={36}
+                        height={36}
+                        className="h-8 md:h-9 w-auto"
+                    />
+                    <h1 className="text-lg md:text-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Primape</h1>
+                    <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-bold border border-primary/30 hidden sm:inline-block">BETA</span>
+                </div>
+            </Link>
+
+
             {/* Mobile menu button */}
-            <button 
+            <button
                 className="md:hidden p-2 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
@@ -71,26 +74,26 @@ export function Navbar() {
                     </svg>
                 )}
             </button>
-            
+
             {/* Desktop navigation */}
             <div className="hidden md:flex items-center space-x-4">
                 <ThemeToggle />
-                
+
                 <Link href="/leaderboard">
                     <Button variant="ghost" size="sm" className="gap-2">
                         <span>Leaderboard</span>
                     </Button>
                 </Link>
-                
+
                 {account && (
                     <Link href="/profile">
                         <Button variant="ghost" size="sm" className="gap-2">
                             <User className="h-4 w-4" />
                             {account && (
                                 <AccountProvider address={account.address} client={client}>
-                                    <AccountName 
+                                    <AccountName
                                         socialType="ens"
-                                        loadingComponent={<span>Profile</span>} 
+                                        loadingComponent={<span>Profile</span>}
                                         fallbackComponent={<span>Profile</span>}
                                     />
                                 </AccountProvider>
@@ -98,9 +101,9 @@ export function Navbar() {
                         </Button>
                     </Link>
                 )}
-                
-                <ConnectButton 
-                    client={client} 
+
+                <ConnectButton
+                    client={client}
                     theme={lightTheme()}
                     chain={defineChain(33139)}
                     wallets={wallets}
@@ -122,7 +125,7 @@ export function Navbar() {
                     }}
                 />
             </div>
-            
+
             {/* Mobile navigation */}
             {isMenuOpen && (
                 <div className="absolute top-full left-0 right-0 bg-background border-b border-border/30 py-2 px-4 md:hidden z-20">
@@ -132,16 +135,16 @@ export function Navbar() {
                                 <span>Leaderboard</span>
                             </Button>
                         </Link>
-                        
+
                         {account && (
                             <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
                                     <User className="h-4 w-4" />
                                     {account && (
                                         <AccountProvider address={account.address} client={client}>
-                                            <AccountName 
+                                            <AccountName
                                                 socialType="ens"
-                                                loadingComponent={<span>Profile</span>} 
+                                                loadingComponent={<span>Profile</span>}
                                                 fallbackComponent={<span>Profile</span>}
                                             />
                                         </AccountProvider>
@@ -149,11 +152,11 @@ export function Navbar() {
                                 </Button>
                             </Link>
                         )}
-                        
+
                         <div className="flex justify-between items-center">
                             <ThemeToggle />
-                            <ConnectButton 
-                                client={client} 
+                            <ConnectButton
+                                client={client}
                                 theme={lightTheme()}
                                 chain={defineChain(33139)}
                                 wallets={wallets}
