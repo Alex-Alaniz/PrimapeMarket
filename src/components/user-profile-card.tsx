@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   useActiveAccount,
-  // useWalletBalance,
   AccountProvider,
+  useWalletBalance,
 } from "thirdweb/react";
 // import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -16,6 +16,7 @@ import {
   Check,
   Twitter as TwitterIcon,
 } from "lucide-react";
+import { defineChain } from "thirdweb/chains";
 import { cn } from "@/lib/utils";
 import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -29,35 +30,26 @@ interface Profile {
   display_name: string;
 }
 
-// interface UserData {
-//   profile_img_url?: string;
-//   username?: string;
-//   email?: string;
-//   display_name?: string;
-// }
-
-// interface BalanceDisplayProps {
-//   address: string;
-//   userData: Profile | null;
-// }
-
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedProfile: Profile) => void;
   initialData: Profile;
 }
+interface BalanceDisplayProps {
+  address: string;
+}
 
 
 // Edit Profile Modal
 function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileModalProps) {
   const { setUserData } = useUserData();
-  const [formData, setFormData] = useState(initialData);
-  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const account = useActiveAccount(); // Get active wallet account
+  const [formData, setFormData] = useState({ ...initialData, wallet_address: account?.address || "" });
 
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    setFormData((prev) => ({ ...prev, ...initialData, wallet_address: account?.address || "" }));
+  }, [initialData, account?.address]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -72,7 +64,6 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
         setFormData((prev) => ({ ...prev, profile_img_url: reader.result as string }));
       };
       reader.readAsDataURL(file);
-      // setSelectedFile(file);
     }
   };
 
@@ -81,8 +72,9 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
       const response = await fetch("/api/userProfile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // Include wallet address in the request
       });
+
       if (response.ok) {
         const updatedUser = await response.json();
         console.log("Profile updated", updatedUser);
@@ -107,9 +99,23 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
         </DialogHeader>
         <div className="space-y-4">
           <div className="relative w-24 h-24 mx-auto">
-            <Image src={formData.profile_img_url} alt="Profile" width={96} height={96} className="rounded-full object-cover" />
-            <input type="file" accept="image/png, image/jpeg" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
+              <Image
+                src={formData.profile_img_url}
+                alt="Profile"
+                width={96}
+                height={96}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={handleImageChange}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
           </div>
+
           <input type="text" name="display_name" placeholder="Name" value={formData.display_name} onChange={handleChange} className="w-full mb-2 p-2 border rounded" />
         </div>
         <DialogFooter>
@@ -119,6 +125,7 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
     </Dialog>
   );
 }
+
 
 // Image Modal
 function ImageModal({ isOpen, onClose, imageUrl }: { isOpen: boolean, onClose: () => void, imageUrl: string }) {
@@ -135,14 +142,17 @@ function ImageModal({ isOpen, onClose, imageUrl }: { isOpen: boolean, onClose: (
   );
 }
 
-// function BalanceDisplay({ userData }: BalanceDisplayProps) {
-//   const linkAccount: Profile | null = userData ? {
-//     profile_img_url: userData.profile_img_url ?? "",
-//     username: userData.username ?? "",
-//     email: userData.email ?? "",
-//     display_name: userData.display_name ?? ""
-//   } : null;
-// }
+
+function BalanceDisplay({ address }: BalanceDisplayProps) {
+  const chain = defineChain(33139);
+  const { data, isLoading } = useWalletBalance({ chain, address, client });
+
+  if (isLoading) return <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span>;
+  if (!data || !data.displayValue || !data.symbol) return <span className="font-semibold text-sm">Error loading</span>;
+
+  const formattedValue = `${(Math.ceil(parseFloat(data.displayValue) * 100) / 100).toFixed(2)} ${data.symbol}`;
+  return <span className="font-semibold text-sm">{formattedValue}</span>;
+}
 
 // User Profile Card
 export function UserProfileCard() {
@@ -224,8 +234,8 @@ export function UserProfileCard() {
             <div className="mt-6 space-y-4">
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
-                  {account.address}
-                  {account.address}
+                  <span className="text-muted-foreground text-xs">Balance</span>
+                  {account.address && <BalanceDisplay address={account.address} />}
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Portfolio</span>

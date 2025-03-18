@@ -5,9 +5,9 @@ import { NextResponse } from "next/server";
 async function testDBConnection() {
   try {
     await db.$connect();
-    console.log("✅ Database connected successfully!");
+    console.log("Database connected successfully!");
   } catch (error) {
-    console.error("❌ Database connection failed:", error);
+    console.error("Database connection failed:", error);
     throw new Error("Database connection error");
   }
 }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
-    console.log("❌ Error creating user:", error);
+    console.log("Error creating user:", error);
     // Handle specific error codes;
     // if ((error as { code?: string }).code === "P2002") {
     //   alert("User already exists");
@@ -74,7 +74,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("❌ Error fetching user:", error);
+    console.error("Error fetching user:", error);
     return NextResponse.json({ error: "Error fetching user" }, { status: 500 });
   }
 }
@@ -101,7 +101,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("❌ Error updating user:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json({ error: "Error updating user" }, { status: 500 });
   }
 }
@@ -125,7 +125,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {
-    console.error("❌ Error deleting user:", error);
+    console.error("Error deleting user:", error);
     return NextResponse.json({ error: "Error deleting user" }, { status: 500 });
   }
 }
