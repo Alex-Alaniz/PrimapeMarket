@@ -52,7 +52,7 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
     setFormData((prev) => ({ ...prev, ...initialData, wallet_address: account?.address || "" }));
   }, [initialData, account?.address]);
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -168,8 +168,7 @@ export function UserProfileCard() {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isImageModalOpen, setImageModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const portfolio = "0";
-  const pnl = "0";
+  const { portfolio = "0", pnl = "0" } = useUserBalance() || {};
   const [profile, setProfile] = useState<Profile>({
     profile_img_url: "",
     username: "",
