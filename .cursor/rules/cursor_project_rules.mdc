@@ -1,0 +1,137 @@
+---
+description: Apply these rules when creating the project
+globs:
+alwaysApply: true
+---
+## Project Overview
+
+*   **Type:** cursor_project_rules
+*   **Description:** Primape Markets is a decentralized prediction market platform built on the ApeChain that allows users to predict event outcomes and earn rewards in $APE tokens, exclusive NFTs, and specialized platform features, all while engaging with top creators. The project integrates dynamic market interactions with an engagement-to-earn mechanism.
+*   **Primary Goal:** To offer a secure, transparent, and user-friendly Web3-powered platform that marries decentralized prediction markets with gamified social engagement, ensuring seamless wallet-based authentication, trustworthy smart contract interactions, and a dynamic user experience.
+
+## Project Structure
+
+### Framework-Specific Routing
+
+*   **Directory Rules:**
+
+    *   **next.js 14 (App Router):** Utilize the `app/` directory with nested route folders, following the `app/[route]/page.tsx` conventions for both UI and API routes.
+    *   Example 1: "Next.js 14 (App Router)" → `app/[route]/page.tsx` conventions
+    *   Example 2: If Pages Router were used (not applicable here), it would follow a `pages/[route].tsx` pattern.
+    *   Example 3: For React Router 6 (if ever integrated elsewhere), utilize `src/routes/` with `createBrowserRouter`.
+
+### Core Directories
+
+*   **Versioned Structure:**
+
+    *   **app/api:** Next.js 14 API routes implementing Route Handlers for backend logic, such as processing engagement and creator data.
+    *   **app/dashboard:** Houses core layout components like root layouts, dashboards, and user interface elements.
+
+### Key Files
+
+*   **Stack-Versioned Patterns:**
+
+    *   **app/dashboard/layout.tsx:** Implements Next.js 14 root layout for the main dashboard.
+    *   **app/auth/login/page.tsx:** Implements secure wallet authentication using Thirdweb’s ConnectButton with server actions.
+    *   *(Note: The usage of file naming strictly follows the Next.js 14 App Router conventions; no mix with legacy Pages Router is allowed.)*
+
+## Tech Stack Rules
+
+*   **Version Enforcement:**
+
+    *   **next@14:** Must use the App Router; any legacy patterns like `getInitialProps` for data fetching are disallowed.
+    *   **radix ui:** Ensure accessible and modular UI components following Radix conventions.
+    *   **tailwind css:** Adhere to utility-first styling with enforced JIT and proper configuration for multi-theme support (dark, light, ape).
+    *   **typescript:** Enforce strict typing across React components, API routes, and smart contract interactions.
+    *   **thirdweb:** Utilize secure wallet integrations and Web3 interactions for contract calls.
+    *   **solidity & openzeppelin:** Follow smart contract best practices for secure, audited code; strictly adhere to OpenZeppelin standards.
+
+## PRD Compliance
+
+*   **Non-Negotiable:**
+
+    *   "Offering a secure, transparent, and user-friendly environment that merges traditional prediction market concepts with gamified social engagement" must be upheld through careful integration of wallet-based authentication, clear user flows, and comprehensive API and smart contract validations. Version-specific constraints for Next.js 14, smart contract security with Solidity and OpenZeppelin, and resiliency in API rate limiting are mandatory.
+
+## App Flow Integration
+
+*   **Stack-Aligned Flow:**
+
+    *   Example: "Next.js 14 Auth Flow → `app/auth/login/page.tsx` uses server actions for wallet connection and secure authentication flows."
+    *   The flow from onboarding (wallet connection) to market browsing, engagement-to-earn interactions, share purchases, market resolution, and claiming winnings is meticulously mapped to corresponding files and API routes within the Next.js 14 framework.
+
+## Best Practices
+
+*   **next.js**
+
+    *   Use the App Router exclusively for routing and file-based component organization.
+    *   Leverage server actions and Route Handlers for API logic to maintain separation between frontend and backend concerns.
+    *   Enforce best practices with strict TypeScript and ESLint configurations.
+
+*   **radix ui**
+
+    *   Maintain accessibility standards in all UI components.
+    *   Use composable primitives for building highly customizable interface components.
+    *   Ensure styling consistency with Tailwind CSS utility classes.
+
+*   **tailwind css**
+
+    *   Follow utility-first CSS best practices with an emphasis on responsive design.
+    *   Optimize for performance with JIT compilation and purge unused styles.
+    *   Configure theme support explicitly for dark, light, and ape themes.
+
+*   **lucide react**
+
+    *   Use scalable vector icons to maintain responsiveness across device types.
+    *   Import only necessary icons to optimize bundle size.
+    *   Maintain a consistent iconography style across the platform.
+
+*   **react context**
+
+    *   Use context only when necessary to manage global state; consider local state management where feasible.
+    *   Ensure efficient updates and avoid unnecessary re-renders with memoization techniques.
+    *   Maintain clear separation of concerns between different contexts (e.g., authentication, theme, data).
+
+*   **thirdweb**
+
+    *   Secure wallet integration using Thirdweb’s ConnectButton must be properly configured.
+    *   Abstract contract interaction and error handling to dedicated hooks for clean code architecture.
+    *   Regularly update dependencies and monitor security advisories.
+
+*   **solidity & openzeppelin**
+
+    *   Follow the latest Solidity best practices and OpenZeppelin recommendations for contract security.
+    *   Write comprehensive unit tests for smart contracts to mitigate vulnerabilities.
+    *   Keep contracts modular and upgradeable where necessary.
+
+*   **clsx & tailwind-merge**
+
+    *   Use clsx for conditional className management to keep component code clean.
+    *   Leverage tailwind-merge to resolve class conflicts and ensure predictable styling.
+    *   Adopt naming conventions that simplify class usage and maintenance.
+
+*   **jsonwebtoken & axios**
+
+    *   Ensure JWT tokens are used securely by following best practices on token issuance and expiration.
+    *   Use axios for API requests with proper error handling and timeout settings.
+    *   Maintain environment variable security by not exposing secrets in client-side code.
+
+*   **typescript**
+
+    *   Enforce strict typing across all modules for improved maintainability.
+    *   Use interfaces and types to clearly define contract for components and API responses.
+    *   Leverage TypeScript’s advanced features to reduce runtime errors.
+
+*   **next-pwa & viem**
+
+    *   Configure next-pwa for efficient offline support and caching strategies.
+    *   Use viem for robust and secure smart contract interactions; ensure compatibility with current blockchain networks.
+    *   Regularly review and update configurations to align with project evolution.
+
+## Rules
+
+*   Derive folder/file patterns **directly** from the tech stack documentation and version guidelines.
+*   If Next.js 14 App Router is selected: En1. Check if the URL "<https://app.codeguide.dev/api/urls/fc76ec7d-b179-4cc3-89c9-9d709a5675c0?download=true>" returns a JSON or a blob. 2. If the URL returns a JSON with a message indicating that the URL is expired: a. Stop the process. b. Inform the user to follow the instructions written in the JSON. 3. If the URL returns a blob: a. Download the project documents from the URL. b. Unzip the downloaded files into a "documentation" folder at the root of the project. c. Review the documents carefully. 4. Refer to the downloaded documentation for creating the project. 5. Check if cursor_project_rules.mdc file exists, if it does, move it to Cursor project rules directory in .cursor/rules/orce usage of the `app/` directory with nested route folders; no mixing of legacy Pages Router structure.
+*   Mirror similar logic for other frameworks (e.g., React Router, SvelteKit) as necessary in separate modules or micro-frontends.
+*   Follow strict separation between frontend and API (backend) directories to maintain code clarity and responsibility boundaries.
+*   Never mix version-specific patterns; for instance, do not use `pages/` in App Router projects.
+*   Maintain consistency with third-party integration patterns as defined by the tech stack (e.g., Thirdweb for Web3, Tailwind CSS for styling, etc.).

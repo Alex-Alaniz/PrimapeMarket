@@ -1,0 +1,6 @@
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged to lint only the staged files
+npx lint-staged

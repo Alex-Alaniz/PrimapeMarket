@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { defineChain } from "thirdweb/chains";
 import { cn } from "@/lib/utils";
+import { useUserBalance } from "@/hooks/useUserBalance";
 import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import Image from "next/image";
@@ -51,7 +52,7 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
     setFormData((prev) => ({ ...prev, ...initialData, wallet_address: account?.address || "" }));
   }, [initialData, account?.address]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
