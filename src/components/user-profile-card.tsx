@@ -169,12 +169,25 @@ export function UserProfileCard() {
   const [copied, setCopied] = useState(false);
   const portfolio = "0";
   const pnl = "0";
-  const [profile, setProfile] = useState({
-    profile_img_url: linkedAccount?.profile_img_url || "",
-    username: linkedAccount?.username || "",
-    email: linkedAccount?.email || "",
-    display_name: linkedAccount?.display_name || "",
+  const [profile, setProfile] = useState<Profile>({
+    profile_img_url: "",
+    username: "",
+    email: "",
+    display_name: "",
   });
+  // Clear profile on account change
+  useEffect(() => {
+    if (userData && account?.address) {
+      setProfile({
+        profile_img_url: userData.profile_img_url || "",
+        username: userData.username || "",
+        email: userData.email || "",
+        display_name: userData.display_name || "",
+      });
+    } else {
+      setProfile({ profile_img_url: "", username: "", email: "", display_name: "" });
+    }
+  }, [userData, account?.address]);
 
   // clear the userData state when the user logs out 
   useEffect(() => {
@@ -222,7 +235,8 @@ export function UserProfileCard() {
           <AccountProvider address={account.address} client={client}>
             <div>
               <h2 className="text-xl font-bold text-center">{formatUsername(profile.display_name) || shortenAddress(account.address)}</h2>
-              <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p>
+              <p className="text-sm text-muted-foreground text-center">{profile.email === "No User Email" ? "" : profile.email}</p>
+              {/* <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p> */}
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>{shortenAddress(account.address)}</span>
                 <button onClick={() => copyToClipboard(account.address)} className="rounded-full p-1 hover:bg-muted">

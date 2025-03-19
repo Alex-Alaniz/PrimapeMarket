@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
+
 interface UserData {
     profile_img_url?: string;
     username?: string;
     email?: string;
     display_name?: string;
 }
+
 const fetcher = async (url: string, options = {}) => {
     const response = await fetch(url, options);
     if (!response.ok) {
@@ -20,22 +22,50 @@ export function useUserData() {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+    const [prevWalletAddress, setPrevWalletAddress] = useState<string | null>(null);
     const account = useActiveAccount();
 
-    // Ensure token is set before making API calls
+    // Check and handle thirdweb active wallet ID
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem(`walletToken-${clientId}`);
-            if (token) setWalletToken(token);
+        if (typeof window === "undefined" || !clientId) return;
+
+        const activeWalletId = localStorage.getItem("thirdweb:active-wallet-id");
+        const tokenKey = `walletToken-${clientId}`;
+
+        if (!activeWalletId || activeWalletId !== "inApp") {
+            localStorage.removeItem(tokenKey);
         }
-    }, [clientId]);
+
+        const token = localStorage.getItem(tokenKey);
+        if (token) {
+            setWalletToken(token);
+        } else {
+            setWalletToken(null);
+        }
+    }, [clientId, account?.address]);
 
     useEffect(() => {
-        let isMounted = true; // To avoid setting state after unmount
-        let isCreatingUser = false; // Flag to prevent duplicate user creation
+        let isMounted = true;
+        let isCreatingUser = false;
 
         const fetchUserData = async () => {
-            if (!walletToken || !account?.address) return;
+            const activeWalletAddress = account?.address;
+
+            // Avoid re-fetching if userData is already set and wallet address is the same
+            if (userData && activeWalletAddress === prevWalletAddress) {
+                setLoading(false);
+                return;
+            }
+
+            // If the wallet address has changed, clear user data
+            if (activeWalletAddress && activeWalletAddress !== prevWalletAddress) {
+                setUserData(null);
+            }
+
+            if (!walletToken || !activeWalletAddress) {
+                setLoading(false);
+                return;
+            }
             setLoading(true);
 
             try {
@@ -52,8 +82,6 @@ export function useUserData() {
                     }
                 );
 
-                const activeWalletAddress = account.address;
-
                 // Check if user exists in DB
                 const dbResponse = await fetch(`/api/userProfile?wallet_address=${activeWalletAddress}`);
 
@@ -61,15 +89,15 @@ export function useUserData() {
                     const dbUser = await dbResponse.json();
                     if (isMounted) setUserData(dbUser);
                 } else if (dbResponse.status === 404) {
-                    if (isCreatingUser) return; // Prevent duplicate user creation
-                    isCreatingUser = true; // Set flag before making request
+                    if (isCreatingUser) return;
+                    isCreatingUser = true;
 
-                    // User not found, create a new one
+                    // Create a new user
                     const newUser = {
                         wallet_address: activeWalletAddress,
                         username: thirdwebData?.linkedAccounts?.[0]?.details?.name || "New User",
-                        email: thirdwebData?.linkedAccounts?.[0]?.details?.email || "",
-                        profile_img_url: thirdwebData?.linkedAccounts?.[0]?.details?.picture || "",
+                        email: thirdwebData?.linkedAccounts?.[0]?.details?.email || `user_${Math.floor(100000 + Math.random() * 900000)}@thirdwebmail.com`,
+                        profile_img_url: thirdwebData?.linkedAccounts?.[0]?.details?.picture || thirdwebData?.linkedAccounts?.[0]?.details?.avatar || "https://thirdweb.com/logo.svg",
                     };
 
                     const createUserResponse = await fetch("/api/userProfile", {
@@ -90,17 +118,20 @@ export function useUserData() {
             } catch (err) {
                 if (isMounted) setError(err as Error);
             } finally {
-                if (isMounted) setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                    setPrevWalletAddress(activeWalletAddress); // Update previous wallet address
+                }
             }
         };
 
         fetchUserData();
 
         return () => {
-            isMounted = false; // Cleanup on unmount
+            isMounted = false;
         };
-    }, [walletToken, account?.address, clientId]);
+    }, [walletToken, account?.address, clientId, userData, prevWalletAddress]);
 
-    console.log({ userData });
+    // console.log({ userData });
     return { userData, loading, error, setUserData };
 }
