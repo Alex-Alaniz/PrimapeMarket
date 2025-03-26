@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { defineChain } from "thirdweb/chains";
 import { cn } from "@/lib/utils";
-import { useUserBalance } from "@/hooks/useUserBalance";
 import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import Image from "next/image";
@@ -102,11 +101,18 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
           <div className="relative w-24 h-24 mx-auto">
             <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
               <Image
-                src={formData.profile_img_url}
+                src={formData.profile_img_url || "/images/pm.PNG"}
                 alt="Profile"
                 width={96}
                 height={96}
                 className="w-full h-full object-cover"
+              />
+              <Image
+                src="/images/pm.PNG"
+                alt="Primape Logo"
+                width={50}
+                height={50}
+                className="h-8 md:h-9 w-auto"
               />
             </div>
             <input
@@ -129,19 +135,19 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
 
 
 // Image Modal
-function ImageModal({ isOpen, onClose, imageUrl }: { isOpen: boolean, onClose: () => void, imageUrl: string }) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="relative bg-white p-4 rounded-lg">
-        <div className="w-64 h-64 relative">
-          <Image src={imageUrl} alt="Profile" fill className="object-cover rounded-lg" />
-        </div>
-        <button onClick={onClose} className="absolute top-2 right-2 text-black">✕</button>
-      </div>
-    </div>
-  );
-}
+// function ImageModal({ isOpen, onClose, imageUrl }: { isOpen: boolean, onClose: () => void, imageUrl: string }) {
+//   if (!isOpen) return null;
+//   return (
+//     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+//       <div className="relative bg-white p-4 rounded-lg">
+//         <div className="w-64 h-64 relative">
+//           <Image src={imageUrl} alt="Profile" fill className="object-cover rounded-lg" />
+//         </div>
+//         <button onClick={onClose} className="absolute top-2 right-2 text-black">✕</button>
+//       </div>
+//     </div>
+//   );
+// }
 
 
 function BalanceDisplay({ address }: BalanceDisplayProps) {
@@ -166,9 +172,10 @@ export function UserProfileCard() {
     display_name: userData.display_name || ""
   } : null, [userData]);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [isImageModalOpen, setImageModalOpen] = useState(false);
+  // const [isImageModalOpen, setImageModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { portfolio = "0", pnl = "0" } = useUserBalance() || {};
+  const portfolio = "0";
+  const pnl = "0";
   const [profile, setProfile] = useState<Profile>({
     profile_img_url: "",
     username: "",
@@ -217,12 +224,18 @@ export function UserProfileCard() {
       <div className="relative">
         <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/40"></div>
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-          <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden cursor-pointer" onClick={() => setImageModalOpen(true)}>
+          <div className="h-24 w-24 rounded-full border-4 border-background bg-background overflow-hidden cursor-pointer">
             {account && profile.profile_img_url ? (
               <Image src={profile.profile_img_url} alt="Profile" width={96} height={96} className="h-full w-full object-cover" />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-muted">
-                <span className="text-2xl">?</span>
+                <Image
+                  src="/images/pm.PNG"
+                  alt="Primape Logo"
+                  width={96}
+                  height={96}
+                  className="h-8 md:h-9 w-auto"
+                />
               </div>
             )}
           </div>
@@ -280,7 +293,7 @@ export function UserProfileCard() {
       </CardContent>
 
       <EditProfileModal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleSaveProfile} initialData={profile} />
-      <ImageModal isOpen={isImageModalOpen} onClose={() => setImageModalOpen(false)} imageUrl={profile.profile_img_url} />
+      {/* <ImageModal isOpen={isImageModalOpen} onClose={() => setImageModalOpen(false)} imageUrl={profile.profile_img_url} /> */}
     </Card>
   );
 }

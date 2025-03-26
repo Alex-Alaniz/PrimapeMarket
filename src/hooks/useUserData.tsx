@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from "react";
 import { useActiveAccount } from "thirdweb/react";
 
@@ -8,107 +9,43 @@ interface UserData {
     display_name?: string;
 }
 
-const fetcher = async (url: string, options = {}) => {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.statusText}`);
-    }
-    return response.json();
-};
-
 export function useUserData() {
-    const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
-    const [walletToken, setWalletToken] = useState<string | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
-    const [prevWalletAddress, setPrevWalletAddress] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const account = useActiveAccount();
 
-    // Check and handle thirdweb active wallet ID
     useEffect(() => {
-        if (typeof window === "undefined" || !clientId) return;
-
-        const activeWalletId = localStorage.getItem("thirdweb:active-wallet-id");
-        const tokenKey = `walletToken-${clientId}`;
-
-        if (!activeWalletId || activeWalletId !== "inApp") {
-            localStorage.removeItem(tokenKey);
+        if (!account?.address) {
+            setUserData(null);
+            return;
         }
 
-        const token = localStorage.getItem(tokenKey);
-        if (token) {
-            setWalletToken(token);
-        } else {
-            setWalletToken(null);
-        }
-    }, [clientId, account?.address]);
-
-    useEffect(() => {
-        let isMounted = true;
-        let isCreatingUser = false;
-
+        const controller = new AbortController(); // Cancel request if account changes
         const fetchUserData = async () => {
-            const activeWalletAddress = account?.address;
-
-            // Avoid re-fetching if userData is already set and wallet address is the same
-            if (userData && activeWalletAddress === prevWalletAddress) {
-                setLoading(false);
-                return;
-            }
-
-            // If the wallet address has changed, clear user data
-            if (activeWalletAddress && activeWalletAddress !== prevWalletAddress) {
-                setUserData(null);
-            }
-
-            if (!walletToken || !activeWalletAddress) {
-                setLoading(false);
-                return;
-            }
             setLoading(true);
+            setError(null);
 
             try {
-                // Fetch user data from Thirdweb
-                const thirdwebData = await fetcher(
-                    "https://embedded-wallet.thirdweb.com/api/2024-05-05/accounts",
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer embedded-wallet-token:${walletToken}`,
-                            "Content-Type": "application/json",
-                            "x-client-id": clientId || "",
-                        },
-                    }
-                );
-
-                // Check if user exists in DB
-                const dbResponse = await fetch(`/api/userProfile?wallet_address=${activeWalletAddress}`);
+                const dbResponse = await fetch(`/api/userProfile?wallet_address=${account.address}`, {
+                    signal: controller.signal,
+                });
 
                 if (dbResponse.ok) {
-                    const dbUser = await dbResponse.json();
-                    if (isMounted) setUserData(dbUser);
+                    setUserData(await dbResponse.json());
                 } else if (dbResponse.status === 404) {
-                    if (isCreatingUser) return;
-                    isCreatingUser = true;
-
-                    // Create a new user
-                    const newUser = {
-                        wallet_address: activeWalletAddress,
-                        username: thirdwebData?.linkedAccounts?.[0]?.details?.name || "New User",
-                        email: thirdwebData?.linkedAccounts?.[0]?.details?.email || `user_${Math.floor(100000 + Math.random() * 900000)}@thirdwebmail.com`,
-                        profile_img_url: thirdwebData?.linkedAccounts?.[0]?.details?.picture || thirdwebData?.linkedAccounts?.[0]?.details?.avatar || "https://thirdweb.com/logo.svg",
-                    };
+                    // Create user if not found
+                    const newUser = { wallet_address: account.address };
 
                     const createUserResponse = await fetch("/api/userProfile", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(newUser),
+                        signal: controller.signal,
                     });
 
                     if (createUserResponse.ok) {
-                        const createdUser = await createUserResponse.json();
-                        if (isMounted) setUserData(createdUser);
+                        setUserData(await createUserResponse.json());
                     } else {
                         throw new Error("Failed to create user");
                     }
@@ -116,22 +53,18 @@ export function useUserData() {
                     throw new Error("Failed to fetch user data");
                 }
             } catch (err) {
-                if (isMounted) setError(err as Error);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                    setPrevWalletAddress(activeWalletAddress); // Update previous wallet address
+                if ((err as Error).name !== "AbortError") {
+                    setError(err instanceof Error ? err.message : "Unknown error");
                 }
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchUserData();
 
-        return () => {
-            isMounted = false;
-        };
-    }, [walletToken, account?.address, clientId, userData, prevWalletAddress]);
+        return () => controller.abort(); // Cleanup on unmount or account change
+    }, [account]); // ✅ Only re-run when `account` changes
 
-    // console.log({ userData });
     return { userData, loading, error, setUserData };
 }

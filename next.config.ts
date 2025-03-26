@@ -5,10 +5,10 @@ const pwaConfig = withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === "development",
   runtimeCaching: [],
   buildExcludes: [/middleware-manifest\.json$/],
-  maximumFileSizeToCacheInBytes: 3000000 // 3MB limit for cached files
+  maximumFileSizeToCacheInBytes: 3000000, // 3MB limit for cached files
 });
 
 const nextConfig: NextConfig = {

@@ -14,7 +14,9 @@ async function testDBConnection() {
   }
 }
 
-function isPrismaError(error: unknown): error is { code: string; meta?: { target: string[] } } {
+function isPrismaError(
+  error: unknown
+): error is { code: string; meta?: { target: string[] } } {
   return (
     typeof error === "object" &&
     error !== null &&
@@ -30,14 +32,13 @@ export async function POST(req: Request) {
   try {
     await testDBConnection(); // Ensure DB connection is active
 
-    const { wallet_address, username, email, profile_img_url } =
-      await req.json();
+    const { wallet_address } = await req.json();
 
     // Validate required fields
-    if (!wallet_address || !username || !email) {
+    if (!wallet_address) {
       return NextResponse.json(
         {
-          error: "Missing required fields: wallet_address, username, or email",
+          error: "Missing required fields: wallet_address",
         },
         { status: 400 }
       );
@@ -47,10 +48,6 @@ export async function POST(req: Request) {
     const newUser = await db.userProfile.create({
       data: {
         wallet_address,
-        username,
-        email,
-        profile_img_url,
-        display_name: username, // Default display name is username
       },
     });
 

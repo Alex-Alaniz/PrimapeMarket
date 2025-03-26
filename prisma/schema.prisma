@@ -4,13 +4,54 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_URL")
+  url      = env("POSTGRES_URL") // .env file se database URL lega
 }
 
 model userProfile {
-  wallet_address  String  @id @unique // Primary Key & Unique
-  username        String  @unique
-  email           String  @unique
+  wallet_address  String            @id @unique
+  username        String?
+  email           String?
   profile_img_url String?
-  display_name    String? // Optional, stores updated username if changed
+  display_name    String?
+  linked_wallets  userWallets[]
+  leaderboard     usersLeaderboard?
+}
+
+model userWallets {
+  id             Int         @id @default(autoincrement())
+  primary_wallet String // FK to userProfile(wallet_address)
+  wallet_address String      @unique // Secondary Wallet Address
+  added_at       DateTime    @default(now()) // Timestamp when wallet was linked
+  userProfile    userProfile @relation(fields: [primary_wallet], references: [wallet_address], onDelete: Cascade)
+}
+
+model walletActivity {
+  id             Int      @id @default(autoincrement())
+  wallet_address String
+  market_id      Int
+  option_index   Int? // Option selected in the market
+  shares         Decimal  @default(0)
+  amount_spent   Decimal  @default(0)
+  amount_claimed Decimal  @default(0)
+  event_type     String // "buy" or "claim"
+  timestamp      DateTime @default(now())
+}
+
+model usersLeaderboard {
+  primary_wallet String      @unique // FK to userProfile(wallet_address)
+  total_invested Decimal     @default(0)
+  total_claimed  Decimal     @default(0)
+  total_won      Int         @default(0) // Number of winning predictions
+  total_lost     Int         @default(0) // Number of losing predictions
+  pnl            Decimal     @default(0) // Computed (total_claimed - total_invested)
+  userProfile    userProfile @relation(fields: [primary_wallet], references: [wallet_address], onDelete: Cascade)
+}
+
+model markets {
+  market_id            Int      @id @default(autoincrement()) // Unique Market ID
+  question             String // Prediction question
+  end_time             DateTime // Time when market ends
+  resolved             Boolean  @default(false) // Whether the market has ended
+  winning_option_index Int? // Changed from Int? to BigInt?
+  total_pool           Decimal // Changed from Float to Decimal for better accuracy
 }
