@@ -5,7 +5,7 @@ import { inAppWallet, createWallet } from "thirdweb/wallets";
 import Image from 'next/image';
 import { ThemeToggle } from "./theme-toggle";
 import Link from "next/link";
-import { User } from "lucide-react";
+import { Award, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import SyncUserWallets from "../hooks/useSyncUserWallets";
@@ -85,6 +85,10 @@ export function Navbar() {
                         <span>Leaderboard</span>
                     </Button>
                 </Link>
+                <Link href="/earn" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary flex items-center gap-1"> {/* Added Earn link */}
+                    <Award className="h-4 w-4" />
+                    <span>Earn</span>
+                </Link> {/* Added Earn link */}
 
                 {account && (
                     <Link href="/profile">
