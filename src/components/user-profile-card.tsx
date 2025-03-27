@@ -7,14 +7,18 @@ import {
   useActiveAccount,
   AccountProvider,
   useWalletBalance,
+  useActiveWallet,
+  useConnectedWallets,
+  WalletIcon,
+  WalletProvider
 } from "thirdweb/react";
 // import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
 import {
   Copy,
-  ExternalLink,
+  // ExternalLink,
   Check,
-  Twitter as TwitterIcon,
+  // Twitter as TwitterIcon,
 } from "lucide-react";
 import { defineChain } from "thirdweb/chains";
 import { cn } from "@/lib/utils";
@@ -22,6 +26,7 @@ import { useUserData } from "@/hooks/useUserData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import Image from "next/image";
 
+import { motion } from "framer-motion";
 
 interface Profile {
   profile_img_url: string;
@@ -219,6 +224,11 @@ export function UserProfileCard() {
   const formatUsername = (name: string) => name?.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "") || "";
   const formattedPnl = pnl ?? "0";
 
+  const activeWallet = useActiveWallet();
+  const connectedWallets = useConnectedWallets();
+  console.log("Connected Wallets ==>>", { connectedWallets });
+  console.log("activeWallet ==>>", { activeWallet });
+
   return (
     <Card className="overflow-hidden min-w-[250px] flex flex-col items-center">
       <div className="relative">
@@ -272,22 +282,50 @@ export function UserProfileCard() {
                   <span className="text-muted-foreground text-xs">Profit/Loss</span>
                   <span className={cn("font-semibold text-sm", formattedPnl.startsWith("+") ? "text-green-600" : formattedPnl.startsWith("-") ? "text-red-600" : "")}>
                     {formattedPnl} APE
-                  </span>                </div>
+                  </span>
+                </div>
               </div>
 
               <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
                 Edit Profile
               </Button>
             </div>
+            <div className="mt-6 border-t pt-4 rounded-lg shadow-lg p-6">
+              <h3 className="font-semibold text-lg text-white-800">Connected Wallets</h3>
+              {connectedWallets.length > 0 ? (
+                <div className="space-y-4 mt-4">
+                  {connectedWallets.map((wallet) => (
+                    <motion.div
+                      key={wallet.id}
+                      className={`flex items-center justify-between p-3 rounded-lg transition-all duration-300 ${wallet.id === activeWallet?.id ? 'bg-blue-100 border-l-8 border-blue-500' : 'bg-gray-100'}`}
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <span className="text-gray-700 font-medium pr-2">{wallet.id}</span>
+                      <WalletProvider id={wallet.id}>
+                        <WalletIcon className="h-8 w-8 rounded-full shadow-md" />
+                      </WalletProvider>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <motion.p
+                  className="text-gray-500 text-sm mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  No wallets connected
+                </motion.p>
+              )}
+            </div>
 
-            <div className="mt-6 border-t pt-4">
+            {/* <div className="mt-6 border-t pt-4">
               <h3 className="font-medium text-sm">Connections</h3>
               <div className="flex items-center justify-between text-sm">
                 <TwitterIcon className="h-4 w-4 text-[#1D9BF0]" />
                 <span>Not connected</span>
                 <Button size="sm" variant="ghost" className="h-7 px-2"><ExternalLink className="h-3 w-3" /></Button>
               </div>
-            </div>
+            </div> */}
           </AccountProvider>
         ) : <h2 className="text-xl font-bold">Not Connected</h2>}
       </CardContent>

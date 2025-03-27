@@ -29,13 +29,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Fetch user details from Thirdweb using the active wallet address
+    // Fetch user details from Thirdweb
     const userData = await getUser({
       client: {
         clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
         secretKey: secretKey,
       },
-      walletAddress, // Use wallet from frontend
+      walletAddress,
     });
 
     if (!userData) {
@@ -50,23 +50,11 @@ export async function POST(req: Request) {
       (profile) => profile.details.address as `0x${string}`
     );
 
-    // Step 1: Check if the primary wallet exists in userProfile or userWallets
+    // Ensure primary wallet exists in userProfile
     let user = await db.userProfile.findUnique({
       where: { wallet_address: primary_wallet },
     });
 
-    if (!user) {
-      const existingWallet = await db.userWallets.findFirst({
-        where: { wallet_address: primary_wallet },
-      });
-      if (existingWallet) {
-        user = await db.userProfile.findUnique({
-          where: { wallet_address: existingWallet.primary_wallet },
-        });
-      }
-    }
-
-    // Step 2: If no user exists, create a new userProfile
     if (!user) {
       user = await db.userProfile.create({
         data: {
@@ -76,63 +64,77 @@ export async function POST(req: Request) {
       });
     }
 
-    // Step 3: Check if any externally linked wallet is already linked with another primary wallet
-    // Ensure externally linked wallets do not contain undefined or null values
-    const validWallets = externally_linked_wallets.filter(
-      (wallet) => wallet !== undefined && wallet !== null
-    );
+    // Ensure primary wallet exists in userWallets
+    const primaryWalletEntry = await db.userWallets.findUnique({
+      where: { wallet_address: primary_wallet },
+    });
 
-    if (validWallets.length > 0) {
-      const conflictingWallets = await db.userWallets.findMany({
-        where: {
-          wallet_address: { in: validWallets },
-          NOT: { primary_wallet: user.wallet_address },
+    if (!primaryWalletEntry) {
+      await db.userWallets.create({
+        data: {
+          primary_wallet,
+          wallet_address: primary_wallet,
         },
       });
-
-      if (conflictingWallets.length > 0) {
-        return NextResponse.json(
-          {
-            error:
-              "One or more externally linked wallets are already associated with a different primary wallet address.",
-          },
-          { status: 409 }
-        );
-      }
     }
 
-    // Step 4: Sync externally linked wallets
+    // Sync externally linked wallets mapped to primary wallet
+    const validWallets = externally_linked_wallets.filter(Boolean);
+
+    // Step 1: Remove conflicts - if any externally linked wallet is already linked to another primary wallet, remove it
+    if (validWallets.length > 0) {
+      await db.userWallets.deleteMany({
+        where: {
+          wallet_address: { in: validWallets },
+          NOT: { primary_wallet },
+        },
+      });
+    }
+
+    // Step 2: Remove externally linked wallets from userProfile if they exist
+    await db.userProfile.deleteMany({
+      where: { wallet_address: { in: validWallets } },
+    });
+
+    // Step 3: Remove externally linked wallets from userWallets if they exist
+    await db.userWallets.deleteMany({
+      where: { wallet_address: { in: validWallets } },
+    });
+
+    // Step 4: Fetch existing linked wallets
     const existingLinkedWallets = await db.userWallets.findMany({
-      where: { primary_wallet: user.wallet_address },
+      where: { primary_wallet },
       select: { wallet_address: true },
     });
 
     const existingWalletSet = new Set(
       existingLinkedWallets.map((w) => w.wallet_address)
     );
-    const newWallets = externally_linked_wallets.filter(
-      (wallet) => wallet && !existingWalletSet.has(wallet)
+    const newWallets = validWallets.filter(
+      (wallet) => !existingWalletSet.has(wallet)
     );
 
     // Step 5: Add new externally linked wallets
     if (newWallets.length > 0) {
       await db.userWallets.createMany({
         data: newWallets.map((wallet) => ({
-          primary_wallet: user.wallet_address,
+          primary_wallet,
           wallet_address: wallet,
         })),
       });
     }
 
-    // Step 6: Remove disconnected wallets
+    // Step 6: Remove disconnected wallets (excluding primary wallet)
     const walletsToRemove = existingLinkedWallets.filter(
       (w) =>
-        !externally_linked_wallets.includes(w.wallet_address as `0x${string}`)
+        !validWallets.includes(w.wallet_address as `0x${string}`) &&
+        w.wallet_address !== primary_wallet
     );
+
     if (walletsToRemove.length > 0) {
       await db.userWallets.deleteMany({
         where: {
-          primary_wallet: user.wallet_address,
+          primary_wallet,
           wallet_address: { in: walletsToRemove.map((w) => w.wallet_address) },
         },
       });
