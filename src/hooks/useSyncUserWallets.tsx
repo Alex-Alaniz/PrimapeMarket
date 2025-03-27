@@ -1,10 +1,12 @@
 "use client";
-import { useActiveAccount } from "thirdweb/react";
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import { useEffect } from "react";
 
 const SyncUserWallets = () => {
     const activeAccount = useActiveAccount();
-
+    const activeWalletConnectionStatus = useActiveWalletConnectionStatus();
+    // console.log("activeAccount ==>>", { activeAccount });
+    // console.log("activeWalletConnectionStatus ==>>", { activeWalletConnectionStatus });
     useEffect(() => {
         if (!activeAccount?.address) return;
 
@@ -16,7 +18,7 @@ const SyncUserWallets = () => {
             .then((res) => res.json())
             .then((data) => console.log("Synced wallet:", data))
             .catch((err) => console.error("Sync error:", err));
-    }, [activeAccount?.address]);
+    }, [activeAccount?.address, activeWalletConnectionStatus]);
 
     return null; // This component does not render anything
 }
