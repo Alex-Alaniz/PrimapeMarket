@@ -1,3 +1,22 @@
+/**
+ * API Endpoint: /api/userWallet
+ * Method: POST
+ * Description:
+ *   - Syncs a user's wallet with the database.
+ *   - Checks for conflicts where externally linked wallets are already mapped to another primary wallet.
+ *   - Ensures a wallet is not linked to multiple users.
+ *   - Adds missing wallet addresses to userProfile and userWallets.
+ *   - Handles cases where no user data is returned from Thirdweb.
+ *
+ * Request Body:
+ *   - walletAddress (string, required): The wallet address to sync.
+ *
+ * Responses:
+ *   - 200: Success messages for different cases.
+ *   - 400: Wallet address missing in request.
+ *   - 500: Internal server error.
+ */
+
 import { db } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getUser } from "thirdweb/wallets";
@@ -39,9 +58,65 @@ export async function POST(req: Request) {
     });
 
     if (!userData) {
+      // Check if wallet exists in userProfile
+      const existingUser = await db.userProfile.findUnique({
+        where: { wallet_address: walletAddress },
+      });
+
+      if (existingUser) {
+        // Also check in the userWallets table
+        const existingUserWallet = await db.userWallets.findUnique({
+          where: {
+            primary_wallet: walletAddress,
+            wallet_address: walletAddress,
+          },
+        });
+
+        if (existingUserWallet) {
+          return NextResponse.json(
+            { message: "User decentralized wallet already exists." },
+            { status: 200 }
+          );
+        }
+
+        // Map the wallet correctly if not already mapped
+        await db.userWallets.create({
+          data: {
+            primary_wallet: walletAddress,
+            wallet_address: walletAddress,
+          },
+        });
+
+        return NextResponse.json(
+          { message: "User decentralized wallet already exists." },
+          { status: 200 }
+        );
+      }
+
+      // Create entry in userProfile with no additional info
+      await db.userProfile.create({
+        data: { wallet_address: walletAddress },
+      });
+
+      // Map this wallet in userWallets
+      // await db.userWallets.create({
+      //   data: {
+      //     primary_wallet: walletAddress,
+      //     wallet_address: walletAddress,
+      //   },
+      // });
+      await db.userWallets.upsert({
+        where: { wallet_address: walletAddress },
+        update: {},
+        create: {
+          primary_wallet: walletAddress,
+          wallet_address: walletAddress,
+        },
+      });
+
       return NextResponse.json(
-        { error: "User not found on Thirdweb." },
-        { status: 404 }
+        { message: "New decentralized wallet added successfully." },
+        { status: 200 }
       );
     }
 
