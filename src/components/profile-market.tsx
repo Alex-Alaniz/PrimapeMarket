@@ -8,7 +8,7 @@ import { MarketCard } from './marketCard'
 import { useEffect, useState } from 'react'
 
 export const ProfileMarket = () => {
-    const [activeCategory, setActiveCategory] = useState('all')
+    // const [activeCategory, setActiveCategory] = useState('all')
     const [_currentCardIndex, setCurrentCardIndex] = useState(0)
     const [isPaused, _setIsPaused] = useState(false)
 
@@ -63,7 +63,7 @@ export const ProfileMarket = () => {
                                         key={index}
                                         index={index}
                                         filter="active"
-                                        category={activeCategory}
+                                        category={"all"}
                                         compact={true}
                                     />
                                 ))}
@@ -77,7 +77,7 @@ export const ProfileMarket = () => {
                                         key={index}
                                         index={index}
                                         filter="pending"
-                                        category={activeCategory}
+                                        category={"all"}
                                         compact={true}
                                     />
                                 ))}
@@ -91,7 +91,7 @@ export const ProfileMarket = () => {
                                         key={index}
                                         index={index}
                                         filter="resolved"
-                                        category={activeCategory}
+                                        category={"all"}
                                         compact={true}
                                     />
                                 ))}
