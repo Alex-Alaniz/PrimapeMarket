@@ -183,23 +183,19 @@ export function ProfileMarketTable() {
 
                 // If this is the winning option
                 if (optionIndex === winningOptionIndex) {
-                    const totalWinningShares = Number(
-                        toEther(totalSharesData[winningOptionIndex]),
-                    );
-                    let losingShares = 0;
-
+                    let totalPool = 0;
                     for (let i = 0; i < totalSharesData.length; i++) {
-                        if (i !== winningOptionIndex) {
-                            losingShares += Number(toEther(totalSharesData[i]));
-                        }
+                        totalPool += Number(toEther(totalSharesData[i]));
                     }
 
+                    const winningShares = Number(
+                        toEther(totalSharesData[winningOptionIndex]),
+                    );
+                    const losingShares = totalPool - winningShares;
+
                     const potentialWinnings =
-                        totalWinningShares > 0
-                            ? userShareAmount +
-                              (userShareAmount * losingShares) /
-                                  totalWinningShares
-                            : 0;
+                        userShareAmount +
+                        (userShareAmount * losingShares) / winningShares;
 
                     return {
                         value: potentialWinnings - userShareAmount,
@@ -208,12 +204,14 @@ export function ProfileMarketTable() {
                                 ? (potentialWinnings / userShareAmount - 1) *
                                   100
                                 : 0,
+                        label: "Profit",
                     };
                 } else {
                     // If this is a losing option
                     return {
                         value: -userShareAmount,
                         percentage: -100,
+                        label: "Loss",
                     };
                 }
             }
@@ -243,6 +241,7 @@ export function ProfileMarketTable() {
                         userShareAmount > 0
                             ? (potentialWinnings / userShareAmount - 1) * 100
                             : 0,
+                    label: "Potential Profit",
                 };
             }
         };
@@ -303,20 +302,47 @@ export function ProfileMarketTable() {
                             </div>
                         </td>
                         <td className="py-3">
-                            <div
-                                className={`text-sm ${pnl.value >= 0 ? "text-green-500" : "text-red-500"}`}
-                            >
-                                {pnl.value > 0 ? "+" : ""}
-                                {pnl.value.toFixed(3)} APE
-                            </div>
-                            {pnl.percentage !== 0 && (
-                                <div
-                                    className={`text-xs ${pnl.percentage > 0 ? "text-green-500" : "text-red-500"}`}
+                            <div className="flex flex-col">
+                                <span
+                                    className={cn(
+                                        pnl.value > 0
+                                            ? "text-green-600"
+                                            : pnl.value < 0
+                                            ? "text-red-600"
+                                            : "text-muted-foreground",
+                                        "font-medium",
+                                    )}
                                 >
-                                    {pnl.percentage > 0 ? "+" : ""}
-                                    {pnl.percentage.toFixed(2)}%
-                                </div>
-                            )}
+                                    {pnl.value === 0
+                                        ? "0.000"
+                                        : `${
+                                              pnl.value > 0 ? "+" : ""
+                                          }${pnl.value.toFixed(3)}`}{" "}
+                                    APE
+                                </span>
+                                <span
+                                    className={cn(
+                                        pnl.percentage > 0
+                                            ? "text-green-600"
+                                            : pnl.percentage < 0
+                                            ? "text-red-600"
+                                            : "text-muted-foreground",
+                                        "text-xs",
+                                    )}
+                                >
+                                    {pnl.percentage === 0
+                                        ? "0.00"
+                                        : `${
+                                              pnl.percentage > 0 ? "+" : ""
+                                          }${pnl.percentage.toFixed(2)}`}
+                                    %
+                                </span>
+                                {pnl.label && (
+                                    <span className="text-xs text-muted-foreground mt-1">
+                                        {pnl.label}
+                                    </span>
+                                )}
+                            </div>
                         </td>
                         <td className="py-3 text-right pr-4">
                             {isActive && (
