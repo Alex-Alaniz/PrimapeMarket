@@ -261,7 +261,7 @@ export function UserProfileCard() {
               <h2 className="text-xl font-bold text-center">
                 {formatUsername(profile.display_name)}
               </h2>
-              {!profile.display_name && account && (
+              {account && (
                 <div className="text-md font-medium text-center mb-1">
                   <AccountProvider address={account.address} client={client}>
                     <AccountName
