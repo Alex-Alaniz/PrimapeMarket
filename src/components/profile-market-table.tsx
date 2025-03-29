@@ -220,7 +220,7 @@ export function ProfileMarketTable() {
             // For active markets, show potential P&L if this option wins
             else {
                 let totalShares = 0;
-                let thisOptionShares = Number(
+                const thisOptionShares = Number(
                     toEther(totalSharesData[optionIndex]),
                 );
 
