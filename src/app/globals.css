@@ -96,6 +96,101 @@ body {
     --background: 0 0% 100%; /* Pure white background */
     --foreground: 0 0% 0%; /* Black text */
 
+
+/* Profile market table styles */
+.market-profile-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.market-profile-table th {
+  text-align: left;
+  color: theme('colors.muted.foreground');
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid theme('colors.border');
+}
+
+.market-profile-table td {
+  padding: 1rem;
+  border-bottom: 1px solid theme('colors.border');
+}
+
+.market-profile-table tr:hover td {
+  background-color: theme('colors.muted.DEFAULT / 5%');
+}
+
+.outcome-chip {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.outcome-yes {
+  background-color: theme('colors.emerald.500 / 10%');
+  color: theme('colors.emerald.500');
+}
+
+.outcome-no {
+  background-color: theme('colors.red.500 / 10%');
+  color: theme('colors.red.500');
+}
+
+.outcome-other {
+  background-color: theme('colors.blue.500 / 10%');
+  color: theme('colors.blue.500');
+}
+
+.profit-positive {
+  color: theme('colors.emerald.500');
+}
+
+.profit-negative {
+  color: theme('colors.red.500');
+}
+
+/* Search input in profile */
+.profile-search {
+  position: relative;
+}
+
+.profile-search input {
+  padding-left: 2.5rem;
+  background-color: theme('colors.muted.DEFAULT / 10%');
+  border: 1px solid theme('colors.border');
+}
+
+.profile-search svg {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: theme('colors.muted.foreground');
+}
+
+/* Tabs styling */
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid theme('colors.border');
+  margin-bottom: 1.5rem;
+}
+
+.profile-tab {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: theme('colors.muted.foreground');
+  cursor: pointer;
+}
+
+.profile-tab.active {
+  color: theme('colors.primary.DEFAULT');
+  border-bottom: 2px solid theme('colors.primary.DEFAULT');
+}
+
     --card: 210 100% 98%; /* Very light blue */
     --card-foreground: 0 0% 0%; /* Black text */
 
