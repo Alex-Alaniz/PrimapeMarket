@@ -11,7 +11,6 @@ import {
 import { toEther } from "thirdweb/utils";
 import { prepareContractCall } from "thirdweb";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 
 type TransactionError = {
     message?: string;
