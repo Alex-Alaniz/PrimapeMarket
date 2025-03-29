@@ -1,16 +1,14 @@
 
-import { useActiveAccount, useReadContract } from 'thirdweb/react';
-import { contract } from '@/constants/contract';
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Search } from 'lucide-react';
-import Image from 'next/image';
-import { toEther } from 'thirdweb/utils';
-import { prepareContractCall } from 'thirdweb';
-import { useSendTransaction } from 'thirdweb/react';
-import { useToast } from "./ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { useActiveAccount, useReadContract, useSendTransaction } from 'thirdweb/react';
+import { contract } from '@/constants/contract';
+import { prepareContractCall, toEther } from 'thirdweb';
 import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { useToast } from './ui/use-toast';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type TransactionError = {
     message?: string;
@@ -34,11 +32,18 @@ export function ProfileMarketTable() {
 
     // State to track which market's buy interface is expanded
     const [expandedMarketId, setExpandedMarketId] = useState<number | null>(null);
+    const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [buyAmount, setBuyAmount] = useState<string>('0.1');
 
     // Function to toggle buy interface for a specific market
     const toggleBuyInterface = (marketId: number) => {
-        setExpandedMarketId(expandedMarketId === marketId ? null : marketId);
+        if (expandedMarketId === marketId) {
+            setExpandedMarketId(null);
+            setSelectedOption(null);
+        } else {
+            setExpandedMarketId(marketId);
+            setSelectedOption(null);
+        }
     };
 
     // Function to handle share purchase
@@ -72,6 +77,7 @@ export function ProfileMarketTable() {
             
             // Close the buy interface
             setExpandedMarketId(null);
+            setSelectedOption(null);
         } catch (error: unknown) {
             const txError = error as TransactionError;
             console.error(txError);
@@ -85,6 +91,42 @@ export function ProfileMarketTable() {
         }
     };
 
+    // Function to format share numbers
+    const formatShares = (sharesInWei: bigint): string => {
+        const sharesAsNumber = Number(toEther(sharesInWei));
+        return sharesAsNumber.toFixed(2);
+    };
+
+    // Calculate P&L
+    const calculatePnL = (marketId: number, optionIndex: number, userShares: bigint[], totalShares: bigint[]) => {
+        // P&L is potential winnings if the market resolves in user's favor
+        const userSharesValue = Number(toEther(userShares[optionIndex]));
+        
+        if (userSharesValue === 0) {
+            return { value: 0, percentage: 0 };
+        }
+
+        // Calculate total shares in market
+        const totalSharesValue = totalShares.reduce((acc, shares) => acc + Number(toEther(shares)), 0);
+        
+        // Calculate P&L
+        // If user wins, they get their share plus a portion of losing shares
+        const winningShares = Number(toEther(totalShares[optionIndex]));
+        const losingShares = totalSharesValue - winningShares;
+        
+        // If there are no winners, return 0
+        if (winningShares === 0) {
+            return { value: 0, percentage: 0 };
+        }
+        
+        // Calculate potential winnings
+        const potentialWinnings = userSharesValue + (userSharesValue / winningShares) * losingShares;
+        const pnlValue = potentialWinnings - userSharesValue;
+        const pnlPercentage = (pnlValue / userSharesValue) * 100;
+        
+        return { value: pnlValue, percentage: pnlPercentage };
+    };
+
     const MarketRow = ({ marketId }: { marketId: number }) => {
         // Get market info
         const { data: marketInfo, isLoading: isLoadingMarketInfo } = useReadContract({
@@ -94,85 +136,67 @@ export function ProfileMarketTable() {
         });
 
         // Get market options
-        const { data: marketOptions } = useReadContract({
+        const { data: marketOptions, isLoading: isLoadingMarketOptions } = useReadContract({
             contract,
-            method: "function getMarketOptions(uint256 _marketId) view returns (string[] memory)",
+            method: "function getMarketOptions(uint256 _marketId) view returns (string[])",
             params: [BigInt(marketId)]
         });
 
-        // Get market total shares
-        const { data: totalSharesData } = useReadContract({
+        // Get total shares per option
+        const { data: totalSharesData, isLoading: isLoadingTotalShares } = useReadContract({
             contract,
-            method: "function getMarketTotalShares(uint256 _marketId) view returns (uint256[] memory)",
+            method: "function getMarketTotalShares(uint256 _marketId) view returns (uint256[])",
             params: [BigInt(marketId)]
         });
 
-        // Get user shares
-        const { data: userShares } = useReadContract({
+        // Get user shares per option
+        const { data: userShares, isLoading: isLoadingUserShares } = useReadContract({
             contract,
-            method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[] memory)",
-            params: [BigInt(marketId), account?.address || "0x0"]
+            method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[])",
+            params: [BigInt(marketId), account]
         });
 
-        // Skip rendering if market doesn't match current tab
-        if (!marketInfo) return null;
-        
-        const isResolved = marketInfo[2]; // resolved flag
-        const isPending = !isResolved && Number(marketInfo[1]) < Date.now() / 1000; // endTime < now
-        const isActive = !isResolved && !isPending;
-        
-        if ((selectedTab === 'active' && !isActive) || 
-            (selectedTab === 'pending' && !isPending) || 
-            (selectedTab === 'resolved' && !isResolved)) {
-            return null;
-        }
-
-        // Filter by search query if present
-        if (searchQuery && !marketInfo[0].toLowerCase().includes(searchQuery.toLowerCase())) {
-            return null;
-        }
-
-        // Calculate user's potential profit/loss for each option
-        const calculatePnL = (optionIndex: number) => {
-            if (!userShares || !totalSharesData) return { value: 0, percentage: 0 };
-            
-            const userShareAmount = Number(toEther(userShares[optionIndex]));
-            if (userShareAmount === 0) return { value: 0, percentage: 0 };
-            
-            const winningOptionIndex = isResolved ? Number(marketInfo[3]) : optionIndex;
-            
-            // If market is resolved and this is not the winning option
-            if (isResolved && optionIndex !== winningOptionIndex) {
-                return { value: -userShareAmount, percentage: -100 };
-            }
-            
-            // For active markets or winning options in resolved markets
-            const totalWinningShares = Number(toEther(totalSharesData[winningOptionIndex]));
-            const totalLosingShares = totalSharesData.reduce((sum, shares, idx) => 
-                idx !== winningOptionIndex ? sum + Number(toEther(shares)) : sum, 0
+        if (isLoadingMarketInfo || isLoadingMarketOptions || isLoadingTotalShares || isLoadingUserShares || !account) {
+            return (
+                <tr>
+                    <td colSpan={6} className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center">
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                            <span>Loading market data...</span>
+                        </div>
+                    </td>
+                </tr>
             );
-            
-            const potentialWinnings = userShareAmount + (userShareAmount * totalLosingShares) / totalWinningShares;
-            const pnl = potentialWinnings - userShareAmount;
-            const pnlPercentage = userShareAmount > 0 ? (pnl / userShareAmount) * 100 : 0;
-            
-            return { 
-                value: pnl, 
-                percentage: pnlPercentage
-            };
-        };
+        }
+
+        if (!marketInfo || !marketOptions || !totalSharesData || !userShares) {
+            return null;
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const isActive = now < Number(marketInfo[1]) && !marketInfo[2];
+        const isPending = now > Number(marketInfo[1]) && !marketInfo[2];
+        const isResolved = marketInfo[2];
+
+        // Match tab selection with market state
+        if (
+            (selectedTab === 'active' && !isActive) ||
+            (selectedTab === 'pending' && !isPending) ||
+            (selectedTab === 'resolved' && !isResolved)
+        ) {
+            return null;
+        }
 
         // For each option in the market
         const marketRows = marketOptions?.map((option, optionIndex) => {
-            const userShareAmount = userShares ? Number(toEther(userShares[optionIndex])) : 0;
-            const pnl = calculatePnL(optionIndex);
-            const sharePrice = totalSharesData && totalSharesData[optionIndex] > 0 
-                ? Number(toEther(totalSharesData[optionIndex])) / Number(totalSharesData.reduce((a, b) => a + b, 0n)) 
-                : 0;
+            const userShareAmount = Number(toEther(userShares[optionIndex]));
             
             // Only show options with user shares for this profile view
             if (userShareAmount === 0) return null;
-            
+
+            // Calculate P&L for this option
+            const pnl = calculatePnL(marketId, optionIndex, userShares, totalSharesData);
+
             return (
                 <tr key={`${marketId}-${optionIndex}`} className="border-b border-gray-800">
                     <td className="py-3 pl-4">
@@ -192,25 +216,29 @@ export function ProfileMarketTable() {
                         </div>
                     </td>
                     <td className="py-3">
-                        <div className={`text-sm font-medium px-3 py-1 rounded-full inline-block
-                            ${optionIndex === 0 ? 'bg-emerald-500/10 text-emerald-500' : 
-                              optionIndex === 1 ? 'bg-red-500/10 text-red-500' :
-                              optionIndex === 2 ? 'bg-blue-500/10 text-blue-500' :
-                              'bg-purple-500/10 text-purple-500'}`}
-                        >
+                        <div className={`outcome-chip ${
+                            option.toLowerCase().includes('yes') ? 'outcome-yes' : 
+                            option.toLowerCase().includes('no') ? 'outcome-no' : 
+                            'outcome-other'
+                        }`}>
                             {option}
                         </div>
                     </td>
-                    <td className="py-3 text-right">
-                        <div className="font-medium text-sm">{userShareAmount.toFixed(3)} APE</div>
-                        <div className="text-xs text-muted-foreground">{(userShareAmount / sharePrice).toFixed(1)} shares</div>
+                    <td className="py-3">
+                        <div className="text-sm font-medium">
+                            {userShareAmount.toFixed(3)} APE
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {formatShares(userShares[optionIndex])} shares
+                        </div>
                     </td>
-                    <td className="py-3 text-right">
-                        <div className="font-medium text-sm">{userShareAmount.toFixed(3)} APE</div>
-                        <div className="text-xs text-muted-foreground">@{sharePrice.toFixed(2)} APE/share</div>
+                    <td className="py-3">
+                        <div className="text-sm font-medium">
+                            {userShareAmount.toFixed(3)} APE
+                        </div>
                     </td>
-                    <td className="py-3 text-right">
-                        <div className={`font-medium text-sm ${pnl.value > 0 ? 'text-green-500' : pnl.value < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                    <td className="py-3">
+                        <div className={`text-sm font-medium ${pnl.value > 0 ? 'text-emerald-500' : pnl.value < 0 ? 'text-red-500' : ''}`}>
                             {pnl.value > 0 ? '+' : ''}{pnl.value.toFixed(3)} APE
                         </div>
                         {pnl.percentage !== 0 && (
@@ -224,7 +252,10 @@ export function ProfileMarketTable() {
                             <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => toggleBuyInterface(marketId)}
+                                onClick={() => {
+                                    toggleBuyInterface(marketId);
+                                    setSelectedOption(optionIndex);
+                                }}
                             >
                                 Buy
                             </Button>
@@ -234,7 +265,8 @@ export function ProfileMarketTable() {
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => {
-                                    // Claim function would go here
+                                    // Claim function
+                                    handleClaimWinnings(marketId);
                                 }}
                             >
                                 Claim
@@ -245,47 +277,47 @@ export function ProfileMarketTable() {
             );
         }).filter(Boolean);
 
-        // If no options have user shares, don't render this market
-        if (!marketRows || marketRows.length === 0) return null;
-
         // Buy interface (expanded when user clicks Buy)
         const buyInterfaceRow = expandedMarketId === marketId && (
             <tr className="bg-slate-900">
                 <td colSpan={6} className="p-4">
                     <div className="flex flex-col gap-3">
-                        <div className="text-sm font-medium">Buy shares in {marketInfo[0]}</div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {marketOptions?.map((option, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-800">
-                                    <span className="text-sm">{option}</span>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            type="number"
-                                            value={buyAmount}
-                                            onChange={(e) => setBuyAmount(e.target.value)}
-                                            className="w-24 text-right"
-                                            min="0.01"
-                                            step="0.01"
-                                        />
-                                        <span className="text-xs">APE</span>
-                                        <Button 
-                                            size="sm" 
-                                            onClick={() => handleBuyShares(marketId, idx)}
-                                            disabled={isBuying !== null}
-                                        >
-                                            {isBuying === idx ? (
-                                                <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Buying</>
-                                            ) : 'Buy'}
-                                        </Button>
-                                    </div>
+                        <div className="text-sm font-medium">Buy more shares in {marketInfo[0]}</div>
+                        
+                        {/* Only show the selected option */}
+                        {selectedOption !== null && (
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800">
+                                <span className="text-sm">{marketOptions[selectedOption]}</span>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="number"
+                                        value={buyAmount}
+                                        onChange={(e) => setBuyAmount(e.target.value)}
+                                        className="w-24 text-right"
+                                        min="0.01"
+                                        step="0.01"
+                                    />
+                                    <span className="text-xs">APE</span>
+                                    <Button 
+                                        size="sm"
+                                        onClick={() => handleBuyShares(marketId, selectedOption)}
+                                        disabled={isBuying !== null}
+                                    >
+                                        {isBuying === selectedOption ? (
+                                            <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Buying</>
+                                        ) : 'Buy'}
+                                    </Button>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </td>
             </tr>
         );
 
+        // If no options have user shares, don't render this market
+        if (!marketRows || marketRows.length === 0) return null;
+        
         return (
             <>
                 {marketRows}
@@ -294,73 +326,98 @@ export function ProfileMarketTable() {
         );
     };
 
+    // Function to handle claiming winnings
+    const handleClaimWinnings = async (marketId: number) => {
+        if (!account) {
+            toast({
+                title: "Wallet not connected",
+                description: "Please connect your wallet to claim winnings.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const transaction = await prepareContractCall({
+                contract,
+                method: "function claimWinnings(uint256 _marketId)",
+                params: [BigInt(marketId)],
+            });
+
+            await sendTransaction(transaction);
+
+            toast({
+                title: "Success!",
+                description: "Claimed your winnings successfully.",
+            });
+        } catch (error: unknown) {
+            const txError = error as TransactionError;
+            console.error(txError);
+            toast({
+                title: "Failed to claim winnings",
+                description: txError.message || "There was an error claiming your winnings.",
+                variant: "destructive",
+            });
+        }
+    };
+
     return (
-        <div className="w-full">
-            <div className="mb-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                    <div className="flex border-b border-gray-800 w-full sm:w-auto">
-                        <button 
-                            className={`px-4 py-2 font-medium text-sm ${selectedTab === 'active' ? 'border-b-2 border-primary text-primary' : 'text-gray-400'}`}
-                            onClick={() => setSelectedTab('active')}
-                        >
-                            Current Predictions
-                        </button>
-                        <button 
-                            className={`px-4 py-2 font-medium text-sm ${selectedTab === 'pending' ? 'border-b-2 border-primary text-primary' : 'text-gray-400'}`}
-                            onClick={() => setSelectedTab('pending')}
-                        >
-                            Past Predictions
-                        </button>
-                        <button 
-                            className={`px-4 py-2 font-medium text-sm ${selectedTab === 'resolved' ? 'border-b-2 border-primary text-primary' : 'text-gray-400'}`}
-                            onClick={() => setSelectedTab('resolved')}
-                        >
-                            History
-                        </button>
-                    </div>
-                    <div className="relative w-full sm:w-auto">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search positions..."
-                            className="w-full sm:w-[250px] pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                </div>
+        <>
+            <div className="flex justify-between items-center mb-4">
+                <Input
+                    placeholder="Search markets..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="max-w-xs"
+                />
             </div>
 
-            {isLoadingMarketCount ? (
-                <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead className="text-left text-gray-400 border-b border-gray-800">
-                            <tr>
-                                <th className="py-3 pl-4 font-medium">Market</th>
-                                <th className="py-3 font-medium">Outcome</th>
-                                <th className="py-3 font-medium text-right">Bet</th>
-                                <th className="py-3 font-medium text-right">Current value</th>
-                                <th className="py-3 font-medium text-right">P&L</th>
-                                <th className="py-3 font-medium text-right pr-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Array.from({ length: Number(marketCount) || 0 }, (_, index) => (
-                                <MarketRow key={index} marketId={index} />
-                            ))}
-                        </tbody>
-                    </table>
-                    {Array.from({ length: Number(marketCount) || 0 }).length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
-                            No predictions found
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+                <TabsList className="mb-4">
+                    <TabsTrigger value="active">Current Predictions</TabsTrigger>
+                    <TabsTrigger value="pending">Past Predictions</TabsTrigger>
+                    <TabsTrigger value="resolved">History</TabsTrigger>
+                </TabsList>
+
+                {['active', 'pending', 'resolved'].map((tab) => (
+                    <TabsContent key={tab} value={tab}>
+                        <div className="rounded-md overflow-hidden">
+                            <table className="w-full market-profile-table">
+                                <thead>
+                                    <tr>
+                                        <th>Market</th>
+                                        <th>Outcome</th>
+                                        <th>Bet</th>
+                                        <th>Current value</th>
+                                        <th>P&L</th>
+                                        <th className="text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {isLoadingMarketCount ? (
+                                        <tr>
+                                            <td colSpan={6} className="text-center py-8">
+                                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                                                <div className="mt-2">Loading markets...</div>
+                                            </td>
+                                        </tr>
+                                    ) : marketCount && Number(marketCount) > 0 ? (
+                                        Array.from({ length: Number(marketCount) }, (_, i) => (
+                                            <MarketRow key={i} marketId={i} />
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="text-center py-8">
+                                                No markets found
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
-                </div>
-            )}
-        </div>
+                    </TabsContent>
+                ))}
+            </Tabs>
+        </>
     );
 }
