@@ -12,6 +12,7 @@ import { toEther } from "thirdweb/utils";
 import { prepareContractCall } from "thirdweb";
 import Image from "next/image";
 import { useState } from "react";
+import { cn } from "@/lib/utils"; // Added import for cn utility
 
 type TransactionError = {
     message?: string;
