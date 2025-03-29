@@ -10,7 +10,8 @@ import {
   useActiveWallet,
   useConnectedWallets,
   WalletIcon,
-  WalletProvider
+  WalletProvider,
+  AccountName
 } from "thirdweb/react";
 // import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -257,7 +258,20 @@ export function UserProfileCard() {
         {account ? (
           <AccountProvider address={account.address} client={client}>
             <div>
-              <h2 className="text-xl font-bold text-center">{formatUsername(profile.display_name) || shortenAddress(account.address)}</h2>
+              <h2 className="text-xl font-bold text-center">
+                {formatUsername(profile.display_name)}
+              </h2>
+              {account && (
+                <div className="text-md font-medium text-center mb-1">
+                  <AccountProvider address={account.address} client={client}>
+                    <AccountName
+                      socialType="ens"
+                      loadingComponent={<span>Loading ENS...</span>}
+                      fallbackComponent={<span>{shortenAddress(account.address)}</span>}
+                    />
+                  </AccountProvider>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground text-center">{profile.email === "No User Email" ? "" : profile.email}</p>
               {/* <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p> */}
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
