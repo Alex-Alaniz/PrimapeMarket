@@ -10,7 +10,8 @@ import {
   useActiveWallet,
   useConnectedWallets,
   WalletIcon,
-  WalletProvider
+  WalletProvider,
+  AccountName
 } from "thirdweb/react";
 // import { defineChain } from "thirdweb/chains";
 import { client } from "@/app/client";
