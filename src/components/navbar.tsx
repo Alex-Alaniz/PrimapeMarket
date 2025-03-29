@@ -151,8 +151,9 @@ export function Navbar() {
                     wallets={wallets}
                     connectModal={{
                         size: "compact",
-                        title: "Primapes Markets",
-                        titleIcon:"https://www.apeforge.io/images/apechain-icon-white.svg",
+                        title: "Primape Markets",
+                        titleIcon:
+                            "https://www.apeforge.io/images/apechain-icon-white.svg",
                         showThirdwebBranding: false,
                     }}
                     connectButton={{
@@ -226,7 +227,7 @@ export function Navbar() {
                                 wallets={wallets}
                                 connectModal={{
                                     size: "compact",
-                                    title: "Primapes Markets",
+                                    title: "Primape Markets",
                                     titleIcon:
                                         "https://www.apeforge.io/images/apechain-icon-white.svg",
                                     showThirdwebBranding: false,
