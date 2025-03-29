@@ -1,14 +1,17 @@
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
-import { contract } from "@/constants/contract"
-import { Search, Loader2 } from "lucide-react"
-import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react"
-import { toEther } from "thirdweb/utils"
-import { prepareContractCall } from "thirdweb"
-import Image from "next/image"
-import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { contract } from "@/constants/contract";
+import { Search, Loader2 } from "lucide-react";
+import {
+    useActiveAccount,
+    useReadContract,
+    useSendTransaction,
+} from "thirdweb/react";
+import { toEther } from "thirdweb/utils";
+import { prepareContractCall } from "thirdweb";
+import Image from "next/image";
+import { useState, useEffect } from "react";
 
 type TransactionError = {
     message?: string;
@@ -18,26 +21,34 @@ type TransactionError = {
 export function ProfileMarketTable() {
     const account = useActiveAccount();
     const { toast } = useToast();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTab, setSelectedTab] = useState('active');
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedTab, setSelectedTab] = useState("active");
     const [isBuying, setIsBuying] = useState<number | null>(null);
     const { mutate: sendTransaction } = useSendTransaction();
 
     // Get market count
-    const { data: marketCount, isLoading: isLoadingMarketCount } = useReadContract({
-        contract,
-        method: "function marketCount() view returns (uint256)",
-        params: []
-    });
+    const { data: marketCount, isLoading: isLoadingMarketCount } =
+        useReadContract({
+            contract,
+            method: "function marketCount() view returns (uint256)",
+            params: [],
+        });
 
     // State to track which market's buy interface is expanded
-    const [expandedMarketId, setExpandedMarketId] = useState<number | null>(null);
-    const [buyAmount, setBuyAmount] = useState<string>('0.1');
-    const [expandedOptionIndex, setExpandedOptionIndex] = useState<number | null>(null);
+    const [expandedMarketId, setExpandedMarketId] = useState<number | null>(
+        null,
+    );
+    const [buyAmount, setBuyAmount] = useState<string>("0.1");
+    const [expandedOptionIndex, setExpandedOptionIndex] = useState<
+        number | null
+    >(null);
 
     // Function to toggle buy interface for a specific market and option
     const toggleBuyInterface = (marketId: number, optionIndex: number) => {
-        if (expandedMarketId === marketId && expandedOptionIndex === optionIndex) {
+        if (
+            expandedMarketId === marketId &&
+            expandedOptionIndex === optionIndex
+        ) {
             setExpandedMarketId(null);
             setExpandedOptionIndex(null);
         } else {
@@ -59,8 +70,8 @@ export function ProfileMarketTable() {
 
         setIsBuying(optionIndex);
         try {
-            const amountInWei = BigInt(parseFloat(buyAmount) * 10**18);
-            
+            const amountInWei = BigInt(parseFloat(buyAmount) * 10 ** 18);
+
             const transaction = await prepareContractCall({
                 contract,
                 method: "function buyShares(uint256 _marketId, uint256 _optionIndex)",
@@ -74,7 +85,7 @@ export function ProfileMarketTable() {
                 title: "Success!",
                 description: `Bought ${buyAmount} APE worth of shares.`,
             });
-            
+
             // Close the buy interface
             setExpandedMarketId(null);
             setExpandedOptionIndex(null);
@@ -83,7 +94,8 @@ export function ProfileMarketTable() {
             console.error(txError);
             toast({
                 title: "Failed to buy shares",
-                description: txError.message || "There was an error buying shares.",
+                description:
+                    txError.message || "There was an error buying shares.",
                 variant: "destructive",
             });
         } finally {
@@ -93,35 +105,45 @@ export function ProfileMarketTable() {
 
     const MarketRow = ({ marketId }: { marketId: number }) => {
         // Get market info
-        const { data: marketInfo, isLoading: isLoadingMarketInfo } = useReadContract({
-            contract,
-            method: "function getMarketInfo(uint256 _marketId) view returns (string question, uint256 endTime, bool resolved, uint256 winningOptionIndex)",
-            params: [BigInt(marketId)]
-        });
+        const { data: marketInfo, isLoading: isLoadingMarketInfo } =
+            useReadContract({
+                contract,
+                method: "function getMarketInfo(uint256 _marketId) view returns (string question, uint256 endTime, bool resolved, uint256 winningOptionIndex)",
+                params: [BigInt(marketId)],
+            });
 
         // Get market options
-        const { data: marketOptions, isLoading: isLoadingMarketOptions } = useReadContract({
-            contract,
-            method: "function getMarketOptions(uint256 _marketId) view returns (string[])",
-            params: [BigInt(marketId)]
-        });
+        const { data: marketOptions, isLoading: isLoadingMarketOptions } =
+            useReadContract({
+                contract,
+                method: "function getMarketOptions(uint256 _marketId) view returns (string[])",
+                params: [BigInt(marketId)],
+            });
 
         // Get total shares for each option
-        const { data: totalSharesData, isLoading: isLoadingTotalShares } = useReadContract({
-            contract,
-            method: "function getMarketTotalShares(uint256 _marketId) view returns (uint256[])",
-            params: [BigInt(marketId)]
-        });
+        const { data: totalSharesData, isLoading: isLoadingTotalShares } =
+            useReadContract({
+                contract,
+                method: "function getMarketTotalShares(uint256 _marketId) view returns (uint256[])",
+                params: [BigInt(marketId)],
+            });
 
         // Get user shares
-        const { data: userShares, isLoading: isLoadingUserShares } = useReadContract({
-            contract,
-            method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[])",
-            params: [BigInt(marketId), account?.address as string]
-        });
+        const { data: userShares, isLoading: isLoadingUserShares } =
+            useReadContract({
+                contract,
+                method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[])",
+                params: [BigInt(marketId), account?.address as string],
+            });
 
         // If any data is loading, show a placeholder
-        if (isLoadingMarketInfo || isLoadingMarketOptions || isLoadingTotalShares || isLoadingUserShares || !marketInfo) {
+        if (
+            isLoadingMarketInfo ||
+            isLoadingMarketOptions ||
+            isLoadingTotalShares ||
+            isLoadingUserShares ||
+            !marketInfo
+        ) {
             return null;
         }
 
@@ -133,154 +155,202 @@ export function ProfileMarketTable() {
 
         // Filter based on tab
         if (
-            (selectedTab === 'active' && !isActive) ||
-            (selectedTab === 'pending' && !isPending) ||
-            (selectedTab === 'resolved' && !isResolved)
+            (selectedTab === "active" && !isActive) ||
+            (selectedTab === "pending" && !isPending) ||
+            (selectedTab === "resolved" && !isResolved)
         ) {
             return null;
         }
 
         // Filter based on search
-        if (searchQuery && !marketInfo[0].toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (
+            searchQuery &&
+            !marketInfo[0].toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
             return null;
         }
 
         // Calculate P&L for each option
         const calculatePnL = (optionIndex: number) => {
-            if (!userShares || !totalSharesData) return { value: 0, percentage: 0 };
-            
+            if (!userShares || !totalSharesData)
+                return { value: 0, percentage: 0 };
+
             const userShareAmount = Number(toEther(userShares[optionIndex]));
-            
+
             // If market is resolved
             if (isResolved) {
                 const winningOptionIndex = Number(marketInfo[3]);
-                
+
                 // If this is the winning option
                 if (optionIndex === winningOptionIndex) {
-                    const totalWinningShares = Number(toEther(totalSharesData[winningOptionIndex]));
+                    const totalWinningShares = Number(
+                        toEther(totalSharesData[winningOptionIndex]),
+                    );
                     let losingShares = 0;
-                    
+
                     for (let i = 0; i < totalSharesData.length; i++) {
                         if (i !== winningOptionIndex) {
                             losingShares += Number(toEther(totalSharesData[i]));
                         }
                     }
-                    
-                    const potentialWinnings = totalWinningShares > 0
-                        ? userShareAmount + (userShareAmount * losingShares) / totalWinningShares
-                        : 0;
-                    
+
+                    const potentialWinnings =
+                        totalWinningShares > 0
+                            ? userShareAmount +
+                              (userShareAmount * losingShares) /
+                                  totalWinningShares
+                            : 0;
+
                     return {
                         value: potentialWinnings - userShareAmount,
-                        percentage: userShareAmount > 0 ? ((potentialWinnings / userShareAmount) - 1) * 100 : 0
+                        percentage:
+                            userShareAmount > 0
+                                ? (potentialWinnings / userShareAmount - 1) *
+                                  100
+                                : 0,
                     };
                 } else {
                     // If this is a losing option
                     return {
                         value: -userShareAmount,
-                        percentage: -100
+                        percentage: -100,
                     };
                 }
-            } 
+            }
             // For active markets, show potential P&L if this option wins
             else {
                 let totalShares = 0;
-                let thisOptionShares = Number(toEther(totalSharesData[optionIndex]));
-                
+                let thisOptionShares = Number(
+                    toEther(totalSharesData[optionIndex]),
+                );
+
                 for (let i = 0; i < totalSharesData.length; i++) {
                     totalShares += Number(toEther(totalSharesData[i]));
                 }
-                
+
                 const otherOptionsShares = totalShares - thisOptionShares;
-                
-                const potentialWinnings = thisOptionShares > 0
-                    ? userShareAmount + (userShareAmount * otherOptionsShares) / thisOptionShares
-                    : 0;
-                
+
+                const potentialWinnings =
+                    thisOptionShares > 0
+                        ? userShareAmount +
+                          (userShareAmount * otherOptionsShares) /
+                              thisOptionShares
+                        : 0;
+
                 return {
                     value: potentialWinnings - userShareAmount,
-                    percentage: userShareAmount > 0 ? ((potentialWinnings / userShareAmount) - 1) * 100 : 0
+                    percentage:
+                        userShareAmount > 0
+                            ? (potentialWinnings / userShareAmount - 1) * 100
+                            : 0,
                 };
             }
         };
 
         // For each option in the market
-        const marketRows = marketOptions?.map((option, optionIndex) => {
-            const userShareAmount = userShares ? Number(toEther(userShares[optionIndex])) : 0;
-            const pnl = calculatePnL(optionIndex);
-            
-            // Only show options with user shares for this profile view
-            if (userShareAmount === 0) return null;
-            
-            // Format shares to avoid exponential notation
-            const formattedShares = userShareAmount.toLocaleString(undefined, { 
-                maximumFractionDigits: 0 
-            });
-            
-            return (
-                <tr key={`${marketId}-${optionIndex}`} className="border-b border-gray-800">
-                    <td className="py-3 pl-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 relative overflow-hidden rounded-md">
-                                <Image 
-                                    src={`/images/default-market.jpg`}
-                                    alt={marketInfo[0]}
-                                    width={32} 
-                                    height={32}
-                                    className="object-cover"
-                                />
+        const marketRows = marketOptions
+            ?.map((option, optionIndex) => {
+                const userShareAmount = userShares
+                    ? Number(toEther(userShares[optionIndex]))
+                    : 0;
+                const pnl = calculatePnL(optionIndex);
+
+                // Only show options with user shares for this profile view
+                if (userShareAmount === 0) return null;
+
+                // Format shares to avoid exponential notation
+                const formattedShares = userShareAmount.toLocaleString(
+                    undefined,
+                    {
+                        maximumFractionDigits: 0,
+                    },
+                );
+
+                return (
+                    <tr
+                        key={`${marketId}-${optionIndex}`}
+                        className="border-b border-gray-800"
+                    >
+                        <td className="py-3 pl-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 relative overflow-hidden rounded-md">
+                                    <Image
+                                        src={`/images/default-market.jpg`}
+                                        alt={marketInfo[0]}
+                                        width={32}
+                                        height={32}
+                                        className="object-cover"
+                                    />
+                                </div>
+                                <div className="text-sm">
+                                    <div className="font-medium truncate max-w-[180px]">
+                                        {marketInfo[0]}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {option}
+                                    </div>
+                                </div>
                             </div>
+                        </td>
+                        <td className="py-3">
                             <div className="text-sm">
-                                <div className="font-medium truncate max-w-[180px]">{marketInfo[0]}</div>
-                                <div className="text-xs text-muted-foreground">{option}</div>
+                                {formattedShares} shares
                             </div>
-                        </div>
-                    </td>
-                    <td className="py-3">
-                        <div className="text-sm">
-                            {formattedShares} shares
-                        </div>
-                    </td>
-                    <td className="py-3">
-                        <div className="text-sm">
-                            {userShareAmount.toFixed(3)} APE
-                        </div>
-                    </td>
-                    <td className="py-3">
-                        <div className={`text-sm ${pnl.value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {pnl.value > 0 ? '+' : ''}{pnl.value.toFixed(3)} APE
-                        </div>
-                        {pnl.percentage !== 0 && (
-                            <div className={`text-xs ${pnl.percentage > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                {pnl.percentage > 0 ? '+' : ''}{pnl.percentage.toFixed(2)}%
+                        </td>
+                        <td className="py-3">
+                            <div className="text-sm">
+                                {userShareAmount.toFixed(3)} APE
                             </div>
-                        )}
-                    </td>
-                    <td className="py-3 text-right pr-4">
-                        {isActive && (
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => toggleBuyInterface(marketId, optionIndex)}
+                        </td>
+                        <td className="py-3">
+                            <div
+                                className={`text-sm ${pnl.value >= 0 ? "text-green-500" : "text-red-500"}`}
                             >
-                                Buy
-                            </Button>
-                        )}
-                        {isResolved && Number(marketInfo[3]) === optionIndex && userShareAmount > 0 && (
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                    // Claim function would go here
-                                }}
-                            >
-                                Claim
-                            </Button>
-                        )}
-                    </td>
-                </tr>
-            );
-        }).filter(Boolean);
+                                {pnl.value > 0 ? "+" : ""}
+                                {pnl.value.toFixed(3)} APE
+                            </div>
+                            {pnl.percentage !== 0 && (
+                                <div
+                                    className={`text-xs ${pnl.percentage > 0 ? "text-green-500" : "text-red-500"}`}
+                                >
+                                    {pnl.percentage > 0 ? "+" : ""}
+                                    {pnl.percentage.toFixed(2)}%
+                                </div>
+                            )}
+                        </td>
+                        <td className="py-3 text-right pr-4">
+                            {isActive && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        toggleBuyInterface(
+                                            marketId,
+                                            optionIndex,
+                                        )
+                                    }
+                                >
+                                    Buy
+                                </Button>
+                            )}
+                            {isResolved &&
+                                Number(marketInfo[3]) === optionIndex &&
+                                userShareAmount > 0 && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            // Claim function would go here
+                                        }}
+                                    >
+                                        Claim
+                                    </Button>
+                                )}
+                        </td>
+                    </tr>
+                );
+            })
+            .filter(Boolean);
 
         // If no options have user shares, don't render this market
         if (!marketRows || marketRows.length === 0) return null;
@@ -290,28 +360,45 @@ export function ProfileMarketTable() {
             <tr className="bg-slate-900">
                 <td colSpan={6} className="p-4">
                     <div className="flex flex-col gap-3">
-                        <div className="text-sm font-medium">Buy more shares in {marketOptions?.[expandedOptionIndex || 0]}</div>
+                        <div className="text-sm font-medium">
+                            Buy more shares in{" "}
+                            {marketOptions?.[expandedOptionIndex || 0]}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-1 gap-3">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800">
-                                <span className="text-sm">{marketOptions?.[expandedOptionIndex || 0]}</span>
+                                <span className="text-sm">
+                                    {marketOptions?.[expandedOptionIndex || 0]}
+                                </span>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="number"
                                         value={buyAmount}
-                                        onChange={(e) => setBuyAmount(e.target.value)}
+                                        onChange={(e) =>
+                                            setBuyAmount(e.target.value)
+                                        }
                                         className="w-24 text-right"
-                                        min="0.01"
-                                        step="0.01"
+                                        min="1.00"
+                                        step="1.00"
                                     />
                                     <span className="text-xs">APE</span>
-                                    <Button 
+                                    <Button
                                         size="sm"
-                                        onClick={() => handleBuyShares(marketId, expandedOptionIndex || 0)}
+                                        onClick={() =>
+                                            handleBuyShares(
+                                                marketId,
+                                                expandedOptionIndex || 0,
+                                            )
+                                        }
                                         disabled={isBuying !== null}
                                     >
                                         {isBuying === expandedOptionIndex ? (
-                                            <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Buying</>
-                                        ) : 'Buy'}
+                                            <>
+                                                <Loader2 className="mr-2 h-3 w-3 animate-spin" />{" "}
+                                                Buying
+                                            </>
+                                        ) : (
+                                            "Buy"
+                                        )}
                                     </Button>
                                 </div>
                             </div>
@@ -345,23 +432,33 @@ export function ProfileMarketTable() {
                     </div>
                     <div className="flex rounded-md overflow-hidden">
                         <Button
-                            variant={selectedTab === 'active' ? 'default' : 'outline'}
+                            variant={
+                                selectedTab === "active" ? "default" : "outline"
+                            }
                             className="rounded-none rounded-l-md"
-                            onClick={() => setSelectedTab('active')}
+                            onClick={() => setSelectedTab("active")}
                         >
                             Active
                         </Button>
                         <Button
-                            variant={selectedTab === 'pending' ? 'default' : 'outline'}
+                            variant={
+                                selectedTab === "pending"
+                                    ? "default"
+                                    : "outline"
+                            }
                             className="rounded-none"
-                            onClick={() => setSelectedTab('pending')}
+                            onClick={() => setSelectedTab("pending")}
                         >
                             Pending
                         </Button>
                         <Button
-                            variant={selectedTab === 'resolved' ? 'default' : 'outline'}
+                            variant={
+                                selectedTab === "resolved"
+                                    ? "default"
+                                    : "outline"
+                            }
                             className="rounded-none rounded-r-md"
-                            onClick={() => setSelectedTab('resolved')}
+                            onClick={() => setSelectedTab("resolved")}
                         >
                             Resolved
                         </Button>
@@ -387,9 +484,12 @@ export function ProfileMarketTable() {
                             </tr>
                         </thead>
                         <tbody>
-                            {Array.from({ length: Number(marketCount) || 0 }, (_, i) => (
-                                <MarketRow key={i} marketId={i} />
-                            ))}
+                            {Array.from(
+                                { length: Number(marketCount) || 0 },
+                                (_, i) => (
+                                    <MarketRow key={i} marketId={i} />
+                                ),
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -397,8 +497,8 @@ export function ProfileMarketTable() {
 
             {!isLoadingMarketCount && (
                 <div className="text-center text-sm text-muted-foreground p-4">
-                    {marketCount && Number(marketCount) > 0 
-                        ? "These are all the predictions you've participated in."
+                    {marketCount && Number(marketCount) > 0
+                        ? "These are all your active predictions."
                         : "You haven't made any predictions yet."}
                 </div>
             )}
