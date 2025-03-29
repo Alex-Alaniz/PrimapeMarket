@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLeaderboardData } from "@/hooks/useLeaderboardData";
 import { cn } from "@/lib/utils";
 import { useActiveAccount } from "thirdweb/react";
+import Link from "next/link";
 
 export function Leaderboard() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,11 +16,14 @@ export function Leaderboard() {
   const { data, isLoading } = useLeaderboardData();
   const account = useActiveAccount();
 
+  // Sort data based on realizedPnL in descending order
+  const sortedData = data ? [...data].sort((a, b) => Number(b.realizedPnL) - Number(a.realizedPnL)) : [];
+
   // Calculate pagination
-  const totalPages = Math.ceil((data?.length || 0) / itemsPerPage);
+  const totalPages = Math.ceil((sortedData.length || 0) / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentData = data?.slice(startIndex, endIndex) || [];
+  const currentData = sortedData.slice(startIndex, endIndex) || [];
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -62,16 +66,20 @@ export function Leaderboard() {
                 ))
               ) : (
                 currentData.map((item, index) => (
-                  <TableRow 
+                  <TableRow
                     key={index}
                     className={cn(
                       item.isHighlighted || (account && item.address === account.address) ? "bg-primary/5" : ""
                     )}
                   >
-                    <TableCell className="font-medium">{item.rank}</TableCell>
+                    <TableCell className="font-medium">{startIndex + index + 1}</TableCell>
                     <TableCell>
-                      {account && item.address === account.address ? 
-                        "You" : 
+                      {account && item.address === account.address ? <Link
+                        href="/profile"
+                        className="text-blue-600 hover:underline cursor-pointer font-bold text-lg">
+                        You
+                      </Link>
+                        :
                         item.address.substring(0, 6) + "..." + item.address.substring(item.address.length - 4)}
                     </TableCell>
                     <TableCell className="text-right">{(Number(item.totalWagered) / 1e18).toFixed(2)} APE</TableCell>
@@ -92,7 +100,7 @@ export function Leaderboard() {
 
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1}-{Math.min(endIndex, data?.length || 0)} of {data?.length || 0} entries
+            Showing {startIndex + 1}-{Math.min(endIndex, sortedData.length || 0)} of {sortedData.length || 0} entries
           </div>
           <div className="flex items-center space-x-2">
             <Button
