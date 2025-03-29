@@ -28,54 +28,54 @@ function isPrismaError(
 /**
  * 🔹 CREATE (POST) - Add a new user profile.
  */
-export async function POST(req: Request) {
-  try {
-    await testDBConnection(); // Ensure DB connection is active
+// export async function POST(req: Request) {
+//   try {
+//     await testDBConnection(); // Ensure DB connection is active
 
-    const { wallet_address } = await req.json();
+//     const { wallet_address } = await req.json();
 
-    // Validate required fields
-    if (!wallet_address) {
-      return NextResponse.json(
-        {
-          error: "Missing required fields: wallet_address",
-        },
-        { status: 400 }
-      );
-    }
+//     // Validate required fields
+//     if (!wallet_address) {
+//       return NextResponse.json(
+//         {
+//           error: "Missing required fields: wallet_address",
+//         },
+//         { status: 400 }
+//       );
+//     }
 
-    // Create a new user
-    const newUser = await db.userProfile.create({
-      data: {
-        wallet_address,
-      },
-    });
+//     // Create a new user
+//     const newUser = await db.userProfile.create({
+//       data: {
+//         wallet_address,
+//       },
+//     });
 
-    return NextResponse.json(newUser, { status: 201 });
-  } catch (error: unknown) {
-    console.error("Error creating user:", error);
+//     return NextResponse.json(newUser, { status: 201 });
+//   } catch (error: unknown) {
+//     console.error("Error creating user:", error);
 
-    // ✅ Check if it's a Prisma error
-    if (isPrismaError(error) && error.code === "P2002") {
-      const field = error.meta?.target?.[0]; // Extract field causing the error
+//     // ✅ Check if it's a Prisma error
+//     if (isPrismaError(error) && error.code === "P2002") {
+//       const field = error.meta?.target?.[0]; // Extract field causing the error
 
-      let errorMessage = "A user with this information already exists.";
-      if (field === "username") errorMessage = "Username is already taken.";
-      if (field === "email") errorMessage = "Email is already registered.";
-      if (field === "wallet_address")
-        errorMessage = "Wallet address is already linked to an account.";
+//       let errorMessage = "A user with this information already exists.";
+//       if (field === "username") errorMessage = "Username is already taken.";
+//       if (field === "email") errorMessage = "Email is already registered.";
+//       if (field === "wallet_address")
+//         errorMessage = "Wallet address is already linked to an account.";
 
-      return NextResponse.json({ error: errorMessage }, { status: 409 }); // HTTP 409 Conflict
-    }
+//       return NextResponse.json({ error: errorMessage }, { status: 409 }); // HTTP 409 Conflict
+//     }
 
-    // ✅ Ensure error is an instance of Error before accessing message
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+//     // ✅ Ensure error is an instance of Error before accessing message
+//     if (error instanceof Error) {
+//       return NextResponse.json({ error: error.message }, { status: 500 });
+//     }
 
-    return NextResponse.json({ error: "Error creating user" }, { status: 500 });
-  }
-}
+//     return NextResponse.json({ error: "Error creating user" }, { status: 500 });
+//   }
+// }
 
 /**
  * 🔹 READ (GET) - Fetch user by wallet address.

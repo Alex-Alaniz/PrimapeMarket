@@ -74,7 +74,10 @@ export async function POST(req: Request) {
 
         if (existingUserWallet) {
           return NextResponse.json(
-            { message: "User decentralized wallet already exists." },
+            {
+              message:
+                "User decentralized wallet already exists just added into userWallets.",
+            },
             { status: 200 }
           );
         }
@@ -222,7 +225,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error handling user wallets:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      // { error: "Internal Server Error" },
       { status: 500 }
     );
   }

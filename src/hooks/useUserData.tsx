@@ -33,22 +33,22 @@ export function useUserData() {
 
                 if (dbResponse.ok) {
                     setUserData(await dbResponse.json());
-                } else if (dbResponse.status === 404) {
-                    // Create user if not found
-                    const newUser = { wallet_address: account.address };
+                    // } else if (dbResponse.status === 404) {
+                    //     // Create user if not found
+                    //     const newUser = { wallet_address: account.address };
 
-                    const createUserResponse = await fetch("/api/userProfile", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(newUser),
-                        signal: controller.signal,
-                    });
+                    //     const createUserResponse = await fetch("/api/userProfile", {
+                    //         method: "POST",
+                    //         headers: { "Content-Type": "application/json" },
+                    //         body: JSON.stringify(newUser),
+                    //         signal: controller.signal,
+                    //     });
 
-                    if (createUserResponse.ok) {
-                        setUserData(await createUserResponse.json());
-                    } else {
-                        throw new Error("Failed to create user");
-                    }
+                    //     if (createUserResponse.ok) {
+                    //         setUserData(await createUserResponse.json());
+                    //     } else {
+                    //         throw new Error("Failed to create user");
+                    //     }
                 } else {
                     throw new Error("Failed to fetch user data");
                 }
