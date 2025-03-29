@@ -239,10 +239,10 @@ export function Navbar() {
                                     },
                                     label: "Sign In | Sign Up",
                                 }}
-                                accountAbstraction={{
-                                    chain: defineChain(33139),
-                                    sponsorGas: true,
-                                }}
+                                // accountAbstraction={{
+                                //     chain: defineChain(33139),
+                                //     sponsorGas: true,
+                                // }}
                             />
                         </div>
                     </div>
