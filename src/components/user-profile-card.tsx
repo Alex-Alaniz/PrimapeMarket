@@ -259,16 +259,19 @@ export function UserProfileCard() {
           <AccountProvider address={account.address} client={client}>
             <div>
               <h2 className="text-xl font-bold text-center">
-                {formatUsername(profile.display_name) || (
+                {formatUsername(profile.display_name)}
+              </h2>
+              {!profile.display_name && account && (
+                <div className="text-md font-medium text-center mb-1">
                   <AccountProvider address={account.address} client={client}>
                     <AccountName
                       socialType="ens"
-                      loadingComponent={<span>{shortenAddress(account.address)}</span>}
+                      loadingComponent={<span>Loading ENS...</span>}
                       fallbackComponent={<span>{shortenAddress(account.address)}</span>}
                     />
                   </AccountProvider>
-                )}
-              </h2>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground text-center">{profile.email === "No User Email" ? "" : profile.email}</p>
               {/* <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p> */}
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
