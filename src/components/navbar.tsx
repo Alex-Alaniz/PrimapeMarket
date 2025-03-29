@@ -3,7 +3,6 @@ import {
     AccountProvider,
     ConnectButton,
     darkTheme,
-    lightTheme,
     useActiveAccount,
 } from "thirdweb/react";
 import { client } from "@/app/client";
