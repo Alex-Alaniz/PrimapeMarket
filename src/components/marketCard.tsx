@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 import { useRef } from "react";
 import type { BuyInterfaceHandle } from "./market-buy-interface";
