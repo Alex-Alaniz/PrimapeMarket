@@ -1,4 +1,3 @@
-
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
 import { Market } from "@/types/prediction-market";
@@ -24,20 +23,11 @@ export function MarketSharesDisplay({
         return { option, shares, sharesInEther, index };
     }).filter(item => Number(item.sharesInEther) > 0);
 
-    // Calculate total shares from market data
-    const totalShares = market.totalSharesPerOption.map((shares, index) => {
-        const sharesInEther = Number(toEther(shares)).toFixed(2);
-        return { 
-            option: market.options[index],
-            shares,
-            sharesInEther,
-            index
-        };
-    });
-
-    // Calculate market's total volume (sum of all shares)
-    const totalMarketVolume = totalShares.reduce((sum, item) => 
-        sum + Number(item.sharesInEther), 0).toFixed(2);
+    // Calculate total market volume (sum of all shares across all options)
+    const totalMarketVolume = market.totalSharesPerOption.reduce(
+        (sum, shares) => sum + Number(toEther(shares)), 
+        0
+    ).toFixed(2);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -45,11 +35,11 @@ export function MarketSharesDisplay({
     // Auto-scroll to next share every 5 seconds
     useEffect(() => {
         if (optionsWithShares.length <= 1) return;
-        
+
         const interval = setInterval(() => {
             setCurrentIndex(prev => (prev + 1) % optionsWithShares.length);
         }, 5000);
-        
+
         return () => clearInterval(interval);
     }, [optionsWithShares.length]);
 
@@ -68,10 +58,6 @@ export function MarketSharesDisplay({
         );
     };
 
-    // Use the current option index to display the corresponding total shares
-    const currentOption = optionsWithShares[currentIndex];
-    const currentTotalShares = totalShares.find(item => item.index === currentOption.index);
-
     return (
         <div className="flex flex-col w-full">
             <div className="flex justify-between items-center w-full text-sm text-muted-foreground mb-1">
@@ -89,7 +75,7 @@ export function MarketSharesDisplay({
                         <ChevronLeft className="h-3 w-3" />
                     </Button>
                 )}
-                
+
                 <div 
                     ref={containerRef} 
                     className="flex justify-between w-full"
@@ -97,8 +83,8 @@ export function MarketSharesDisplay({
                     {optionsWithShares.map((item, idx) => (
                         <div 
                             key={item.index} 
-                            className={`flex justify-between w-full ${
-                                idx === currentIndex ? 'flex' : 'hidden'
+                            className={`w-full ${
+                                idx === currentIndex ? 'block' : 'hidden'
                             }`}
                         >
                             <Badge 
@@ -107,19 +93,10 @@ export function MarketSharesDisplay({
                             >
                                 {item.option}: {item.sharesInEther}
                             </Badge>
-                            
-                            {currentTotalShares && (
-                                <Badge 
-                                    variant="outline"
-                                    className={compact ? 'text-xs py-0.5 ml-2' : 'ml-2'}
-                                >
-                                    Total: {currentTotalShares.sharesInEther}
-                                </Badge>
-                            )}
                         </div>
                     ))}
                 </div>
-                
+
                 {optionsWithShares.length > 1 && (
                     <Button 
                         variant="ghost" 
@@ -130,7 +107,7 @@ export function MarketSharesDisplay({
                         <ChevronRight className="h-3 w-3" />
                     </Button>
                 )}
-                
+
                 {optionsWithShares.length > 1 && (
                     <div className="flex gap-1 ml-1">
                         {optionsWithShares.map((_, idx) => (
