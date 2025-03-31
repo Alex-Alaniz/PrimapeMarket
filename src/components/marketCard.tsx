@@ -16,6 +16,7 @@ import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-mark
 import { Button } from "./ui/button";
 import { toEther } from "thirdweb"; //Added
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 
 interface MarketCardProps {
@@ -120,7 +121,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
             ) : (
                 <>
                     <div className="relative">
-                        <img 
+                        <Image
                             src={market?.image || '/images/default-market.jpg'}
                             alt={market?.question || "Market"}
                             width={400}
@@ -159,7 +160,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                     {market.options.map((option, idx) => {
                                         // Calculate probability percentage for each option
                                         const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
-                                        const percentage = totalPool === BigInt(0) ? 0 : 
+                                        const percentage = totalPool === BigInt(0) ? 0 :
                                             Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
 
                                         return (
@@ -171,7 +172,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                     <span className="text-sm text-muted-foreground font-medium">{percentage}%</span>
                                                     {!market.resolved && !isExpired && account && (
                                                         <Button
-                                                            size="sm" 
+                                                            size="sm"
                                                             variant="outline"
                                                             className={`h-7 px-2.5 text-xs font-medium opacity-80 group-hover:opacity-100 ${market.options.length <= 2 ? (idx === 0 ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white") : "bg-green-500 hover:bg-green-600 text-white"}`}
                                                             onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
@@ -191,7 +192,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                         )}
 
                         {/* Hidden component for handling buys */}
-                        <MarketBuyInterface 
+                        <MarketBuyInterface
                             marketId={index}
                             market={market!}
                             _compact={true}
@@ -211,8 +212,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                 const shares = userShares && userShares[index] ? userShares[index] : BigInt(0);
                                                 const sharesInEther = Number(toEther(shares)).toFixed(2);
                                                 return (
-                                                    <Badge 
-                                                        key={index} 
+                                                    <Badge
+                                                        key={index}
                                                         variant={Number(sharesInEther) > 0 ? "default" : "secondary"}
                                                         className="text-xs py-0.5"
                                                     >
