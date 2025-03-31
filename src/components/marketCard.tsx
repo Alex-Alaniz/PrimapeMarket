@@ -208,7 +208,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                         Your shares:
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {market.options.map((option, index) => {
-                                                const shares = userShares[index] || BigInt(0);
+                                                // Add null check for userShares
+                                                const shares = userShares && userShares[index] ? userShares[index] : BigInt(0);
                                                 const sharesInEther = Number(toEther(shares)).toFixed(2);
                                                 return (
                                                     <Badge 
