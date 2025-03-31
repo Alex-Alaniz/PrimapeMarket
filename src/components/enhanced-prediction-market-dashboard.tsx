@@ -7,7 +7,7 @@ import { MarketCard } from './marketCard'
 import { Navbar } from './navbar'
 import { Footer } from "./footer"
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+// import Image from 'next/image' // Import removed due to unused variable
 import { Button } from './ui/button'
 import { ChevronRight, TrendingUp, Zap, Globe, Award, Briefcase } from 'lucide-react'
 // import Link from 'next/link'

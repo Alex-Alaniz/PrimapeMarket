@@ -1,4 +1,4 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 import { useRef } from "react";
 import type { BuyInterfaceHandle } from "./market-buy-interface";
@@ -13,7 +13,6 @@ import { _MarketPending as _MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
 // import { MarketSharesDisplay } from "./market-shares-display"; //Removed
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
-import Image from "next/image";
 import { Button } from "./ui/button";
 import { toEther } from "thirdweb"; //Added
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +26,7 @@ interface MarketCardProps {
     compact?: boolean;
 }
 
-export function MarketCard({ index, filter, category = 'all', featured = false, compact = false }: MarketCardProps) {
+export function MarketCard({ index, filter, category = 'all', featured = false, compact: _compact = false }: MarketCardProps) {
     const account = useActiveAccount();
     const buyInterfaceRef = useRef<BuyInterfaceHandle>(null);
 
@@ -121,7 +120,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
             ) : (
                 <>
                     <div className="relative">
-                        <Image 
+                        <img 
                             src={market?.image || '/images/default-market.jpg'}
                             alt={market?.question || "Market"}
                             width={400}

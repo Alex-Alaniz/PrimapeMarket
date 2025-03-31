@@ -1,6 +1,5 @@
 import { Badge } from "./ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Progress } from "./ui/progress";
+import { Card, CardContent, CardHeader, CardFooter, CardTitle } from "./ui/card";
 
 export function MarketCardSkeleton() {
     return (
@@ -8,7 +7,7 @@ export function MarketCardSkeleton() {
             <div className="animate-pulse">
                 {/* Image placeholder */}
                 <div className="w-full h-24 bg-gray-200"></div>
-                
+
                 <CardHeader className="p-3 pb-1.5">
                     <Badge 
                         variant="secondary" 
@@ -16,7 +15,7 @@ export function MarketCardSkeleton() {
                     />
                     <CardTitle className="bg-gray-200 h-5 w-full" />
                 </CardHeader>
-                
+
                 <CardContent className="px-3 py-1 flex-grow">
                     <div className="h-[110px] mb-2">
                         {/* Options placeholders */}
@@ -31,7 +30,7 @@ export function MarketCardSkeleton() {
                         ))}
                     </div>
                 </CardContent>
-                
+
                 <CardFooter className="p-3 pt-1 border-t border-border/30">
                     <div className="w-full flex justify-start">
                         <span className="bg-gray-200 h-6 w-1/2 rounded-full" />
