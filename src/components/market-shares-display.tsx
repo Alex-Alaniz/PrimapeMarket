@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 
 interface MarketSharesDisplayProps {
     market: Market;
-    userShares: bigint[];
+    userShares: readonly bigint[];
     compact?: boolean;
 }
 
