@@ -74,7 +74,10 @@ export function MarketSharesDisplay({
     return (
         <div className="flex flex-col w-full">
             <div className="flex justify-start items-center w-full text-sm text-muted-foreground mb-1">
-                <span>{totalMarketVolume} $APE</span>
+                <span className="flex items-center gap-1">
+                    {totalMarketVolume} $APE
+                    <img src="/images/ape.png" alt="APE" className="h-4 w-4" />
+                </span>
             </div>
             <div className="flex items-center w-full">
                 {optionsWithShares.length > 1 && (
