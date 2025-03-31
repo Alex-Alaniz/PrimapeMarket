@@ -60,8 +60,7 @@ export function MarketSharesDisplay({
 
     return (
         <div className="flex flex-col w-full">
-            <div className="flex justify-between items-center w-full text-sm text-muted-foreground mb-1">
-                <span>Your shares:</span>
+            <div className="flex justify-end items-center w-full text-sm text-muted-foreground mb-1">
                 <span>Total market volume: {totalMarketVolume}</span>
             </div>
             <div className="flex items-center w-full">
