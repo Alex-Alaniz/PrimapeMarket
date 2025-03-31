@@ -94,7 +94,7 @@ export function EnhancedPredictionMarketDashboard() {
                             <MarketCard 
                                 key={index} 
                                 index={index} 
-                                filter="all" 
+                                filter="active" 
                                 category={activeCategory}
                                 compact={true}
                                 featured={index === 0}
