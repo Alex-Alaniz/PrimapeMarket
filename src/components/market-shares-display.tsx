@@ -32,13 +32,13 @@ export function MarketSharesDisplay({
     const [currentIndex, setCurrentIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to next share every 5 seconds
+    // Auto-scroll to next share every 8 seconds
     useEffect(() => {
         if (optionsWithShares.length <= 1) return;
 
         const interval = setInterval(() => {
             setCurrentIndex(prev => (prev + 1) % optionsWithShares.length);
-        }, 5000);
+        }, 8000);
 
         return () => clearInterval(interval);
     }, [optionsWithShares.length]);
@@ -60,7 +60,7 @@ export function MarketSharesDisplay({
 
     return (
         <div className="flex flex-col w-full">
-            <div className="flex justify-end items-center w-full text-sm text-muted-foreground mb-1">
+            <div className="flex justify-start items-center w-full text-sm text-muted-foreground mb-1">
                 <span>Total market volume: {totalMarketVolume}</span>
             </div>
             <div className="flex items-center w-full">
@@ -74,6 +74,10 @@ export function MarketSharesDisplay({
                         <ChevronLeft className="h-3 w-3" />
                     </Button>
                 )}
+
+                <div className="flex flex-col items-center justify-center text-xs text-muted-foreground">
+                    <span>Your Shares</span>
+                </div>
 
                 <div 
                     ref={containerRef} 
