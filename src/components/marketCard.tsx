@@ -11,10 +11,13 @@ import { _MarketProgress as _MarketProgress } from "./market-progress";
 import { MarketResolved as _MarketResolved } from "./market-resolved";
 import { _MarketPending as _MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
-import { MarketSharesDisplay } from "./market-shares-display";
+// import { MarketSharesDisplay } from "./market-shares-display"; //Removed
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
-import Image from "next/image";
 import { Button } from "./ui/button";
+import { toEther } from "thirdweb"; //Added
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+
 
 interface MarketCardProps {
     index: number;
@@ -24,7 +27,7 @@ interface MarketCardProps {
     compact?: boolean;
 }
 
-export function MarketCard({ index, filter, category = 'all', featured = false, compact = false }: MarketCardProps) {
+export function MarketCard({ index, filter, category = 'all', featured = false, compact: _compact = false }: MarketCardProps) {
     const account = useActiveAccount();
     const buyInterfaceRef = useRef<BuyInterfaceHandle>(null);
 
@@ -112,13 +115,13 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
     const probabilityPercentage = calculateProbabilityPercentage();
 
     return (
-        <Card key={index} className={`flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg h-full ${featured ? 'border-0 shadow-md' : compact ? 'border border-border/40 hover:border-primary/30' : 'border border-border/40 hover:border-primary/30'}`}>
+        <Card key={index} className="flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg h-full border border-border/40 hover:border-primary/30">
             {isLoadingMarketInfo ? (
                 <MarketCardSkeleton />
             ) : (
                 <>
                     <div className="relative">
-                        <Image 
+                        <Image
                             src={market?.image || '/images/default-market.jpg'}
                             alt={market?.question || "Market"}
                             width={400}
@@ -127,110 +130,69 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                             priority={featured}
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                         />
-                        {/* Probability badge - Polymarket style */}
+                        {/* Probability badge */}
                         <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 text-xs font-bold text-white">
                             {probabilityPercentage}%
                         </div>
                     </div>
 
-                    <CardHeader className={`${compact ? 'p-3 pb-2' : 'p-4 pb-3'}`}>
-                        <div className="flex items-start gap-2">
+                    <CardHeader className="p-3 pb-1.5">
+                        <div className="flex items-start">
                             <div className="flex-1">
                                 {market && (
-                                    <div className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground flex items-center gap-1`}>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
                                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         <MarketTime endTime={market.endTime} />
                                     </div>
                                 )}
-                                <CardTitle className={`${compact ? 'text-sm' : 'text-base'} font-medium line-clamp-2 mt-1`}>
+                                <CardTitle className="text-sm font-medium line-clamp-2 mt-1">
                                     {market?.question}
                                 </CardTitle>
                             </div>
                         </div>
                     </CardHeader>
 
-                    <CardContent className={`${compact ? 'px-3 py-1' : 'px-4 py-2'} flex-grow`}>
+                    <CardContent className="px-3 py-1 flex-grow">
                         {market && market.options && market.totalSharesPerOption && (
-                            <div className="mb-3">
-                                {/* Options with percentages and buy buttons - Polymarket style */}
-                                {market.options.length <= 2 ? (
-                                    // For 2 or fewer options - Display as in left side of the reference image (Yes/No style)
-                                    <div className="space-y-2">
-                                        {market.options.map((option, idx) => {
-                                            // Calculate probability percentage for each option
-                                            const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
-                                            const percentage = totalPool === BigInt(0) ? 0 : 
-                                                Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
+                            <div className="mb-2">
+                                {/* Unified card size for all option counts */}
+                                <div className={`${market.options.length > 4 ? 'max-h-[110px]' : 'h-[110px]'} overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent`}>
+                                    {market.options.map((option, idx) => {
+                                        // Calculate probability percentage for each option
+                                        const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
+                                        const percentage = totalPool === BigInt(0) ? 0 :
+                                            Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
 
-                                            return (
-                                                <div key={idx} className="flex items-center justify-between text-sm py-0.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="truncate">{option}</span>
-                                                        <span className="text-muted-foreground font-medium">{percentage}%</span>
-                                                    </div>
-                                                    <div className={`w-4 h-4 rounded-sm ${idx === 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                        return (
+                                            <div key={idx} className="flex items-center justify-between py-1 group">
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="truncate text-sm block">{option}</span>
                                                 </div>
-                                            );
-                                        })}
-
-                                        {/* Large buy buttons at the bottom for 2 or fewer options */}
-                                        {!market.resolved && !isExpired && account && (
-                                            <div className="grid grid-cols-2 gap-2 mt-3">
-                                                {market.options.map((option, idx) => (
-                                                    <Button 
-                                                        key={idx}
-                                                        variant="outline"
-                                                        onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
-                                                        className={`w-full ${
-                                                            market.options.length <= 2 
-                                                                ? (idx === 0 
-                                                                    ? "bg-green-500 hover:bg-green-600 text-white" 
-                                                                    : "bg-red-500 hover:bg-red-600 text-white")
-                                                                : "bg-green-500 hover:bg-green-600 text-white"
-                                                        }`}
-                                                        size="sm"
-                                                    >
-                                                        Buy
-                                                    </Button>
-                                                ))}
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <span className="text-sm text-muted-foreground font-medium">{percentage}%</span>
+                                                    {!market.resolved && !isExpired && account && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className={`h-7 px-2.5 text-xs font-medium opacity-80 group-hover:opacity-100 ${market.options.length <= 2 ? (idx === 0 ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white") : "bg-green-500 hover:bg-green-600 text-white"}`}
+                                                            onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
+                                                        >
+                                                            Buy
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    // For 3 or more options - Display as in right side of the reference image
-                                    <div className={`space-y-1.5 ${market.options.length > 4 ? 'max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
-                                        {market.options.map((option, idx) => {
-                                            // Calculate probability percentage for each option
-                                            const totalPool = market.totalSharesPerOption.reduce((sum, shares) => sum + shares, BigInt(0));
-                                            const percentage = totalPool === BigInt(0) ? 0 : 
-                                                Math.round(Number(market.totalSharesPerOption[idx] * BigInt(100)) / Number(totalPool));
+                                        );
+                                    })}
 
-                                            return (
-                                                <div key={idx} className="flex items-center justify-between py-1 group">
-                                                    <span className="truncate text-sm">{option}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm text-muted-foreground font-medium">{percentage}%</span>
-                                                        {!market.resolved && !isExpired && account && (
-                                                            <Button
-                                                                size="sm" 
-                                                                variant="outline"
-                                                                className="h-7 px-3 font-medium opacity-70 group-hover:opacity-100 bg-green-500 hover:bg-green-600 text-white"
-                                                                onClick={() => buyInterfaceRef.current?.handleBuy(idx)}
-                                                            >
-                                                                Buy
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                    {/* Add padding space at bottom for markets with few options */}
+                                    {market.options.length < 3 && <div className="h-2"></div>}
+                                </div>
                             </div>
                         )}
 
                         {/* Hidden component for handling buys */}
-                        <MarketBuyInterface 
+                        <MarketBuyInterface
                             marketId={index}
                             market={market!}
                             _compact={true}
@@ -239,13 +201,33 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     </CardContent>
 
                     {account && (
-                        <CardFooter className={`${compact ? 'p-3 pt-1' : 'p-4 pt-2'} border-t border-border/30`}>
-                            {market && (
-                                <MarketSharesDisplay 
-                                    market={market}
-                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                    compact={true}
-                                />
+                        <CardFooter className="p-3 pt-1 border-t border-border/30">
+                            {market && userShares && userShares.some(shares => shares > BigInt(0)) && (
+                                <div className="flex flex-col gap-1 mt-2">
+                                    <div className="w-full text-sm text-muted-foreground">
+                                        Your shares:
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {market.options.map((option, index) => {
+                                                // Add null check for userShares
+                                                const shares = userShares && userShares[index] ? userShares[index] : BigInt(0);
+                                                const sharesInEther = Number(toEther(shares)).toFixed(2);
+                                                
+                                                // Only render badges for options with shares
+                                                if (shares <= BigInt(0)) return null;
+                                                
+                                                return (
+                                                    <Badge
+                                                        key={index}
+                                                        variant="default"
+                                                        className="text-xs py-0.5"
+                                                    >
+                                                        {option}: {sharesInEther}
+                                                    </Badge>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </CardFooter>
                     )}

@@ -19,7 +19,8 @@ export function MarketSharesDisplay({
                 Your shares:
                 <div className="flex flex-wrap gap-2 mt-1">
                     {market.options.map((option, index) => {
-                        const shares = userShares[index] || BigInt(0);
+                        // Add null check for userShares and userShares[index]
+                        const shares = userShares && userShares[index] ? userShares[index] : BigInt(0);
                         const sharesInEther = Number(toEther(shares)).toFixed(2);
                         return (
                             <Badge 

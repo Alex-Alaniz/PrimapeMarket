@@ -7,7 +7,7 @@ import { MarketCard } from './marketCard'
 import { Navbar } from './navbar'
 import { Footer } from "./footer"
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+// import Image from 'next/image' // Import removed due to unused variable
 import { Button } from './ui/button'
 import { ChevronRight, TrendingUp, Zap, Globe, Award, Briefcase } from 'lucide-react'
 // import Link from 'next/link'
@@ -74,72 +74,7 @@ export function EnhancedPredictionMarketDashboard() {
                     ))}
                 </div>
 
-                {/* Featured Markets Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                    {/* Global Trade Wars */}
-                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
-                        <Image 
-                            src="/images/markets/1.jpg"
-                            alt="Global Trade Wars"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            priority
-                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
-                        />
-                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
-                            <div className="text-white font-bold text-lg">Global trade wars</div>
-                            <div className="space-y-2">
-                                <p className="text-white/90 text-sm">Hedge risk & forecast the fallout amid rising tariffs</p>
-                                <Button size="sm" className="gap-1 text-xs" variant="outline">
-                                    <span>Markets</span>
-                                    <ChevronRight className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* AI Markets */}
-                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
-                        <Image 
-                            src="/images/markets/2.jpg"
-                            alt="Race to AGI"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
-                        />
-                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
-                            <div className="text-white font-bold text-lg">Race to AGI</div>
-                            <div className="space-y-2">
-                                <p className="text-white/90 text-sm">Predict model dominance, policy changes & more</p>
-                                <Button size="sm" className="gap-1 text-xs" variant="outline">
-                                    <span>Markets</span>
-                                    <ChevronRight className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* First 100 Days */}
-                    <div className="relative h-[180px] rounded-xl overflow-hidden group">
-                        <Image 
-                            src="/images/markets/3.jpg"
-                            alt="First 100 days"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                            className="object-cover brightness-75 group-hover:scale-105 transition-all duration-500"
-                        />
-                        <div className="absolute inset-0 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-black/70">
-                            <div className="text-white font-bold text-lg">First 100 days</div>
-                            <div className="space-y-2">
-                                <p className="text-white/90 text-sm">What will happen in these most pivotal days?</p>
-                                <Button size="sm" className="gap-1 text-xs" variant="outline">
-                                    <span>Markets</span>
-                                    <ChevronRight className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Featured Markets Section Removed */}
 
                 {/* Trending Markets Header */}
                 <div className="flex justify-between items-center mb-4">
