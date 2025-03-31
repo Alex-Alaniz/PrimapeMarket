@@ -14,8 +14,8 @@ import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import { Button } from "./ui/button";
-import { toEther } from "thirdweb";
-import { Badge } from "@/components/ui/badge";
+import { toEther as _toEther } from "thirdweb";
+import { Badge as _Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
 
