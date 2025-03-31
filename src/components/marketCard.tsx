@@ -11,10 +11,13 @@ import { _MarketProgress as _MarketProgress } from "./market-progress";
 import { MarketResolved as _MarketResolved } from "./market-resolved";
 import { _MarketPending as _MarketPending } from "./market-pending";
 import { MarketBuyInterface } from "./market-buy-interface";
-import { MarketSharesDisplay } from "./market-shares-display";
+// import { MarketSharesDisplay } from "./market-shares-display"; //Removed
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import { toEther } from "thirdweb"; //Added
+import { Badge } from "@/components/ui/badge";
+
 
 interface MarketCardProps {
     index: number;
@@ -200,11 +203,26 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     {account && (
                         <CardFooter className="p-3 pt-1 border-t border-border/30">
                             {market && (
-                                <MarketSharesDisplay 
-                                    market={market}
-                                    userShares={userShares ? [...userShares] : Array(market.options.length).fill(BigInt(0))}
-                                    compact={true}
-                                />
+                                <div className="flex flex-col gap-1 mt-2">
+                                    <div className="w-full text-sm text-muted-foreground">
+                                        Your shares:
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {market.options.map((option, index) => {
+                                                const shares = userShares[index] || BigInt(0);
+                                                const sharesInEther = Number(toEther(shares)).toFixed(2);
+                                                return (
+                                                    <Badge 
+                                                        key={index} 
+                                                        variant={Number(sharesInEther) > 0 ? "default" : "secondary"}
+                                                        className="text-xs py-0.5"
+                                                    >
+                                                        {option}: {sharesInEther}
+                                                    </Badge>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </CardFooter>
                     )}
