@@ -79,10 +79,6 @@ export function EnhancedPredictionMarketDashboard() {
                 {/* Trending Markets Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">Trending Markets</h2>
-                    <Button variant="ghost" size="sm" className="gap-1">
-                        <span>View All</span>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
                 </div>
 
                 {/* Market Cards in Compact Layout - Polymarket style */}
