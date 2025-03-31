@@ -1,3 +1,4 @@
+
 import { Badge } from "./ui/badge";
 import { toEther } from "thirdweb";
 import { Market } from "@/types/prediction-market";
@@ -22,6 +23,21 @@ export function MarketSharesDisplay({
         const sharesInEther = Number(toEther(shares)).toFixed(2);
         return { option, shares, sharesInEther, index };
     }).filter(item => Number(item.sharesInEther) > 0);
+
+    // Calculate total shares from market data
+    const totalShares = market.totalSharesPerOption.map((shares, index) => {
+        const sharesInEther = Number(toEther(shares)).toFixed(2);
+        return { 
+            option: market.options[index],
+            shares,
+            sharesInEther,
+            index
+        };
+    });
+
+    // Calculate market's total volume (sum of all shares)
+    const totalMarketVolume = totalShares.reduce((sum, item) => 
+        sum + Number(item.sharesInEther), 0).toFixed(2);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -52,12 +68,17 @@ export function MarketSharesDisplay({
         );
     };
 
+    // Use the current option index to display the corresponding total shares
+    const currentOption = optionsWithShares[currentIndex];
+    const currentTotalShares = totalShares.find(item => item.index === currentOption.index);
+
     return (
-        <div className="flex flex-col">
-            <div className="w-full text-sm text-muted-foreground mb-1">
-                Your shares:
+        <div className="flex flex-col w-full">
+            <div className="flex justify-between items-center w-full text-sm text-muted-foreground mb-1">
+                <span>Your shares:</span>
+                <span>Total market volume: {totalMarketVolume}</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center w-full">
                 {optionsWithShares.length > 1 && (
                     <Button 
                         variant="ghost" 
@@ -71,13 +92,13 @@ export function MarketSharesDisplay({
                 
                 <div 
                     ref={containerRef} 
-                    className="flex overflow-x-hidden scroll-smooth flex-1"
+                    className="flex justify-between w-full"
                 >
                     {optionsWithShares.map((item, idx) => (
                         <div 
                             key={item.index} 
-                            className={`flex-shrink-0 transition-transform duration-300 w-full ${
-                                idx === currentIndex ? 'block' : 'hidden'
+                            className={`flex justify-between w-full ${
+                                idx === currentIndex ? 'flex' : 'hidden'
                             }`}
                         >
                             <Badge 
@@ -86,6 +107,15 @@ export function MarketSharesDisplay({
                             >
                                 {item.option}: {item.sharesInEther}
                             </Badge>
+                            
+                            {currentTotalShares && (
+                                <Badge 
+                                    variant="outline"
+                                    className={compact ? 'text-xs py-0.5 ml-2' : 'ml-2'}
+                                >
+                                    Total: {currentTotalShares.sharesInEther}
+                                </Badge>
+                            )}
                         </div>
                     ))}
                 </div>
