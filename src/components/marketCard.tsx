@@ -202,7 +202,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
 
                     {account && (
                         <CardFooter className="p-3 pt-1 border-t border-border/30">
-                            {market && (
+                            {market && userShares && userShares.some(shares => shares > BigInt(0)) && (
                                 <div className="flex flex-col gap-1 mt-2">
                                     <div className="w-full text-sm text-muted-foreground">
                                         Your shares:
@@ -211,10 +211,14 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                                 // Add null check for userShares
                                                 const shares = userShares && userShares[index] ? userShares[index] : BigInt(0);
                                                 const sharesInEther = Number(toEther(shares)).toFixed(2);
+                                                
+                                                // Only render badges for options with shares
+                                                if (shares <= BigInt(0)) return null;
+                                                
                                                 return (
                                                     <Badge
                                                         key={index}
-                                                        variant={Number(sharesInEther) > 0 ? "default" : "secondary"}
+                                                        variant="default"
                                                         className="text-xs py-0.5"
                                                     >
                                                         {option}: {sharesInEther}
