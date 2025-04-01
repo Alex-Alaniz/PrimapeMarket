@@ -19,13 +19,20 @@ type TransactionError = {
     [key: string]: unknown;
 };
 
-export function ProfileMarketTable() {
+interface ProfileMarketTableProps {
+    address?: string;
+}
+
+export function ProfileMarketTable({ address }: ProfileMarketTableProps) {
     const account = useActiveAccount();
     const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTab, setSelectedTab] = useState("active");
     const [isBuying, setIsBuying] = useState<number | null>(null);
     const { mutate: sendTransaction } = useSendTransaction();
+    
+    // Use provided address or account address for queries
+    const walletAddress = address || account?.address;
 
     // Get market count
     const { data: marketCount, isLoading: isLoadingMarketCount } =
@@ -134,7 +141,7 @@ export function ProfileMarketTable() {
             useReadContract({
                 contract,
                 method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[])",
-                params: [BigInt(marketId), account?.address as string],
+                params: [BigInt(marketId), walletAddress as string],
             });
 
         // If any data is loading, show a placeholder
@@ -257,6 +264,9 @@ export function ProfileMarketTable() {
 
                 // Only show options with user shares for this profile view
                 if (userShareAmount === 0) return null;
+                
+                // Skip rendering if we're viewing someone else's profile but don't have their shares data
+                if (!walletAddress || !userShares) return null;
 
                 // Format shares to avoid exponential notation
                 const formattedShares = userShareAmount.toLocaleString(

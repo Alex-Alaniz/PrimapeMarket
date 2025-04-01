@@ -4,6 +4,7 @@ import { Market } from "@/types/prediction-market";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface MarketSharesDisplayProps {
     market: Market;
@@ -76,7 +77,7 @@ export function MarketSharesDisplay({
             <div className="flex justify-start items-center w-full text-sm text-muted-foreground mb-1">
                 <span className="flex items-center gap-1">
                     {totalMarketVolume} $APE
-                    <img src="/images/ape.png" alt="APE" className="h-4 w-4" />
+                    <Image src="/images/ape.png" alt="APE" width={16} height={16} className="h-4 w-4" />
                 </span>
             </div>
             <div className="flex items-center w-full">
