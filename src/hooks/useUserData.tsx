@@ -14,7 +14,7 @@ export function useUserData(address?: string) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const account = useActiveAccount();
-    
+
     // Use provided address or account address
     const walletAddress = address || account?.address;
 
@@ -30,28 +30,12 @@ export function useUserData(address?: string) {
             setError(null);
 
             try {
-                const dbResponse = await fetch(`/api/userProfile?wallet_address=${walletAddress}`, {
+                const dbResponse = await fetch(`/api/user?address=${walletAddress}`, {
                     signal: controller.signal,
                 });
 
                 if (dbResponse.ok) {
                     setUserData(await dbResponse.json());
-                    // } else if (dbResponse.status === 404) {
-                    //     // Create user if not found
-                    //     const newUser = { wallet_address: account.address };
-
-                    //     const createUserResponse = await fetch("/api/userProfile", {
-                    //         method: "POST",
-                    //         headers: { "Content-Type": "application/json" },
-                    //         body: JSON.stringify(newUser),
-                    //         signal: controller.signal,
-                    //     });
-
-                    //     if (createUserResponse.ok) {
-                    //         setUserData(await createUserResponse.json());
-                    //     } else {
-                    //         throw new Error("Failed to create user");
-                    //     }
                 } else {
                     throw new Error("Failed to fetch user data");
                 }
