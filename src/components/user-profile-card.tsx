@@ -76,7 +76,7 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
   const handleSubmit = async () => {
     try {
       // Determine if this is a create or update operation
-      const isNewProfile = !userData || !userData.wallet_address;
+      const isNewProfile = !formData.wallet_address;
       const method = isNewProfile ? "POST" : "PUT";
       
       console.log(`${isNewProfile ? 'Creating' : 'Updating'} user profile with data:`, formData);
