@@ -95,7 +95,10 @@ export async function POST(req: NextRequest) {
         { error: `User with this ${field} already exists` },
         { status: 409 }
       );
-    }e error
+    }
+
+    // Handle other errors
+    return NextResponse.json({ error: "Error creating user" }, { status: 500 });
 
 //       let errorMessage = "A user with this information already exists.";
 //       if (field === "username") errorMessage = "Username is already taken.";
