@@ -141,7 +141,7 @@ export function ProfileMarketTable({ address }: ProfileMarketTableProps) {
             useReadContract({
                 contract,
                 method: "function getUserShares(uint256 _marketId, address _user) view returns (uint256[])",
-                params: [BigInt(marketId), account?.address as string],
+                params: [BigInt(marketId), walletAddress as string],
             });
 
         // If any data is loading, show a placeholder
@@ -264,6 +264,9 @@ export function ProfileMarketTable({ address }: ProfileMarketTableProps) {
 
                 // Only show options with user shares for this profile view
                 if (userShareAmount === 0) return null;
+                
+                // Skip rendering if we're viewing someone else's profile but don't have their shares data
+                if (!walletAddress || !userShares) return null;
 
                 // Format shares to avoid exponential notation
                 const formattedShares = userShareAmount.toLocaleString(
