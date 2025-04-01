@@ -207,16 +207,7 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                     {market.options.length < 3 && <div className="h-2"></div>}
                                 </div>
                                 
-                                {/* Always show total market volume regardless of user connection */}
-                                {market.totalSharesPerOption && (
-                                    <div className="flex justify-start items-center w-full text-sm text-muted-foreground mt-2">
-                                        <span className="flex items-center gap-1">
-                                            {formatTotalVolume(market.totalSharesPerOption)} $APE
-                                            <Image src="/images/ape.png" alt="APE" width={16} height={16} className="h-4 w-4" />
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
+                                </div>
                         )}
 
                         {/* Hidden component for handling buys */}
@@ -229,11 +220,11 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     </CardContent>
 
                     <CardFooter className="p-3 pt-1 border-t border-border/30">
-                        {market && account && (
+                        {market && (
                             <MarketSharesDisplay 
                                 market={market} 
-                                userShares={userShares || []} 
-                                showVolumeOnly={false}
+                                userShares={userShares || []}
+                                showVolumeOnly={!account}
                             />
                         )}
                     </CardFooter>

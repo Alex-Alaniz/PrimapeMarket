@@ -59,9 +59,6 @@ export function MarketSharesDisplay({
         return () => clearInterval(interval);
     }, [optionsWithShares.length]);
 
-    // If no shares, return null
-    if (optionsWithShares.length === 0) return null;
-
     const handlePrev = () => {
         setCurrentIndex(prev => 
             prev === 0 ? optionsWithShares.length - 1 : prev - 1
@@ -83,8 +80,8 @@ export function MarketSharesDisplay({
                 </span>
             </div>
             
-            {/* Only show user shares section if there are shares to display */}
-            {optionsWithShares.length > 0 && (
+            {/* Only show user shares section if there are shares to display and not in volume-only mode */}
+            {optionsWithShares.length > 0 && !showVolumeOnly && (
                 <div className="flex items-center w-full">
                     {optionsWithShares.length > 1 && (
                         <Button 
