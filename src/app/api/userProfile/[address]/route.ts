@@ -6,10 +6,9 @@ import { NextResponse } from "next/server";
  * 🔹 READ (GET) - Fetch user by wallet address from path parameter.
  */
 export async function GET(
-  req: Request,
-  context: { params: { address: string } }
+  request: Request,
+  { params }: { params: { address: string } }
 ) {
-  const { params } = context;
   try {
     const { address } = params;
     
