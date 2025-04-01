@@ -66,8 +66,8 @@ export function useUserData(address?: string) {
 
         fetchUserData();
 
-        return () => controller.abort(); // Cleanup on unmount or account change
-    }, [account]); // ✅ Only re-run when `account` changes
+        return () => controller.abort(); // Cleanup on unmount or address change
+    }, [walletAddress]); // ✅ Re-run when walletAddress changes
 
     return { userData, loading, error, setUserData };
 }

@@ -193,7 +193,8 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
     email: "",
     display_name: "",
   });
-  // Clear profile on account change or load viewed profile
+  
+  // Update profile when userData changes
   useEffect(() => {
     if (userData) {
       setProfile({
@@ -207,12 +208,12 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
     }
   }, [userData]);
 
-  // clear the userData state when the user logs out 
+  // Clear the userData state when the user logs out (only for own profile)
   useEffect(() => {
-    if (!account) {
+    if (!account && !viewAddress) {
       setUserData(null);
     }
-  }, [account, setUserData]);
+  }, [account, setUserData, viewAddress]);
 
   useEffect(() => {
     if (linkedAccount) setProfile(linkedAccount);
@@ -259,29 +260,26 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
       </div>
 
       <CardContent className="pt-16 pb-6 text-center">
-        {account && loading ? <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span> : null}
-        {account ? (
-          <AccountProvider address={account.address} client={client}>
+        {loading ? <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span> : null}
+        {userData ? (
+          <AccountProvider address={viewAddress || (account?.address || "")} client={client}>
             <div>
               <h2 className="text-xl font-bold text-center">
                 {formatUsername(profile.display_name)}
               </h2>
-              {account && (
-                <div className="text-md font-medium text-center mb-1">
-                  <AccountProvider address={account.address} client={client}>
-                    <AccountName
-                      socialType="ens"
-                      loadingComponent={<span>Loading ENS...</span>}
-                      fallbackComponent={<span>{shortenAddress(account.address)}</span>}
-                    />
-                  </AccountProvider>
-                </div>
-              )}
+              <div className="text-md font-medium text-center mb-1">
+                <AccountProvider address={viewAddress || (account?.address || "")} client={client}>
+                  <AccountName
+                    socialType="ens"
+                    loadingComponent={<span>Loading ENS...</span>}
+                    fallbackComponent={<span>{shortenAddress(viewAddress || account?.address)}</span>}
+                  />
+                </AccountProvider>
+              </div>
               <p className="text-sm text-muted-foreground text-center">{profile.email === "No User Email" ? "" : profile.email}</p>
-              {/* <p className="text-sm text-muted-foreground text-center">{profile.email || ""}</p> */}
               <div className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <span>{shortenAddress(account.address)}</span>
-                <button onClick={() => copyToClipboard(account.address)} className="rounded-full p-1 hover:bg-muted">
+                <span>{shortenAddress(viewAddress || account?.address)}</span>
+                <button onClick={() => copyToClipboard(viewAddress || account?.address)} className="rounded-full p-1 hover:bg-muted">
                   {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
                 </button>
               </div>
@@ -291,7 +289,7 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
               <div className="grid grid-cols-3 divide-x">
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Balance</span>
-                  {account.address && <BalanceDisplay address={account.address} />}
+                  <BalanceDisplay address={viewAddress || account?.address || ""} />
                 </div>
                 <div className="flex flex-col p-2">
                   <span className="text-muted-foreground text-xs">Portfolio</span>
@@ -311,33 +309,35 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
                 </Button>
               )}
             </div>
-            <div className="mt-6 border-t pt-4 rounded-lg shadow-lg p-6">
-              <h3 className="font-semibold text-lg text-white-800">Connected Wallets</h3>
-              {connectedWallets.length > 0 ? (
-                <div className="space-y-4 mt-4">
-                  {connectedWallets.map((wallet) => (
-                    <motion.div
-                      key={wallet.id}
-                      className={`flex items-center justify-between p-3 rounded-lg transition-all duration-300 ${wallet.id === activeWallet?.id ? 'bg-blue-100 border-l-8 border-blue-500' : 'bg-gray-100'}`}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <span className="text-gray-700 font-medium pr-2">{wallet.id}</span>
-                      <WalletProvider id={wallet.id}>
-                        <WalletIcon className="h-8 w-8 rounded-full shadow-md" />
-                      </WalletProvider>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <motion.p
-                  className="text-gray-500 text-sm mt-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  No wallets connected
-                </motion.p>
-              )}
-            </div>
+            {!viewOnly && (
+              <div className="mt-6 border-t pt-4 rounded-lg shadow-lg p-6">
+                <h3 className="font-semibold text-lg text-white-800">Connected Wallets</h3>
+                {connectedWallets.length > 0 ? (
+                  <div className="space-y-4 mt-4">
+                    {connectedWallets.map((wallet) => (
+                      <motion.div
+                        key={wallet.id}
+                        className={`flex items-center justify-between p-3 rounded-lg transition-all duration-300 ${wallet.id === activeWallet?.id ? 'bg-blue-100 border-l-8 border-blue-500' : 'bg-gray-100'}`}
+                        whileHover={{ scale: 1.05 }}
+                      >
+                        <span className="text-gray-700 font-medium pr-2">{wallet.id}</span>
+                        <WalletProvider id={wallet.id}>
+                          <WalletIcon className="h-8 w-8 rounded-full shadow-md" />
+                        </WalletProvider>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <motion.p
+                    className="text-gray-500 text-sm mt-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    No wallets connected
+                  </motion.p>
+                )}
+              </div>
+            )}
 
             {/* <div className="mt-6 border-t pt-4">
               <h3 className="font-medium text-sm">Connections</h3>
