@@ -10,12 +10,14 @@ interface MarketSharesDisplayProps {
     market: Market;
     userShares: readonly bigint[];
     compact?: boolean;
+    showVolumeOnly?: boolean;
 }
 
 export function MarketSharesDisplay({
     market,
     userShares,
-    compact = false
+    compact = false,
+    showVolumeOnly = false
 }: MarketSharesDisplayProps) {
     // Only show options where user has shares
     const optionsWithShares = market.options.map((option, index) => {

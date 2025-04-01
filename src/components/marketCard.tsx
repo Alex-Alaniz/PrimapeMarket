@@ -14,9 +14,27 @@ import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import { Button } from "./ui/button";
-import { toEther as _toEther } from "thirdweb";
+import { toEther } from "thirdweb";
 import { Badge as _Badge } from "@/components/ui/badge";
 import Image from "next/image";
+
+// Function to format total market volume with K/M for larger numbers
+const formatTotalVolume = (totalSharesPerOption: readonly bigint[]): string => {
+    // Calculate total market volume (sum of all shares across all options)
+    const rawTotalMarketVolume = totalSharesPerOption.reduce(
+        (sum, shares) => sum + Number(toEther(shares)), 
+        0
+    );
+    
+    // Format the total market volume with K/M for larger numbers
+    if (rawTotalMarketVolume >= 1000000) {
+        return (rawTotalMarketVolume / 1000000).toFixed(2) + 'M';
+    } else if (rawTotalMarketVolume >= 1000) {
+        return (rawTotalMarketVolume / 1000).toFixed(2) + 'K';
+    } else {
+        return rawTotalMarketVolume.toFixed(2);
+    }
+};
 
 
 interface MarketCardProps {
@@ -188,6 +206,16 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                     {/* Add padding space at bottom for markets with few options */}
                                     {market.options.length < 3 && <div className="h-2"></div>}
                                 </div>
+                                
+                                {/* Always show total market volume regardless of user connection */}
+                                {market.totalSharesPerOption && (
+                                    <div className="flex justify-start items-center w-full text-sm text-muted-foreground mt-2">
+                                        <span className="flex items-center gap-1">
+                                            {formatTotalVolume(market.totalSharesPerOption)} $APE
+                                            <Image src="/images/ape.png" alt="APE" width={16} height={16} className="h-4 w-4" />
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -201,10 +229,11 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                     </CardContent>
 
                     <CardFooter className="p-3 pt-1 border-t border-border/30">
-                        {market && (
+                        {market && account && (
                             <MarketSharesDisplay 
                                 market={market} 
                                 userShares={userShares || []} 
+                                showVolumeOnly={false}
                             />
                         )}
                     </CardFooter>
