@@ -19,13 +19,20 @@ type TransactionError = {
     [key: string]: unknown;
 };
 
-export function ProfileMarketTable() {
+interface ProfileMarketTableProps {
+    address?: string;
+}
+
+export function ProfileMarketTable({ address }: ProfileMarketTableProps) {
     const account = useActiveAccount();
     const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTab, setSelectedTab] = useState("active");
     const [isBuying, setIsBuying] = useState<number | null>(null);
     const { mutate: sendTransaction } = useSendTransaction();
+    
+    // Use provided address or account address for queries
+    const walletAddress = address || account?.address;
 
     // Get market count
     const { data: marketCount, isLoading: isLoadingMarketCount } =

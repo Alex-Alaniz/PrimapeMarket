@@ -9,25 +9,28 @@ interface UserData {
     display_name?: string;
 }
 
-export function useUserData() {
+export function useUserData(address?: string) {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const account = useActiveAccount();
+    
+    // Use provided address or account address
+    const walletAddress = address || account?.address;
 
     useEffect(() => {
-        if (!account?.address) {
+        if (!walletAddress) {
             setUserData(null);
             return;
         }
 
-        const controller = new AbortController(); // Cancel request if account changes
+        const controller = new AbortController(); // Cancel request if address changes
         const fetchUserData = async () => {
             setLoading(true);
             setError(null);
 
             try {
-                const dbResponse = await fetch(`/api/userProfile?wallet_address=${account.address}`, {
+                const dbResponse = await fetch(`/api/userProfile?wallet_address=${walletAddress}`, {
                     signal: controller.signal,
                 });
 

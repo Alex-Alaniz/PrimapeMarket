@@ -168,9 +168,14 @@ function BalanceDisplay({ address }: BalanceDisplayProps) {
 }
 
 // User Profile Card
-export function UserProfileCard() {
+interface UserProfileCardProps {
+  viewAddress?: string;
+  viewOnly?: boolean;
+}
+
+export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCardProps) {
   const account = useActiveAccount();
-  const { userData, loading, setUserData } = useUserData();
+  const { userData, loading, setUserData } = useUserData(viewAddress);
   const linkedAccount: Profile | null = useMemo(() => userData ? {
     profile_img_url: userData.profile_img_url || "",
     username: userData.username || "",
@@ -188,9 +193,9 @@ export function UserProfileCard() {
     email: "",
     display_name: "",
   });
-  // Clear profile on account change
+  // Clear profile on account change or load viewed profile
   useEffect(() => {
-    if (userData && account?.address) {
+    if (userData) {
       setProfile({
         profile_img_url: userData.profile_img_url || "",
         username: userData.username || "",
@@ -200,7 +205,7 @@ export function UserProfileCard() {
     } else {
       setProfile({ profile_img_url: "", username: "", email: "", display_name: "" });
     }
-  }, [userData, account?.address]);
+  }, [userData]);
 
   // clear the userData state when the user logs out 
   useEffect(() => {
@@ -300,9 +305,11 @@ export function UserProfileCard() {
                 </div>
               </div>
 
-              <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
-                Edit Profile
-              </Button>
+              {!viewOnly && (
+                <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
+                  Edit Profile
+                </Button>
+              )}
             </div>
             <div className="mt-6 border-t pt-4 rounded-lg shadow-lg p-6">
               <h3 className="font-semibold text-lg text-white-800">Connected Wallets</h3>
