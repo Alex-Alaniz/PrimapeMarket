@@ -9,7 +9,6 @@ import { useLeaderboardData } from "@/hooks/useLeaderboardData";
 import { cn } from "@/lib/utils";
 import { useActiveAccount } from "thirdweb/react";
 import Link from "next/link";
-import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface UserProfileData {
@@ -68,7 +67,7 @@ export function Leaderboard() {
     };
     
     fetchProfiles();
-  }, [sortedData, currentPage]);
+  }, [sortedData, currentPage, userProfiles]);
 
   // Calculate pagination
   const totalPages = Math.ceil((sortedData.length || 0) / itemsPerPage);
