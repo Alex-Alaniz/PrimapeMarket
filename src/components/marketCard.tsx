@@ -18,24 +18,6 @@ import { toEther } from "thirdweb";
 import { Badge as _Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
-// Function to format total market volume with K/M for larger numbers
-const formatTotalVolume = (totalSharesPerOption: readonly bigint[]): string => {
-    // Calculate total market volume (sum of all shares across all options)
-    const rawTotalMarketVolume = totalSharesPerOption.reduce(
-        (sum, shares) => sum + Number(toEther(shares)), 
-        0
-    );
-    
-    // Format the total market volume with K/M for larger numbers
-    if (rawTotalMarketVolume >= 1000000) {
-        return (rawTotalMarketVolume / 1000000).toFixed(2) + 'M';
-    } else if (rawTotalMarketVolume >= 1000) {
-        return (rawTotalMarketVolume / 1000).toFixed(2) + 'K';
-    } else {
-        return rawTotalMarketVolume.toFixed(2);
-    }
-};
-
 
 interface MarketCardProps {
     index: number;
