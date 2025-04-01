@@ -261,7 +261,8 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
 
       <CardContent className="pt-16 pb-6 text-center">
         {loading ? <span className="inline-block w-12 h-4 bg-muted animate-pulse rounded"></span> : null}
-        {userData ? (
+        {/* If viewing own profile and account exists, or if userData exists, show profile */}
+        {(!viewAddress && account) || userData ? (
           <AccountProvider address={viewAddress || (account?.address || "")} client={client}>
             <div>
               <h2 className="text-xl font-bold text-center">
@@ -303,9 +304,15 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
                 </div>
               </div>
 
+              {/* Show edit button for own profile, even if userData doesn't exist yet */}
               {!viewOnly && (
-                <Button size="sm" variant="outline" className="w-full" onClick={() => setEditModalOpen(true)}>
-                  Edit Profile
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => setEditModalOpen(true)}
+                >
+                  {userData ? "Edit Profile" : "Create Profile"}
                 </Button>
               )}
             </div>
@@ -348,7 +355,14 @@ export function UserProfileCard({ viewAddress, viewOnly = false }: UserProfileCa
               </div>
             </div> */}
           </AccountProvider>
-        ) : <h2 className="text-xl font-bold">Not Connected</h2>}
+        ) : (
+          // Only show "Not Connected" if there's truly no connected account
+          account ? (
+            <h2 className="text-xl font-bold">Setup Your Profile</h2>
+          ) : (
+            <h2 className="text-xl font-bold">Not Connected</h2>
+          )
+        )}
       </CardContent>
 
       <EditProfileModal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleSaveProfile} initialData={profile} />
