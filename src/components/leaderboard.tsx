@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,10 @@ export function Leaderboard() {
   const account = useActiveAccount();
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfileData>>({});
 
-  // Sort data based on realizedPnL in descending order
-  const sortedData = data ? [...data].sort((a, b) => Number(b.realizedPnL) - Number(a.realizedPnL)) : [];
+  // Sort data based on realizedPnL in descending order using useMemo
+  const sortedData = useMemo(() => {
+    return data ? [...data].sort((a, b) => Number(b.realizedPnL) - Number(a.realizedPnL)) : [];
+  }, [data]);
 
   // Fetch profile data for users in the current page
   useEffect(() => {
