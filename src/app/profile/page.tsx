@@ -17,7 +17,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mt-8">
           {/* User Profile Card */}
           <div className="md:col-span-3">
-            <UserProfileCard />
+            <UserProfileCard viewOnly={false} />
           </div>
 
           {/* User Activity */}

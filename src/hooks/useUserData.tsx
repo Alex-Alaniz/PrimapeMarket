@@ -35,7 +35,12 @@ export function useUserData(address?: string) {
                 });
 
                 if (dbResponse.ok) {
-                    setUserData(await dbResponse.json());
+                    const data = await dbResponse.json();
+                    setUserData(data);
+                } else if (dbResponse.status === 404) {
+                    // User not found but that's okay - we'll set null userData
+                    // but this is different from an error
+                    setUserData(null);
                 } else {
                     throw new Error("Failed to fetch user data");
                 }
