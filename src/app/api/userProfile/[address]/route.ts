@@ -7,8 +7,9 @@ import { NextResponse } from "next/server";
  */
 export async function GET(
   req: Request,
-  { params }: { params: { address: string } }
+  context: { params: { address: string } }
 ) {
+  const { params } = context;
   try {
     const { address } = params;
     
