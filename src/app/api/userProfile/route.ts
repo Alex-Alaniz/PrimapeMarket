@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * ✅ Test database connection when the API is called.
@@ -14,6 +14,7 @@ async function testDBConnection() {
   }
 }
 
+// Utility to check for Prisma errors
 function isPrismaError(
   error: unknown
 ): error is { code: string; meta?: { target: string[] } } {
@@ -28,21 +29,6 @@ function isPrismaError(
 /**
  * 🔹 CREATE (POST) - Add a new user profile.
  */
-import { db } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-
-// Utility to check for Prisma errors
-function isPrismaError(
-  error: unknown
-): error is { code: string; meta?: { target: string[] } } {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    typeof (error as { code: string }).code === "string"
-  );
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { wallet_address, display_name, profile_img_url, username } = await req.json();
@@ -99,29 +85,13 @@ export async function POST(req: NextRequest) {
 
     // Handle other errors
     return NextResponse.json({ error: "Error creating user" }, { status: 500 });
-
-//       let errorMessage = "A user with this information already exists.";
-//       if (field === "username") errorMessage = "Username is already taken.";
-//       if (field === "email") errorMessage = "Email is already registered.";
-//       if (field === "wallet_address")
-//         errorMessage = "Wallet address is already linked to an account.";
-
-//       return NextResponse.json({ error: errorMessage }, { status: 409 }); // HTTP 409 Conflict
-//     }
-
-//     // ✅ Ensure error is an instance of Error before accessing message
-//     if (error instanceof Error) {
-//       return NextResponse.json({ error: error.message }, { status: 500 });
-//     }
-
-//     return NextResponse.json({ error: "Error creating user" }, { status: 500 });
-//   }
-// }
+  }
+}
 
 /**
  * 🔹 READ (GET) - Fetch user by wallet address.
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     await testDBConnection(); // Ensure DB connection is active
 
@@ -153,49 +123,6 @@ export async function GET(req: Request) {
 /**
  * 🔹 UPDATE (PUT) - Update user profile.
  */
-export async function PUT(req: Request) {
-  try {
-    const { wallet_address, username, email, profile_img_url, display_name } =
-      await req.json();
-
-    // Validate wallet address
-    if (!wallet_address) {
-      return NextResponse.json(
-        { error: "Wallet address is required" },
-        { status: 400 }
-      );
-    }
-
-    // Update user profile
-    const updatedUser = await db.userProfile.update({
-      where: { wallet_address },
-      data: { username, email, profile_img_url, display_name },
-    });
-
-    return NextResponse.json(updatedUser);
-  } catch (error: unknown) {
-    console.error("Error updating user:", error);
-
-    // Handle unique constraint violations
-    if (isPrismaError(error) && error.code === "P2002") {
-      const field = error.meta?.target?.[0];
-
-      let errorMessage = "Update failed due to unique constraint violation.";
-      if (field === "username")
-        errorMessage = "This username is already in use.";
-      if (field === "email")
-        errorMessage = "This email is already associated with another account.";
-
-      return NextResponse.json({ error: errorMessage }, { status: 409 });
-    }
-
-    return NextResponse.json({ error: "Error updating user" }, { status: return NextResponse.json({ error: "Error creating user" }, { status: 500 });
-  }
-}
-
-/**
- * 🔹 UPDATE (PUT) - Update a user profile.
- */
 export async function PUT(req: NextRequest) {
   try {
     const { wallet_address, display_name, profile_img_url, username, email } = await req.json();
@@ -224,7 +151,7 @@ export async function PUT(req: NextRequest) {
           email: email || ""
         },
       });
-      
+
       return NextResponse.json(newUser, { status: 201 });
     }
 
@@ -242,6 +169,17 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error("Error updating user:", error);
+
+    // Handle unique constraint violations
+    if (isPrismaError(error) && error.code === "P2002") {
+      const field = error.meta?.target?.[0];
+      let errorMessage = "Update failed due to unique constraint violation.";
+      if (field === "username") errorMessage = "This username is already in use.";
+      if (field === "email") errorMessage = "This email is already associated with another account.";
+
+      return NextResponse.json({ error: errorMessage }, { status: 409 });
+    }
+
     return NextResponse.json({ error: "Error updating user" }, { status: 500 });
   }
 }
@@ -249,7 +187,7 @@ export async function PUT(req: NextRequest) {
 /**
  * 🔹 DELETE (DELETE) - Delete user by wallet address.
  */
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
   try {
     await testDBConnection(); // Ensure DB connection is active
 
