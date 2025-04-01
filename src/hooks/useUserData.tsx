@@ -1,8 +1,10 @@
+
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useActiveAccount } from "thirdweb/react";
 
 interface UserData {
+    wallet_address?: string;
     profile_img_url?: string;
     username?: string;
     email?: string;
@@ -17,6 +19,38 @@ export function useUserData(address?: string) {
 
     // Use provided address or account address
     const walletAddress = address || account?.address;
+
+    // Function to create a user profile
+    const createUserProfile = useCallback(async (wallet: string) => {
+        try {
+            // Check if user already exists first
+            const checkResponse = await fetch(`/api/user?address=${wallet}`);
+            if (checkResponse.ok) {
+                // User exists, return the data
+                return await checkResponse.json();
+            }
+
+            // Create a new user profile if not found
+            const createResponse = await fetch(`/api/userProfile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    wallet_address: wallet
+                }),
+            });
+
+            if (createResponse.ok) {
+                const newUser = await createResponse.json();
+                return newUser;
+            }
+            return null;
+        } catch (err) {
+            console.error("Error creating user profile:", err);
+            return null;
+        }
+    }, []);
 
     useEffect(() => {
         if (!walletAddress) {
@@ -38,9 +72,13 @@ export function useUserData(address?: string) {
                     const data = await dbResponse.json();
                     setUserData(data);
                 } else if (dbResponse.status === 404) {
-                    // User not found but that's okay - we'll set null userData
-                    // but this is different from an error
-                    setUserData(null);
+                    // User not found, let's create a profile automatically
+                    const newUser = await createUserProfile(walletAddress);
+                    if (newUser) {
+                        setUserData(newUser);
+                    } else {
+                        setUserData(null);
+                    }
                 } else {
                     throw new Error("Failed to fetch user data");
                 }
@@ -56,7 +94,7 @@ export function useUserData(address?: string) {
         fetchUserData();
 
         return () => controller.abort(); // Cleanup on unmount or address change
-    }, [walletAddress]); // ✅ Re-run when walletAddress changes
+    }, [walletAddress, createUserProfile]); // Re-run when walletAddress changes
 
     return { userData, loading, error, setUserData };
 }

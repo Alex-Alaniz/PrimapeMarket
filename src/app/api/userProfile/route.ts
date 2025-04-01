@@ -28,36 +28,74 @@ function isPrismaError(
 /**
  * 🔹 CREATE (POST) - Add a new user profile.
  */
-// export async function POST(req: Request) {
-//   try {
-//     await testDBConnection(); // Ensure DB connection is active
+import { db } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
-//     const { wallet_address } = await req.json();
+// Utility to check for Prisma errors
+function isPrismaError(
+  error: unknown
+): error is { code: string; meta?: { target: string[] } } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code: string }).code === "string"
+  );
+}
 
-//     // Validate required fields
-//     if (!wallet_address) {
-//       return NextResponse.json(
-//         {
-//           error: "Missing required fields: wallet_address",
-//         },
-//         { status: 400 }
-//       );
-//     }
+export async function POST(req: NextRequest) {
+  try {
+    const { wallet_address, display_name, profile_img_url, username } = await req.json();
 
-//     // Create a new user
-//     const newUser = await db.userProfile.create({
-//       data: {
-//         wallet_address,
-//       },
-//     });
+    // Validate required fields
+    if (!wallet_address) {
+      return NextResponse.json(
+        {
+          error: "Missing required fields: wallet_address",
+        },
+        { status: 400 }
+      );
+    }
 
-//     return NextResponse.json(newUser, { status: 201 });
-//   } catch (error: unknown) {
-//     console.error("Error creating user:", error);
+    // Check if user already exists
+    const existingUser = await db.userProfile.findUnique({
+      where: { wallet_address }
+    });
 
-//     // ✅ Check if it's a Prisma error
-//     if (isPrismaError(error) && error.code === "P2002") {
-//       const field = error.meta?.target?.[0]; // Extract field causing the error
+    if (existingUser) {
+      // User already exists, return the user
+      return NextResponse.json(existingUser, { status: 200 });
+    }
+
+    // Create a new user
+    const newUser = await db.userProfile.create({
+      data: {
+        wallet_address,
+        display_name: display_name || "",
+        profile_img_url: profile_img_url || "",
+        username: username || ""
+      },
+    });
+
+    // Create an entry in the leaderboard
+    await db.usersLeaderboard.create({
+      data: {
+        primary_wallet: wallet_address,
+      }
+    });
+
+    return NextResponse.json(newUser, { status: 201 });
+  } catch (error: unknown) {
+    console.error("Error creating user:", error);
+
+    // Check if it's a Prisma error
+    if (isPrismaError(error) && error.code === "P2002") {
+      const field = error.meta?.target?.[0]; // Extract field causing the unique constraint violation
+      return NextResponse.json(
+        { error: `User with this ${field} already exists` },
+        { status: 409 }
+      );
+    }e error
 
 //       let errorMessage = "A user with this information already exists.";
 //       if (field === "username") errorMessage = "Username is already taken.";
@@ -148,6 +186,59 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 409 });
     }
 
+    return NextResponse.json({ error: "Error updating user" }, { status: return NextResponse.json({ error: "Error creating user" }, { status: 500 });
+  }
+}
+
+/**
+ * 🔹 UPDATE (PUT) - Update a user profile.
+ */
+export async function PUT(req: NextRequest) {
+  try {
+    const { wallet_address, display_name, profile_img_url, username, email } = await req.json();
+
+    // Validate required fields
+    if (!wallet_address) {
+      return NextResponse.json(
+        { error: "Wallet address is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if user exists
+    const existingUser = await db.userProfile.findUnique({
+      where: { wallet_address }
+    });
+
+    if (!existingUser) {
+      // User doesn't exist, create it
+      const newUser = await db.userProfile.create({
+        data: {
+          wallet_address,
+          display_name: display_name || "",
+          profile_img_url: profile_img_url || "",
+          username: username || "",
+          email: email || ""
+        },
+      });
+      
+      return NextResponse.json(newUser, { status: 201 });
+    }
+
+    // Update user profile
+    const updatedUser = await db.userProfile.update({
+      where: { wallet_address },
+      data: {
+        display_name: display_name !== undefined ? display_name : existingUser.display_name,
+        profile_img_url: profile_img_url !== undefined ? profile_img_url : existingUser.profile_img_url,
+        username: username !== undefined ? username : existingUser.username,
+        email: email !== undefined ? email : existingUser.email
+      }
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
     return NextResponse.json({ error: "Error updating user" }, { status: 500 });
   }
 }
