@@ -80,68 +80,72 @@ export function MarketSharesDisplay({
                     <Image src="/images/ape.png" alt="APE" width={16} height={16} className="h-4 w-4" />
                 </span>
             </div>
-            <div className="flex items-center w-full">
-                {optionsWithShares.length > 1 && (
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 p-0" 
-                        onClick={handlePrev}
-                    >
-                        <ChevronLeft className="h-3 w-3" />
-                    </Button>
-                )}
-
-                <div className="flex flex-col items-center justify-center text-xs text-muted-foreground">
-                    <span>Your Shares</span>
-                </div>
-
-                <div 
-                    ref={containerRef} 
-                    className="flex justify-between w-full"
-                >
-                    {optionsWithShares.map((item, idx) => (
-                        <div 
-                            key={item.index} 
-                            className={`w-full ${
-                                idx === currentIndex ? 'block' : 'hidden'
-                            }`}
+            
+            {/* Only show user shares section if there are shares to display */}
+            {optionsWithShares.length > 0 && (
+                <div className="flex items-center w-full">
+                    {optionsWithShares.length > 1 && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 p-0" 
+                            onClick={handlePrev}
                         >
-                            <Badge 
-                                variant="default"
-                                className={compact ? 'text-xs py-0.5' : ''}
-                            >
-                                {item.option}: {item.sharesInEther}
-                            </Badge>
-                        </div>
-                    ))}
-                </div>
+                            <ChevronLeft className="h-3 w-3" />
+                        </Button>
+                    )}
 
-                {optionsWithShares.length > 1 && (
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 p-0" 
-                        onClick={handleNext}
+                    <div className="flex flex-col items-center justify-center text-xs text-muted-foreground">
+                        <span>Your Shares</span>
+                    </div>
+
+                    <div 
+                        ref={containerRef} 
+                        className="flex justify-between w-full"
                     >
-                        <ChevronRight className="h-3 w-3" />
-                    </Button>
-                )}
-
-                {optionsWithShares.length > 1 && (
-                    <div className="flex gap-1 ml-1">
-                        {optionsWithShares.map((_, idx) => (
+                        {optionsWithShares.map((item, idx) => (
                             <div 
-                                key={idx} 
-                                className={`h-1 w-1 rounded-full ${
-                                    idx === currentIndex ? 'bg-primary' : 'bg-muted'
+                                key={item.index} 
+                                className={`w-full ${
+                                    idx === currentIndex ? 'block' : 'hidden'
                                 }`}
-                                onClick={() => setCurrentIndex(idx)}
-                            />
+                            >
+                                <Badge 
+                                    variant="default"
+                                    className={compact ? 'text-xs py-0.5' : ''}
+                                >
+                                    {item.option}: {item.sharesInEther}
+                                </Badge>
+                            </div>
                         ))}
                     </div>
-                )}
-            </div>
+
+                    {optionsWithShares.length > 1 && (
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 p-0" 
+                            onClick={handleNext}
+                        >
+                            <ChevronRight className="h-3 w-3" />
+                        </Button>
+                    )}
+
+                    {optionsWithShares.length > 1 && (
+                        <div className="flex gap-1 ml-1">
+                            {optionsWithShares.map((_, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={`h-1 w-1 rounded-full ${
+                                        idx === currentIndex ? 'bg-primary' : 'bg-muted'
+                                    }`}
+                                    onClick={() => setCurrentIndex(idx)}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

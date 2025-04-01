@@ -200,13 +200,14 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                         />
                     </CardContent>
 
-                    {account && (
-                        <CardFooter className="p-3 pt-1 border-t border-border/30">
-                            {market && userShares && (
-                                <MarketSharesDisplay market={market} userShares={userShares} />
-                            )}
-                        </CardFooter>
-                    )}
+                    <CardFooter className="p-3 pt-1 border-t border-border/30">
+                        {market && (
+                            <MarketSharesDisplay 
+                                market={market} 
+                                userShares={userShares || []} 
+                            />
+                        )}
+                    </CardFooter>
                 </>
             )}
         </Card>
