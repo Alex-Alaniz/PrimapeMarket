@@ -75,22 +75,34 @@ function EditProfileModal({ isOpen, onClose, onSave, initialData }: EditProfileM
 
   const handleSubmit = async () => {
     try {
+      // Determine if this is a create or update operation
+      const isNewProfile = !formData.wallet_address;
+      const method = isNewProfile ? "POST" : "PUT";
+      
+      console.log(`${isNewProfile ? 'Creating' : 'Updating'} user profile with data:`, formData);
+      
       const response = await fetch("/api/userProfile", {
-        method: "PUT",
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData), // Include wallet address in the request
+        body: JSON.stringify({
+          ...formData,
+          wallet_address: account?.address // Ensure wallet address is included
+        }),
       });
 
       if (response.ok) {
         const updatedUser = await response.json();
-        console.log("Profile updated", updatedUser);
+        console.log("Profile saved", updatedUser);
         setUserData(updatedUser);
         onSave(updatedUser);
       } else {
-        console.error("Error updating profile");
+        const errorData = await response.json();
+        console.error("Error saving profile:", errorData);
+        alert(`Error saving profile: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error("Error updating profile", error);
+      console.error("Error saving profile", error);
+      alert(`Error saving profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
     onClose();
   };
