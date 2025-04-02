@@ -44,28 +44,40 @@ export async function GET() {
           }
           
           // If no cached data, fetch from Twitter API
-          const twitterData = await getTwitterProfileData(creator.handle);
-          
-          // Cache the Twitter data for future use
-          if (twitterData) {
-            await cacheTwitterProfile(twitterData);
+          try {
+            const twitterData = await getTwitterProfileData(creator.handle);
             
-            // Mark as onboarded in the whitelist
-            await twitterDb.twitterWhitelist.update({
-              where: { username: creator.handle.replace('@', '') },
-              data: { is_onboarded: true }
-            });
-            
-            return {
-              ...creator,
-              name: twitterData.name || creator.handle,
-              twitterId: twitterData.id,
-              avatar: twitterData.profile_image_url || '/images/pm.PNG',
-              description: twitterData.description || 'Creator information not available at this time.'
-            };
+            // Cache the Twitter data for future use
+            if (twitterData) {
+              await cacheTwitterProfile(twitterData);
+              
+              // Mark as onboarded in the whitelist
+              await twitterDb.twitterWhitelist.update({
+                where: { username: creator.handle.replace('@', '') },
+                data: { is_onboarded: true }
+              });
+              
+              return {
+                ...creator,
+                name: twitterData.name || creator.handle,
+                twitterId: twitterData.id,
+                avatar: twitterData.profile_image_url || '/images/pm.PNG',
+                description: twitterData.description || 'Creator information not available at this time.'
+              };
+            }
+          } catch (twitterError) {
+            console.error(`Error fetching Twitter data for ${creator.handle}:`, twitterError);
+            // Fall through to default placeholder data
           }
           
-          return creator;
+          // Return with placeholder data if Twitter API failed or returned no data
+          return {
+            ...creator,
+            name: `${creator.handle.replace('@', '')} | ApeChain Creator`,
+            twitterId: creator.id || '',
+            avatar: '/images/pm.PNG',
+            description: 'An awesome ApeChain creator building the future of Web3 social engagement. Check back soon for their full profile!'
+          };
         } catch (error) {
           console.error(`Error fetching Twitter data for ${creator.handle}:`, error);
           return creator;
