@@ -35,7 +35,16 @@ export default function EarnPage() {
         const data = await response.json();
 
         // Transform Twitter handles to include @ if not present
-        const enhancedData = data.map(creator => ({
+        const enhancedData = data.map((creator: {
+          id: string;
+          name: string;
+          handle: string;
+          avatar: string;
+          description: string;
+          category: string;
+          points: number;
+          engagementTypes: string[];
+        }) => ({
           ...creator,
           handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
         }));
