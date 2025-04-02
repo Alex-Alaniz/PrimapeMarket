@@ -55,21 +55,34 @@ export async function processBatch() {
       currentBatchIndex = 0;
     }
     
-    // Get current batch
-    const endIndex = Math.min(currentBatchIndex + BATCH_SIZE, creators.length);
-    const currentBatch = creators.slice(currentBatchIndex, endIndex);
-    
-    // Process each creator in the batch
-    console.log(`Processing batch of ${currentBatch.length} creators (${currentBatchIndex+1}-${endIndex} of ${creators.length})`);
+    // Process creators one by one instead of in fixed batches
+    // This ensures we don't waste our index on skipped profiles
+    let remainingToProcess = BATCH_SIZE;
     let processed = 0;
     let skipped = 0;
+    let processedIndexes = [];
     
-    for (const creator of currentBatch) {
+    // Keep track of our starting point for reporting
+    const startIndex = currentBatchIndex;
+    
+    while (remainingToProcess > 0 && currentBatchIndex < creators.length) {
+      const creator = creators[currentBatchIndex];
+      console.log(`Processing creator ${currentBatchIndex+1} of ${creators.length}: ${creator.username}`);
+      
       try {
+        // Check if we've already exceeded our API rate limit
+        if (!canMakeApiCall() && remainingToProcess > 0) {
+          console.log('Rate limit reached - halting this batch early');
+          break;
+        }
+        
         // Check if profile already exists in cache
         const existingProfile = await twitterDb.twitterProfile.findUnique({
           where: { username: creator.username }
         });
+        
+        // Check if we should skip this profile
+        let shouldSkip = false;
         
         if (existingProfile) {
           if (existingProfile.updated_at) {
@@ -80,18 +93,24 @@ export async function processBatch() {
             // Only update profiles older than 72 hours (3 days)
             if (hoursSinceUpdate < 72) {
               console.log(`Skipping ${creator.username} - cached profile is less than 72 hours old (${hoursSinceUpdate.toFixed(2)} hours)`);
-              skipped++;
-              continue;
+              shouldSkip = true;
+            } else {
+              console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating since it's older than 72 hours`);
             }
-            console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating since it's older than 72 hours`);
           } else {
             console.log(`Skipping ${creator.username} - profile exists in database but has no updated_at timestamp`);
-            skipped++;
-            continue;
+            shouldSkip = true;
           }
         }
         
-        // Only reach this point if the profile doesn't exist or is older than 24 hours
+        if (shouldSkip) {
+          skipped++;
+          // Move to the next creator without counting against our processing limit
+          currentBatchIndex++;
+          continue;
+        }
+        
+        // Only reach this point if the profile doesn't exist or is older than 72 hours
         console.log(`Fetching Twitter data for ${creator.username}`);
         
         // Check if we should use the cached data instead of making an API call
@@ -99,6 +118,9 @@ export async function processBatch() {
           console.log(`Rate limited - using existing data for ${creator.username} instead of API call`);
           // Still count it as processed since we're handling it
           processed++;
+          remainingToProcess--;
+          processedIndexes.push(currentBatchIndex);
+          currentBatchIndex++;
           continue;
         }
         
@@ -112,16 +134,30 @@ export async function processBatch() {
         } else {
           console.log(`No Twitter data available for ${creator.username}`);
         }
+        
+        // Count this creator against our batch size and move to next
+        remainingToProcess--;
+        processedIndexes.push(currentBatchIndex);
+        currentBatchIndex++;
+        
       } catch (error) {
         console.error(`Error processing ${creator.username}:`, error);
+        // Still move to the next creator even if there was an error
+        currentBatchIndex++;
       }
     }
     
-    // Update index for next batch
-    currentBatchIndex = endIndex;
+    // If we've reached the end of the creator list, reset to beginning
     if (currentBatchIndex >= creators.length) {
-      currentBatchIndex = 0; // Reset to beginning for next run
+      currentBatchIndex = 0;
     }
+    
+    // Calculate the actual end index for reporting
+    const endIndex = processedIndexes.length > 0 ? 
+      Math.max(...processedIndexes) + 1 : 
+      startIndex;
+      
+    console.log(`Batch complete: Processed ${processed}, Skipped ${skipped}, Next starting at index ${currentBatchIndex}`);
     
     const nextBatchTime = Date.now() + BATCH_INTERVAL_MS;
     const remainingCreators = creators.length - currentBatchIndex;
