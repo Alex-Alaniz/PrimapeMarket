@@ -68,15 +68,20 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
       };
     }
     
-    // Check if we have a Twitter bearer token
-    const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    if (!bearerToken) {
-      console.warn('Twitter Bearer Token not found in environment variables');
+    // Check if we have Twitter bearer tokens (primary and backup)
+    const primaryBearerToken = process.env.TWITTER_BEARER_TOKEN;
+    const secondaryBearerToken = process.env.TWITTER_BEARER_TOKEN_SECONDARY;
+    
+    if (!primaryBearerToken && !secondaryBearerToken) {
+      console.warn('No Twitter Bearer Tokens found in environment variables');
       return null;
     }
-
-    // Check rate limits before making API call
-    if (!canMakeApiCall()) {
+    
+    // For manual fetching, we'll bypass the rate limit check
+    const isManualFetch = process.env.MANUAL_FETCH === 'true';
+    
+    // Check rate limits before making API call (unless it's a manual fetch)
+    if (!isManualFetch && !canMakeApiCall()) {
       console.warn(`Rate limit reached for Twitter API. Cannot fetch ${cleanUsername} data.`);
       return null;
     }
@@ -84,36 +89,66 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
     // Only fetch from Twitter API if we don't have data in our DB
     console.log(`Fetching Twitter data for ${cleanUsername} from API`);
     
-    // Increment API call counter
-    apiCallsInWindow++;
+    // Increment API call counter (unless it's a manual fetch)
+    if (!isManualFetch) {
+      apiCallsInWindow++;
+    }
+    
+    // Determine which token to use - start with primary
+    let bearerToken = primaryBearerToken;
     
     // Fetch user data from Twitter API with retry logic
     let retries = 2;
     let response: Response | undefined;
     
+    let useSecondaryToken = false;
+    
     while (retries >= 0) {
-      response = await fetch(
-        `${TWITTER_API_ENDPOINT}${cleanUsername}?user.fields=description,profile_image_url`, 
-        {
-          headers: {
-            Authorization: `Bearer ${bearerToken}`
-          }
-        }
-      );
-      
-      if (response.status === 429) {
-        // Rate limited - wait and retry if we have retries left
-        if (retries > 0) {
-          console.warn(`Rate limited fetching ${cleanUsername}, retrying in 2s...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          retries--;
-          continue;
-        }
-        throw new Error('Twitter API rate limited');
+      // If primary token fails with auth error and we have a secondary token, try that
+      if (useSecondaryToken && secondaryBearerToken) {
+        console.log(`Trying secondary token for ${cleanUsername}`);
+        bearerToken = secondaryBearerToken;
       }
       
-      // Break out of retry loop if we got a response (even if it's an error)
-      break;
+      try {
+        response = await fetch(
+          `${TWITTER_API_ENDPOINT}${cleanUsername}?user.fields=description,profile_image_url`, 
+          {
+            headers: {
+              Authorization: `Bearer ${bearerToken}`
+            }
+          }
+        );
+        
+        // If we get a 401 Unauthorized and have a secondary token to try
+        if (response.status === 401 && secondaryBearerToken && !useSecondaryToken) {
+          console.warn(`Auth failed for ${cleanUsername}, trying secondary token...`);
+          useSecondaryToken = true;
+          continue; // Try again with secondary token
+        }
+        
+        if (response.status === 429) {
+          // Rate limited - wait and retry if we have retries left
+          if (retries > 0) {
+            console.warn(`Rate limited fetching ${cleanUsername}, retrying in 2s...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            retries--;
+            continue;
+          }
+          throw new Error('Twitter API rate limited');
+        }
+        
+        // Break out of retry loop if we got a response (even if it's an error)
+        break;
+      } catch (error) {
+        console.error(`Network error fetching ${cleanUsername}:`, error);
+        if (retries > 0) {
+          retries--;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        throw error; // Re-throw if out of retries
+      }
     }
 
     if (!response || !response.ok) {
