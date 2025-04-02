@@ -1,10 +1,18 @@
 
 // Script to backup and restore Twitter profiles
-const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
 const path = require('path');
 
-// Temporarily use the regular PrismaClient until the Twitter client is generated
+// Try to import the Twitter-specific PrismaClient
+let PrismaClient;
+try {
+  PrismaClient = require('@prisma/twitter-client').PrismaClient;
+} catch (error) {
+  // Fallback to regular PrismaClient if the Twitter client is not generated yet
+  console.warn("Twitter client not found, using regular Prisma client as fallback");
+  PrismaClient = require('@prisma/client').PrismaClient;
+}
+
 const twitterDb = new PrismaClient({
   datasources: {
     db: {
