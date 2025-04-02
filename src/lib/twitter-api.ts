@@ -1,12 +1,9 @@
 
 import 'dotenv/config';
+import { twitterDb } from './twitter-prisma';
 
 // Twitter API v2 endpoint for user lookup
 const TWITTER_API_ENDPOINT = 'https://api.twitter.com/2/users/by/username/';
-
-interface TwitterUserData {
-  id: string;
-  name: string;
 
 // Track API rate limits
 let apiCallsInWindow = 0;
@@ -29,6 +26,9 @@ function canMakeApiCall() {
   return apiCallsInWindow < 3; // 3 requests per 15 minutes
 }
 
+interface TwitterUserData {
+  id: string;
+  name: string;
   username: string;
   description: string;
   profile_image_url: string;
@@ -143,8 +143,6 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
 /**
  * Caches Twitter profile data in our database
  */
-import { twitterDb } from './twitter-prisma';
-
 export async function cacheTwitterProfile(profileData: TwitterUserData): Promise<void> {
   try {
     await twitterDb.twitterProfile.upsert({
