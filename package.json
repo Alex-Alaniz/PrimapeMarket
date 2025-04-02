@@ -2,6 +2,9 @@
   "name": "simplepredictionmarket",
   "version": "0.1.0",
   "private": true,
+  "_moduleAliases": {
+    "@": "./src"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "node prisma/generate-twitter-schema.js && next build",
@@ -32,6 +35,7 @@
     "dotenv": "^16.4.7",
     "framer-motion": "^12.6.2",
     "lucide-react": "^0.453.0",
+    "module-alias": "^2.2.3",
     "next": "15.0.1",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.4",

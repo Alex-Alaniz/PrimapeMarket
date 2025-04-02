@@ -1,55 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
-import { getUserWallet } from "@/lib/utils";
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { spaceId, walletAddress } = body;
-
-    if (!spaceId || !walletAddress) {
-      return NextResponse.json(
-        { error: "Space ID and wallet address are required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if the space exists
-    const space = await twitterDb.twitterSpace.findUnique({
-      where: { id: spaceId },
-      include: { hosts: true }
-    });
-
-    if (!space) {
-      return NextResponse.json(
-        { error: "Space not found" },
-        { status: 404 }
-      );
-    }
-
-    // For now, we'll just return a success response
-    // In a real implementation, you would save the RSVP in the database
-    return NextResponse.json({
-      success: true,
-      message: "RSVP successful",
-      space: {
-        id: space.id,
-        title: space.title,
-        start_time: space.start_time,
-        hosts: space.hosts.map(host => host.username)
-      }
-    });
-  } catch (error) {
-    console.error("Error handling space RSVP:", error);
-    return NextResponse.json(
-      { error: "Failed to process RSVP" },
-      { status: 500 }
-    );
-  }
-}
-import { NextRequest, NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
 import db from "@/lib/prisma";
 
 // Simple RSVP API for Twitter spaces
@@ -67,6 +18,7 @@ export async function POST(req: NextRequest) {
     // Verify the space exists
     const space = await twitterDb.twitterSpace.findUnique({
       where: { id: spaceId },
+      include: { hosts: true }
     });
 
     if (!space) {
@@ -77,8 +29,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Store RSVP in the main database (assuming a SpaceRSVP table exists)
-    // This is a simplified implementation - you may want to add additional checks,
-    // such as preventing duplicate RSVPs
     const rsvp = await db.spaceRSVP.upsert({
       where: {
         spaceId_walletAddress: {
@@ -101,6 +51,12 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "RSVP recorded successfully",
       data: rsvp,
+      space: {
+        id: space.id,
+        title: space.title,
+        start_time: space.start_time,
+        hosts: space.hosts.map(host => host.username)
+      }
     });
   } catch (error) {
     console.error("Error recording RSVP:", error);
