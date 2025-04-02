@@ -1,26 +1,25 @@
-
 {
   "name": "Primape Markets",
   "short_name": "Primape",
-  "description": "Predict the Jungle - Web3 prediction markets",
+  "description": "Predict the Jungle - The premier prediction marketplace on ApeChain, where you can participate in decentralized prediction markets.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "pm.PNG",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/public/images/pm.PNG",
       "sizes": "384x384",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/public/images/pm.PNG",
       "sizes": "512x512",
       "type": "image/png"
     }
