@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Store RSVP in the main database (assuming a SpaceRSVP table exists)
-    const rsvp = await db.spaceRSVP.upsert({
+    // Store RSVP in the Twitter database
+    const rsvp = await twitterDb.spaceRSVP.upsert({
       where: {
         spaceId_walletAddress: {
           spaceId,
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
       whereClause = { ...whereClause, walletAddress };
     }
 
-    const rsvps = await db.spaceRSVP.findMany({
+    const rsvps = await twitterDb.spaceRSVP.findMany({
       where: whereClause,
       orderBy: {
         createdAt: "desc",
