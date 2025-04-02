@@ -119,12 +119,14 @@ export function Navbar() {
                     href="/earn"
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary flex items-center gap-1"
                 >
-                    {" "}
                     {/* Added Earn link */}
                     <Award className="h-4 w-4" />
                     <span>Earn</span>
-                </Link>{" "}
+                </Link>
                 {/* Added Earn link */}
+                 <Link href="/spaces" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                    Spaces
+                </Link>
                 {account && (
                     <Link href="/profile">
                         <Button variant="ghost" size="sm" className="gap-2">
@@ -186,7 +188,18 @@ export function Navbar() {
                                 <span>Leaderboard</span>
                             </Button>
                         </Link>
-
+                        <Link
+                            href="/spaces"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start"
+                            >
+                                <span>Spaces</span>
+                            </Button>
+                        </Link>
                         {account && (
                             <Link
                                 href="/profile"

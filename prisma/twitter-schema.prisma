@@ -11,25 +11,38 @@ datasource db {
 
 // Model for cached Twitter profiles
 model TwitterProfile {
-  id               String   @id
-  username         String   @unique
-  name             String?
-  description      String?
+  id                String         @id
+  username          String         @unique
+  name              String?
+  description       String?
   profile_image_url String?
-  followers_count  Int      @default(0)
-  following_count  Int      @default(0)
-  tweet_count      Int      @default(0)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-
-  @@map("twitter_profiles")
+  followers_count   Int?
+  following_count   Int?
+  tweet_count       Int?
+  fetched_at        DateTime       @default(now())
+  hosted_spaces     TwitterSpace[] @relation("HostedSpaces")
 }
 
 model TwitterWhitelist {
-  username     String   @id @unique
-  category     String   @default("Spaces")
-  points       Int      @default(250)
-  added_at     DateTime @default(now())
-  is_onboarded Boolean  @default(false)
-  added_by     String?  // admin wallet address who added this creator
+  username      String    @id @unique
+  category      String    @default("Spaces")
+  points        Int       @default(250)
+  is_onboarded  Boolean   @default(false)
+  added_at      DateTime  @default(now())
+  added_by      String?
+}
+
+model TwitterSpace {
+  id           String           @id @default(uuid())
+  space_id     String?          @unique
+  title        String
+  description  String?
+  start_time   DateTime
+  end_time     DateTime?
+  day_of_week  String
+  recurring    Boolean          @default(true)
+  hosts        TwitterProfile[] @relation("HostedSpaces")
+  points       Int              @default(100)
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
 }
