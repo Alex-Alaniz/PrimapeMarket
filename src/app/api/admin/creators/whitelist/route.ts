@@ -1,38 +1,37 @@
-
-import { NextRequest, NextResponse } from 'next/server';
-import { twitterDb } from '@/lib/twitter-prisma';
-import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
+import { NextRequest, NextResponse } from "next/server";
+import { twitterDb } from "@/lib/twitter-prisma";
+import { getTwitterProfileData, cacheTwitterProfile } from "@/lib/twitter-api";
 
 // Simple admin validation - in production use a more robust system
 const ADMIN_WALLETS = [
   // Add your admin wallet addresses here
-  "0x1234567890123456789012345678901234567890",
+  "0x1A5B5a2FF1F70989E186aC6109705CF2cA327158",
   // Add more as needed
 ];
 
 async function validateAdmin(req: NextRequest): Promise<boolean> {
-  const adminWallet = req.headers.get('x-admin-wallet');
-  return ADMIN_WALLETS.includes(adminWallet || '');
+  const adminWallet = req.headers.get("x-admin-wallet");
+  return ADMIN_WALLETS.includes(adminWallet || "");
 }
 
 // GET /api/admin/creators/whitelist - List all whitelisted creators
 export async function GET(req: NextRequest) {
   try {
     // Validate admin access
-    if (!await validateAdmin(req)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!(await validateAdmin(req))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const whitelistedCreators = await twitterDb.twitterWhitelist.findMany({
-      orderBy: { added_at: 'desc' },
+      orderBy: { added_at: "desc" },
     });
 
     return NextResponse.json(whitelistedCreators);
   } catch (error) {
-    console.error('Error fetching whitelisted creators:', error);
+    console.error("Error fetching whitelisted creators:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch whitelisted creators' },
-      { status: 500 }
+      { error: "Failed to fetch whitelisted creators" },
+      { status: 500 },
     );
   }
 }
@@ -41,8 +40,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Validate admin access
-    if (!await validateAdmin(req)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!(await validateAdmin(req))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -50,23 +49,23 @@ export async function POST(req: NextRequest) {
 
     if (!username) {
       return NextResponse.json(
-        { error: 'Twitter username is required' },
-        { status: 400 }
+        { error: "Twitter username is required" },
+        { status: 400 },
       );
     }
 
     // Clean username (remove @ if present)
-    const cleanUsername = username.replace('@', '');
+    const cleanUsername = username.replace("@", "");
 
     // Check if already in whitelist
     const existing = await twitterDb.twitterWhitelist.findUnique({
-      where: { username: cleanUsername }
+      where: { username: cleanUsername },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: 'Creator already in whitelist', creator: existing },
-        { status: 409 }
+        { error: "Creator already in whitelist", creator: existing },
+        { status: 409 },
       );
     }
 
@@ -74,10 +73,10 @@ export async function POST(req: NextRequest) {
     const whitelistedCreator = await twitterDb.twitterWhitelist.create({
       data: {
         username: cleanUsername,
-        category: category || 'Spaces',
+        category: category || "Spaces",
         points: points || 250,
         added_by: adminWallet || null,
-      }
+      },
     });
 
     // Try to pre-fetch their Twitter data (but don't fail if this fails)
@@ -87,16 +86,19 @@ export async function POST(req: NextRequest) {
         await cacheTwitterProfile(twitterData);
       }
     } catch (prefetchError) {
-      console.warn(`Pre-fetching Twitter data failed for ${cleanUsername}:`, prefetchError);
+      console.warn(
+        `Pre-fetching Twitter data failed for ${cleanUsername}:`,
+        prefetchError,
+      );
       // Continue anyway - this is just a convenience feature
     }
 
     return NextResponse.json(whitelistedCreator, { status: 201 });
   } catch (error) {
-    console.error('Error adding creator to whitelist:', error);
+    console.error("Error adding creator to whitelist:", error);
     return NextResponse.json(
-      { error: 'Failed to add creator to whitelist' },
-      { status: 500 }
+      { error: "Failed to add creator to whitelist" },
+      { status: 500 },
     );
   }
 }
@@ -105,46 +107,46 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // Validate admin access
-    if (!await validateAdmin(req)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!(await validateAdmin(req))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
-    const username = searchParams.get('username');
+    const username = searchParams.get("username");
 
     if (!username) {
       return NextResponse.json(
-        { error: 'Username parameter is required' },
-        { status: 400 }
+        { error: "Username parameter is required" },
+        { status: 400 },
       );
     }
 
     // Clean username (remove @ if present)
-    const cleanUsername = username.replace('@', '');
+    const cleanUsername = username.replace("@", "");
 
     // Check if in whitelist
     const existing = await twitterDb.twitterWhitelist.findUnique({
-      where: { username: cleanUsername }
+      where: { username: cleanUsername },
     });
 
     if (!existing) {
       return NextResponse.json(
-        { error: 'Creator not found in whitelist' },
-        { status: 404 }
+        { error: "Creator not found in whitelist" },
+        { status: 404 },
       );
     }
 
     // Remove from whitelist
     await twitterDb.twitterWhitelist.delete({
-      where: { username: cleanUsername }
+      where: { username: cleanUsername },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error removing creator from whitelist:', error);
+    console.error("Error removing creator from whitelist:", error);
     return NextResponse.json(
-      { error: 'Failed to remove creator from whitelist' },
-      { status: 500 }
+      { error: "Failed to remove creator from whitelist" },
+      { status: 500 },
     );
   }
 }
