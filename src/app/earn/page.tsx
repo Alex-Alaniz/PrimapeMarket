@@ -27,13 +27,32 @@ export default function EarnPage() {
   }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Track last fetch time in session storage to avoid repeated fetches
+  const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
+  
   useEffect(() => {
     const fetchCreators = async () => {
       try {
-        // Fetch from the API which now includes Twitter profile data
-        const response = await fetch('/api/creators');
+        // Check if we have cached creators in localStorage and when they were last fetched
+        const cachedCreators = localStorage.getItem('cached_creators');
+        const savedLastFetchTime = sessionStorage.getItem('creators_last_fetch');
+        setLastFetchTime(savedLastFetchTime);
+        
+        const now = new Date().toISOString();
+        const useCache = cachedCreators && savedLastFetchTime && 
+          (new Date(now).getTime() - new Date(savedLastFetchTime).getTime() < 15 * 60 * 1000); // 15 minutes
+        
+        if (useCache) {
+          console.log("Using cached creators data");
+          setCreators(JSON.parse(cachedCreators));
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fetch from API with cache flag - this tells the backend to prioritize cached data
+        const response = await fetch('/api/creators?use_cache=true');
         const data = await response.json();
-
+        
         // Transform Twitter handles to include @ if not present
         const enhancedData = data.map((creator: {
           id: string;
@@ -49,10 +68,19 @@ export default function EarnPage() {
           handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
         }));
 
+        // Store in localStorage for future use
+        localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
+        sessionStorage.setItem('creators_last_fetch', now);
+        setLastFetchTime(now);
+        
         setCreators(enhancedData);
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        // No fallback data needed - API is working correctly
+        // Try to use cached data if available, even if it's older than 15 minutes
+        const cachedCreators = localStorage.getItem('cached_creators');
+        if (cachedCreators) {
+          setCreators(JSON.parse(cachedCreators));
+        }
       } finally {
         setIsLoading(false);
       }

@@ -7,6 +7,28 @@ const TWITTER_API_ENDPOINT = 'https://api.twitter.com/2/users/by/username/';
 interface TwitterUserData {
   id: string;
   name: string;
+
+// Track API rate limits
+let apiCallsInWindow = 0;
+let apiWindowResetTime = Date.now() + (15 * 60 * 1000); // 15 minutes from now
+
+// Reset counter when the time window passes
+function checkAndResetRateLimit() {
+  const now = Date.now();
+  if (now > apiWindowResetTime) {
+    apiCallsInWindow = 0;
+    apiWindowResetTime = now + (15 * 60 * 1000); // 15 minutes from now
+    return true;
+  }
+  return false;
+}
+
+// Check if we're within rate limits
+function canMakeApiCall() {
+  checkAndResetRateLimit();
+  return apiCallsInWindow < 3; // 3 requests per 15 minutes
+}
+
   username: string;
   description: string;
   profile_image_url: string;
@@ -53,8 +75,17 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
       return null;
     }
 
+    // Check rate limits before making API call
+    if (!canMakeApiCall()) {
+      console.warn(`Rate limit reached for Twitter API. Cannot fetch ${cleanUsername} data.`);
+      return null;
+    }
+
     // Only fetch from Twitter API if we don't have data in our DB
     console.log(`Fetching Twitter data for ${cleanUsername} from API`);
+    
+    // Increment API call counter
+    apiCallsInWindow++;
     
     // Fetch user data from Twitter API with retry logic
     let retries = 2;
