@@ -86,14 +86,12 @@ export async function GET() {
       });
     });
 
-    // Order days of the week
+    // Ensure we have all days of the week in the response, even if empty
     const orderedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const orderedSpacesByDay = orderedDays
-      .filter(day => spacesByDay[day])
-      .reduce((acc, day) => {
-        acc[day] = spacesByDay[day];
-        return acc;
-      }, {} as Record<string, EnhancedSpace[]>);
+    const orderedSpacesByDay = orderedDays.reduce((acc, day) => {
+      acc[day] = spacesByDay[day] || [];
+      return acc;
+    }, {} as Record<string, EnhancedSpace[]>);
 
     return NextResponse.json(orderedSpacesByDay);
   } catch (error) {

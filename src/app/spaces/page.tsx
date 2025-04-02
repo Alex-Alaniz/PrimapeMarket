@@ -4,12 +4,15 @@
 import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { SpacesSchedule } from "@/components/spaces/spaces-schedule";
 import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SpacesContainer } from "@/components/spaces/spaces-container";
+import { Button } from "@/components/ui/button";
+import { Twitter } from "lucide-react";
+import Link from "next/link";
 
 export default function SpacesPage() {
   const { toast } = useToast();
+  
   interface TwitterSpace {
     id: string;
     title: string;
@@ -64,14 +67,13 @@ export default function SpacesPage() {
     fetchSpaces();
   }, [toast]);
 
-  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  
-  // Get current day of week to set as default tab
-  const getCurrentDayTab = () => {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const today = days[new Date().getDay()];
-    return weekDays.includes(today) ? today.toLowerCase() : 'monday';
-  };
+  // Featured hosts that we want to highlight
+  const featuredHosts = [
+    { username: "BlueEyeQueen", profile: "/images/pm.PNG" },
+    { username: "RedGoatQueen", profile: "/images/pm.PNG" },
+    { username: "OVI_LIVE", profile: "/images/pm.PNG" },
+    { username: "Tater_Poutine", profile: "/images/pm.PNG" },
+  ];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -79,7 +81,7 @@ export default function SpacesPage() {
         <Navbar />
 
         <div className="mt-8">
-          <div className="flex flex-col justify-between items-start gap-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
             <div>
               <h1 className="text-3xl font-bold">ApeChain Spaces Schedule</h1>
               <p className="text-muted-foreground mt-2 max-w-2xl">
@@ -87,40 +89,26 @@ export default function SpacesPage() {
                 Earn points by participating and engaging with creators.
               </p>
             </div>
+            
+            <div className="flex items-center gap-3">
+              <Button asChild variant="outline">
+                <Link href="https://twitter.com/i/spaces" target="_blank" rel="noopener noreferrer">
+                  <Twitter className="w-4 h-4 mr-2" />
+                  View Live Spaces
+                </Link>
+              </Button>
+            </div>
           </div>
 
-          {isLoading ? (
-            <div className="mt-8 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-40 bg-card rounded-lg animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <Tabs defaultValue={getCurrentDayTab()} className="mt-8">
-              <TabsList className="grid grid-cols-7 w-full">
-                {weekDays.map((day) => (
-                  <TabsTrigger key={day} value={day.toLowerCase()}>
-                    {day}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {weekDays.map((day) => (
-                <TabsContent key={day} value={day.toLowerCase()} className="mt-6">
-                  <SpacesSchedule 
-                    daySchedule={(spacesData[day] || []).map(space => ({
-                      ...space,
-                      description: space.description || null // Ensure description is never undefined
-                    }))} 
-                    day={day} 
-                  />
-                </TabsContent>
-              ))}
-            </Tabs>
-          )}
+          <div className="mt-8">
+            <SpacesContainer 
+              spacesData={spacesData} 
+              isLoading={isLoading} 
+            />
+          </div>
 
           <div className="mt-12 p-6 bg-blue-950 rounded-lg text-white">
-            <h2 className="text-2xl font-bold mb-4">Streaming Schedule</h2>
+            <h2 className="text-2xl font-bold mb-4">Featured Creators Streaming Schedule</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-xl font-semibold mb-3">Blue Eye Queen</h3>
