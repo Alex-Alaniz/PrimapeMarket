@@ -71,18 +71,24 @@ export async function processBatch() {
           where: { username: creator.username }
         });
         
-        if (existingProfile && existingProfile.updated_at) {
-          // Get the difference in hours
-          const lastUpdated = new Date(existingProfile.updated_at).getTime();
-          const hoursSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60);
-          
-          // Only update profiles older than 24 hours
-          if (hoursSinceUpdate < 24) {
-            console.log(`Skipping ${creator.username} - cached profile is less than 24 hours old`);
+        if (existingProfile) {
+          if (existingProfile.updated_at) {
+            // Get the difference in hours
+            const lastUpdated = new Date(existingProfile.updated_at).getTime();
+            const hoursSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60);
+            
+            // Only update profiles older than 72 hours (3 days)
+            if (hoursSinceUpdate < 72) {
+              console.log(`Skipping ${creator.username} - cached profile is less than 72 hours old (${hoursSinceUpdate.toFixed(2)} hours)`);
+              skipped++;
+              continue;
+            }
+            console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating since it's older than 72 hours`);
+          } else {
+            console.log(`Skipping ${creator.username} - profile exists in database but has no updated_at timestamp`);
             skipped++;
             continue;
           }
-          console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating`);
         }
         
         // Only reach this point if the profile doesn't exist or is older than 24 hours
