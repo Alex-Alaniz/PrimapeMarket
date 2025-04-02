@@ -33,7 +33,7 @@ export default function EarnPage() {
 
   // Track last fetch time in session storage to avoid repeated fetches
   const [_lastFetchTime, setLastFetchTime] = useState<string | null>(null);
-  
+
   // Check refresh status periodically
   useEffect(() => {
     const checkRefreshStatus = async () => {
@@ -47,49 +47,49 @@ export default function EarnPage() {
         console.error("Failed to check refresh status:", error);
       }
     };
-    
+
     // Check immediately and then every minute
     checkRefreshStatus();
     const interval = setInterval(checkRefreshStatus, 60000);
-    
+
     return () => clearInterval(interval);
   }, []);
-  
+
   useEffect(() => {
     const fetchCreators = async () => {
       try {
         setIsLoading(true);
-        
+
         // Check if we have cached creators in localStorage and when they were last fetched
         const cachedCreators = localStorage.getItem('cached_creators');
         const savedLastFetchTime = sessionStorage.getItem('creators_last_fetch');
         setLastFetchTime(savedLastFetchTime);
-        
+
         const now = new Date().toISOString();
         const cacheAge = savedLastFetchTime 
           ? (new Date(now).getTime() - new Date(savedLastFetchTime).getTime()) 
           : Infinity;
-        
+
         // Use cache for UI immediately if available (regardless of age)
         if (cachedCreators) {
           console.log("Using cached creators data from localStorage");
           setCreators(JSON.parse(cachedCreators));
           setIsLoading(false);
         }
-        
+
         // Only fetch from API if cache is older than 5 minutes or doesn't exist
         if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
           console.log("Cache expired or not available, fetching fresh data");
-          
+
           // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
           const response = await fetch('/api/creators?use_cache=true');
-          
+
           if (!response.ok) {
             throw new Error(`API returned ${response.status}: ${response.statusText}`);
           }
-          
+
           const data = await response.json();
-          
+
           // Transform Twitter handles to include @ if not present
           const enhancedData = data.map((creator: {
             id: string;
@@ -104,24 +104,24 @@ export default function EarnPage() {
             ...creator,
             handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
           }));
-          
+
           // Store in localStorage for future use
           localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
           sessionStorage.setItem('creators_last_fetch', now);
           setLastFetchTime(now);
-          
+
           // Only update state if we got valid data
           if (enhancedData.length > 0) {
             console.log("Updating UI with fresh data from API");
             setCreators(enhancedData);
           }
-          
+
           // Log the fetched data
           console.log("Fetched creators data:", enhancedData);
         }
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        
+
         // Try to use cached data if available and we haven't already set it
         if (creators.length === 0) {
           const cachedCreators = localStorage.getItem('cached_creators');
@@ -210,7 +210,7 @@ export default function EarnPage() {
                       localStorage.removeItem('cached_creators');
                       sessionStorage.removeItem('creators_last_fetch');
                       setIsLoading(true);
-                      
+
                       // Fetch creators function
                       const refreshCreators = async () => {
                         try {
@@ -218,20 +218,20 @@ export default function EarnPage() {
                           if (!response.ok) {
                             throw new Error(`API returned ${response.status}`);
                           }
-                          
+
                           const data = await response.json();
-                          
+
                           // Transform Twitter handles to include @ if not present
                           const enhancedData = data.map((creator: any) => ({
                             ...creator,
                             handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
                           }));
-                          
+
                           // Store in localStorage and update state
                           localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
                           sessionStorage.setItem('creators_last_fetch', new Date().toISOString());
                           setCreators(enhancedData);
-                          
+
                           toast({
                             title: "Refresh Complete",
                             description: "Creator data has been refreshed."
@@ -247,7 +247,7 @@ export default function EarnPage() {
                           setIsLoading(false);
                         }
                       };
-                      
+
                       refreshCreators();
                     }}
                   >
@@ -295,8 +295,11 @@ export default function EarnPage() {
                   [...creators]
                     .sort((a, b) => {
                       // Put creators with avatar (cached data) at the top
-                      if (a.avatar && !b.avatar) return -1;
-                      if (!a.avatar && b.avatar) return 1;
+                      const hasAvatarA = a.avatar && a.avatar.trim() !== '';
+                      const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+
+                      if (hasAvatarA && !hasAvatarB) return -1;
+                      if (!hasAvatarA && hasAvatarB) return 1;
                       return 0;
                     })
                     .map(creator => (
@@ -320,8 +323,11 @@ export default function EarnPage() {
                   .filter(c => c.category === 'Spaces')
                   .sort((a, b) => {
                     // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
+                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
+                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
                     return 0;
                   })
                   .map(creator => (
@@ -344,8 +350,11 @@ export default function EarnPage() {
                   .filter(c => c.category === 'Podcast')
                   .sort((a, b) => {
                     // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
+                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
+                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
                     return 0;
                   })
                   .map(creator => (
@@ -360,7 +369,7 @@ export default function EarnPage() {
                   ))}
               </div>
             </TabsContent>
-            
+
             {/* News tab with prioritized cached profiles */}
             <TabsContent value="news" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -368,8 +377,11 @@ export default function EarnPage() {
                   .filter(c => c.category === 'News')
                   .sort((a, b) => {
                     // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
+                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
+                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
                     return 0;
                   })
                   .map(creator => (
