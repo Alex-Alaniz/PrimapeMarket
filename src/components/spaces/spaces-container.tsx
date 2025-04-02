@@ -66,8 +66,19 @@ export function SpacesContainer({ spacesData, isLoading }: SpacesContainerProps)
       )
     : spacesData;
 
+  // Count today's spaces
+  const today = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
+  const todaySpaces = spacesData[today] ? spacesData[today].length : 0;
+  
   return (
     <div className="space-y-8">
+      {!isLoading && todaySpaces > 0 && (
+        <div className="bg-blue-900 text-white p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold">Today's Schedule</h2>
+          <p className="mt-1">There {todaySpaces === 1 ? 'is' : 'are'} {todaySpaces} space{todaySpaces === 1 ? '' : 's'} scheduled for today!</p>
+        </div>
+      )}
+      
       {!isLoading && allHosts.length > 0 && (
         <Card>
           <CardHeader>

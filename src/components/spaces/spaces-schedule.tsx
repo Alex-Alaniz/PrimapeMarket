@@ -53,11 +53,36 @@ export function SpacesSchedule({ daySchedule, day }: SpacesScheduleProps) {
       return;
     }
     
-    // In a real implementation, this would call your API
-    toast({
-      title: "RSVP Successful!",
-      description: `You've been added to the guest list for "${title}"`,
-    });
+    try {
+      const response = await fetch('/api/spaces/rsvp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          spaceId,
+          walletAddress: activeAccount.address,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "RSVP Successful!",
+          description: `You've been added to the guest list for "${title}"`,
+        });
+      } else {
+        throw new Error(data.error || 'Failed to RSVP');
+      }
+    } catch (error) {
+      console.error('RSVP error:', error);
+      toast({
+        title: "RSVP Failed",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive"
+      });
+    }
   };
   
   const isCurrentOrUpcoming = (space: Space) => {
