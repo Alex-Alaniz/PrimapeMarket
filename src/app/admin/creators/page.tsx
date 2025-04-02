@@ -87,6 +87,48 @@ export default function AdminCreatorsPage() {
     fetchWhitelist();
   }, [isAdmin, activeAccount?.address]);
 
+  const handleToggleStatus = async (username: string, newStatus: boolean) => {
+    try {
+      const response = await fetch('/api/admin/creators/whitelist/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-wallet': activeAccount?.address || ''
+        },
+        body: JSON.stringify({
+          username,
+          isOnboarded: newStatus
+        })
+      });
+
+      if (response.ok) {
+        // Update the creator in the local state
+        setCreators(prev => prev.map(c => 
+          c.username === username 
+            ? {...c, is_onboarded: newStatus} 
+            : c
+        ));
+        toast({ 
+          title: 'Success', 
+          description: `Creator status updated to ${newStatus ? 'Active' : 'Pending'}` 
+        });
+      } else {
+        toast({ 
+          title: 'Error', 
+          description: 'Failed to update creator status', 
+          variant: 'destructive' 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating creator status:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'An unexpected error occurred', 
+        variant: 'destructive' 
+      });
+    }
+  };
+
   const handleAddCreator = async () => {
     if (!newCreator.username) {
       toast({ title: 'Error', description: 'Username is required', variant: 'destructive' });
@@ -273,9 +315,17 @@ export default function AdminCreatorsPage() {
                       <TableCell>{creator.points}</TableCell>
                       <TableCell>
                         {creator.is_onboarded ? (
-                          <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Active</span>
+                          <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full cursor-pointer"
+                                onClick={() => handleToggleStatus(creator.username, false)}
+                                title="Click to mark as pending">
+                            Active
+                          </span>
                         ) : (
-                          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Pending</span>
+                          <span className="bg-yellow-100 text-yellow-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full cursor-pointer"
+                                onClick={() => handleToggleStatus(creator.username, true)}
+                                title="Click to mark as active">
+                            Pending
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>{new Date(creator.added_at).toLocaleDateString()}</TableCell>
