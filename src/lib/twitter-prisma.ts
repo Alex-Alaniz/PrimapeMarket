@@ -1,5 +1,5 @@
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/twitter-client";
 
 // Create a new PrismaClient instance specifically for Twitter data
 // Using the Twitter-specific connection URL

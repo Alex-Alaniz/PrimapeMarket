@@ -65,10 +65,34 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
 
 /**
  * Caches Twitter profile data in our database
- * Note: This function would integrate with the Twitter-specific Prisma client
  */
+import { twitterDb } from './twitter-prisma';
+
 export async function cacheTwitterProfile(profileData: TwitterUserData): Promise<void> {
-  // Implement Twitter profile caching
-  // This would be connected to the Twitter-specific Prisma client
-  console.log('Caching Twitter profile:', profileData.username);
+  try {
+    await twitterDb.twitterProfile.upsert({
+      where: { id: profileData.id },
+      update: {
+        username: profileData.username,
+        name: profileData.name,
+        description: profileData.description,
+        profile_image_url: profileData.profile_image_url,
+        // You can update other fields as needed
+      },
+      create: {
+        id: profileData.id,
+        username: profileData.username,
+        name: profileData.name,
+        description: profileData.description,
+        profile_image_url: profileData.profile_image_url,
+        // Set default values for other required fields
+        followers_count: 0,
+        following_count: 0,
+        tweet_count: 0,
+      },
+    });
+    console.log('Twitter profile cached successfully:', profileData.username);
+  } catch (error) {
+    console.error('Error caching Twitter profile:', error);
+  }
 }
