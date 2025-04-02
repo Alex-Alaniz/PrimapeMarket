@@ -104,14 +104,49 @@ if (!hasTwitterClient) {
     findUnique: async ({ where }: any) => {
       try {
         // Use raw query to find a specific Twitter profile
-        const data = await twitterDb.$queryRaw`
-          SELECT * FROM "TwitterProfile" 
-          WHERE ${where.id ? `"id" = ${where.id}` : `"username" = ${where.username}`}
-          LIMIT 1
-        `;
+        let data;
+        if (where.id) {
+          data = await twitterDb.$queryRaw`
+            SELECT * FROM "TwitterProfile" 
+            WHERE "id" = ${where.id}
+            LIMIT 1
+          `;
+        } else {
+          data = await twitterDb.$queryRaw`
+            SELECT * FROM "TwitterProfile" 
+            WHERE "username" = ${where.username}
+            LIMIT 1
+          `;
+        }
         return Array.isArray(data) && data.length > 0 ? data[0] : null;
       } catch (error) {
         console.error("Error executing findUnique on TwitterProfile:", error);
+        return null;
+      }
+    },
+    findFirst: async ({ where }: any) => {
+      try {
+        // Use raw query to find the first matching Twitter profile
+        let query = `SELECT * FROM "TwitterProfile" LIMIT 1`;
+        let params: any[] = [];
+        
+        if (where) {
+          // Build WHERE clause manually
+          const conditions = [];
+          if (where.username) {
+            conditions.push(`"username" = $${params.length + 1}`);
+            params.push(where.username);
+          }
+          
+          if (conditions.length) {
+            query = `SELECT * FROM "TwitterProfile" WHERE ${conditions.join(' AND ')} LIMIT 1`;
+          }
+        }
+        
+        const data = await twitterDb.$queryRawUnsafe(query, ...params);
+        return Array.isArray(data) && data.length > 0 ? data[0] : null;
+      } catch (error) {
+        console.error("Error executing findFirst on TwitterProfile:", error);
         return null;
       }
     },

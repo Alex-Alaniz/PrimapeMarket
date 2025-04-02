@@ -23,11 +23,17 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
     const cleanUsername = username.replace('@', '');
     
     // First, try to get data from our database to avoid API calls
-    const existingProfile = await twitterDb.twitterProfile.findFirst({
-      where: {
-        username: cleanUsername
-      }
-    });
+    let existingProfile;
+    try {
+      existingProfile = await twitterDb.twitterProfile.findUnique({
+        where: {
+          username: cleanUsername
+        }
+      });
+    } catch (error) {
+      console.error(`Error fetching existing Twitter profile for ${cleanUsername}:`, error);
+      existingProfile = null;
+    }
     
     if (existingProfile) {
       console.log(`Using existing Twitter profile for ${cleanUsername}`);
