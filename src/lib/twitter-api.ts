@@ -52,7 +52,7 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
     
     // Fetch user data from Twitter API with retry logic
     let retries = 2;
-    let response;
+    let response: Response | undefined;
     
     while (retries >= 0) {
       response = await fetch(
@@ -79,8 +79,8 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
       break;
     }
 
-    if (!response.ok) {
-      throw new Error(`Twitter API error: ${response.status} ${response.statusText}`);
+    if (!response || !response.ok) {
+      throw new Error(`Twitter API error: ${response?.status || 'unknown'} ${response?.statusText || 'unknown'}`);
     }
 
     const data = await response.json();

@@ -1,7 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
-import db from "@/lib/prisma";
 
 // Simple RSVP API for Twitter spaces
 export async function POST(req: NextRequest) {
