@@ -85,9 +85,9 @@ export async function processBatch() {
         let shouldSkip = false;
         
         if (existingProfile) {
-          if (existingProfile.updated_at) {
+          if (existingProfile.fetched_at) {
             // Get the difference in hours
-            const lastUpdated = new Date(existingProfile.updated_at).getTime();
+            const lastUpdated = new Date(existingProfile.fetched_at).getTime();
             const hoursSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60);
             
             // Only update profiles older than 72 hours (3 days)
@@ -98,7 +98,7 @@ export async function processBatch() {
               console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating since it's older than 72 hours`);
             }
           } else {
-            console.log(`Skipping ${creator.username} - profile exists in database but has no updated_at timestamp`);
+            console.log(`Skipping ${creator.username} - profile exists in database but has no fetched_at timestamp`);
             shouldSkip = true;
           }
         }
@@ -152,8 +152,8 @@ export async function processBatch() {
       currentBatchIndex = 0;
     }
     
-    // Calculate the actual end index for reporting
-    const endIndex = processedIndexes.length > 0 ? 
+    // Calculate next batch info for logging
+    const _endIndex = processedIndexes.length > 0 ? 
       Math.max(...processedIndexes) + 1 : 
       startIndex;
       
@@ -183,7 +183,7 @@ export async function processBatch() {
  */
 export function getBatchStatus() {
   const now = Date.now();
-  const timeSinceLastBatch = now - lastBatchTime;
+  const _timeSinceLastBatch = now - lastBatchTime;
   const nextBatchTime = lastBatchTime + BATCH_INTERVAL_MS;
   const timeUntilNextBatch = Math.max(0, nextBatchTime - now);
   

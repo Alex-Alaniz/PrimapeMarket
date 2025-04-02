@@ -32,7 +32,7 @@ export default function EarnPage() {
   } | null>(null);
 
   // Track last fetch time in session storage to avoid repeated fetches
-  const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
+  const [_lastFetchTime, setLastFetchTime] = useState<string | null>(null);
   
   // Check refresh status periodically
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, []);
+  }, [creators.length]);
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {
