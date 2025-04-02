@@ -1,13 +1,9 @@
 
 // Script to add Twitter creators to the whitelist
 require('dotenv').config();
-const { twitterDb } = require('@/lib/twitter-prisma');
 
-// Fix module resolution for Node scripts
-require('module-alias/register');
-
-// Setup module alias for @ to point to src
-require('module-alias').addAlias('@', require('path').resolve(__dirname, '../src'));
+// Import the Twitter Prisma client using a direct path
+const { twitterDb } = require('../src/lib/twitter-prisma');
 
 // List of creators to add to whitelist
 const creators = [
