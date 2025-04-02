@@ -2,16 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
 import { getTwitterProfileData, cacheTwitterProfile } from "@/lib/twitter-api";
 
-// Simple admin validation - in production use a more robust system
+// Admin wallet addresses - keep this list secure and limited
 const ADMIN_WALLETS = [
-  // Add your admin wallet addresses here
-  "0x1A5B5a2FF1F70989E186aC6109705CF2cA327158",
+  // Add your admin wallet addresses here in lowercase for consistent comparison
+  "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
   // Add more as needed
 ];
 
 async function validateAdmin(req: NextRequest): Promise<boolean> {
   const adminWallet = req.headers.get("x-admin-wallet");
-  return ADMIN_WALLETS.includes(adminWallet || "");
+  if (!adminWallet) return false;
+  
+  // Convert to lowercase for case-insensitive comparison
+  const normalizedWallet = adminWallet.toLowerCase();
+  
+  // Check if the wallet is in our admin list
+  return ADMIN_WALLETS.includes(normalizedWallet);
 }
 
 // GET /api/admin/creators/whitelist - List all whitelisted creators

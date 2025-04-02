@@ -26,9 +26,34 @@ export default function AdminCreatorsPage() {
   const [creators, setCreators] = useState<WhitelistedCreator[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCreator, setNewCreator] = useState({ username: '', category: 'Spaces', points: 250 });
-
-  // Check if user is admin - in production, use a more robust check
-  const isAdmin = Boolean(activeAccount?.address);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Check if the connected wallet is an admin wallet
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!activeAccount?.address) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      try {
+        // Make a test request to the admin API endpoint
+        const response = await fetch('/api/admin/creators/whitelist', {
+          headers: {
+            'x-admin-wallet': activeAccount.address
+          }
+        });
+        
+        // If we get a 200 OK, the wallet is an admin
+        setIsAdmin(response.status === 200);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [activeAccount?.address]);
 
   useEffect(() => {
     if (!isAdmin) return;
