@@ -6,22 +6,22 @@ import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 
 export async function GET() {
   try {
-    // Get creators from the database
-    const creators = [
-      {
-        id: '1',
-        handle: 'AlexDotEth',
-        name: 'Alex | Web3 Builder',
-        points: 250,
-        category: 'Spaces',
-        engagementTypes: ['listen', 'share', 'comment'],
-        twitterId: '',
-        description: '', 
-        avatar: '',
-        claimed: false
-      },
-      // More creators would be added from database eventually
-    ];
+    // Get whitelisted creators from the database
+    const whitelistedCreators = await twitterDb.twitterWhitelist.findMany();
+    
+    // Map to the format expected by the frontend
+    const creators = whitelistedCreators.map(creator => ({
+      id: creator.username, // Using username as ID for now
+      handle: creator.username,
+      name: '',  // Will be populated from Twitter data
+      points: creator.points,
+      category: creator.category,
+      engagementTypes: ['listen', 'share', 'comment'], // Default engagement types
+      twitterId: '',
+      description: '', 
+      avatar: '',
+      claimed: false
+    }));
 
     // Enhance creators with Twitter data
     const enhancedCreators = await Promise.all(
@@ -36,6 +36,7 @@ export async function GET() {
             console.log(`Using cached Twitter data for ${creator.handle}`);
             return {
               ...creator,
+              name: cachedProfile.name || creator.handle,
               twitterId: cachedProfile.id,
               avatar: cachedProfile.profile_image_url || '/images/pm.PNG',
               description: cachedProfile.description || 'Creator information not available at this time.'
@@ -48,14 +49,23 @@ export async function GET() {
           // Cache the Twitter data for future use
           if (twitterData) {
             await cacheTwitterProfile(twitterData);
+            
+            // Mark as onboarded in the whitelist
+            await twitterDb.twitterWhitelist.update({
+              where: { username: creator.handle.replace('@', '') },
+              data: { is_onboarded: true }
+            });
+            
+            return {
+              ...creator,
+              name: twitterData.name || creator.handle,
+              twitterId: twitterData.id,
+              avatar: twitterData.profile_image_url || '/images/pm.PNG',
+              description: twitterData.description || 'Creator information not available at this time.'
+            };
           }
           
-          return {
-            ...creator,
-            twitterId: twitterData?.id || '',
-            avatar: twitterData?.profile_image_url || '/images/pm.PNG',
-            description: twitterData?.description || 'Creator information not available at this time.'
-          };
+          return creator;
         } catch (error) {
           console.error(`Error fetching Twitter data for ${creator.handle}:`, error);
           return creator;
