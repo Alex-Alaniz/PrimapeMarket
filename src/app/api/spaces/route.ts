@@ -75,7 +75,7 @@ export async function GET(req: Request) {
     }
 
     // Format the spaces for the frontend
-    const formattedSpaces = spaces.map(space => {
+    const formattedSpaces = spaces.map((space: any) => {
       // Format start time for display
       const startTime = new Date(space.start_time);
       const formattedStartTime = startTime.toLocaleTimeString('en-US', {

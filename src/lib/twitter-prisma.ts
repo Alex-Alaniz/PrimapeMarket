@@ -10,7 +10,7 @@ try {
   // Dynamic import to avoid build errors when the module doesn't exist yet
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   PrismaClient = require("@prisma/twitter-client").PrismaClient;
-} catch (err) {
+} catch (_) {
   // Fallback to regular PrismaClient if the Twitter client is not generated yet
   console.warn("Twitter client not found, using regular Prisma client as fallback");
   PrismaClient = DefaultPrismaClient;
