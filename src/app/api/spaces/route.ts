@@ -108,7 +108,7 @@ export async function GET(req: Request) {
 
     // Group spaces by day of the week
     const spacesByDay = DAYS_OF_WEEK.reduce((acc, day) => {
-      acc[day] = formattedSpaces.filter(space => space.day_of_week === day);
+      acc[day] = formattedSpaces.filter((space: any) => space.day_of_week === day);
       return acc;
     }, {} as Record<string, any[]>);
 
