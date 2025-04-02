@@ -87,11 +87,11 @@ if (!hasTwitterClient) {
         }
         
         // Use raw query to update a Twitter whitelist entry
-        await twitterDb.$executeRaw`
-          UPDATE "TwitterWhitelist"
-          SET ${twitterDb.$raw(setClauses.join(', '))}
-          WHERE "username" = ${where.username}
-        `;
+        const setClause = setClauses.join(', ');
+        await twitterDb.$executeRawUnsafe(
+          `UPDATE "TwitterWhitelist" SET ${setClause} WHERE "username" = $1`,
+          where.username
+        );
         
         return { id: 0, username: where.username, ...data };
       } catch (error) {
@@ -163,10 +163,11 @@ if (!hasTwitterClient) {
         
         // Use raw query to create a new Twitter profile entry
         const valuesPlaceholders = values.map((_, i) => `$${i+1}`).join(', ');
-        await twitterDb.$executeRaw`
-          INSERT INTO "TwitterProfile" (${twitterDb.$raw(fieldList)})
-          VALUES (${twitterDb.$raw(valuesPlaceholders)})
-        `;
+        // Use executeRawUnsafe instead of template literals with $raw
+        await twitterDb.$executeRawUnsafe(
+          `INSERT INTO "TwitterProfile" (${fieldList}) VALUES (${valuesPlaceholders})`,
+          ...values
+        );
         
         // Execute with values
         await twitterDb.$executeRaw({
