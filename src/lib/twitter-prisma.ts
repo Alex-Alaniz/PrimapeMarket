@@ -126,10 +126,17 @@ if (!hasTwitterClient) {
         const placeholders = fields.map((_, i) => `$${i+1}`).join(', ');
         
         // Use raw query to create a new Twitter profile entry
+        const valuesPlaceholders = values.map((_, i) => `$${i+1}`).join(', ');
         await twitterDb.$executeRaw`
           INSERT INTO "TwitterProfile" (${twitterDb.$raw(fieldList)})
-          VALUES (${...values})
+          VALUES (${twitterDb.$raw(valuesPlaceholders)})
         `;
+        
+        // Execute with values
+        await twitterDb.$executeRaw({
+          sql: `INSERT INTO "TwitterProfile" (${fieldList}) VALUES (${valuesPlaceholders})`,
+          values: values
+        });
         
         return data;
       } catch (error) {
