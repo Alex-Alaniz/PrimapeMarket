@@ -1,0 +1,27 @@
+
+// Twitter Database Schema
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/twitter-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TWITTER_POSTGRES_URL")
+}
+
+// Model for cached Twitter profiles
+model TwitterProfile {
+  id               String   @id
+  username         String   @unique
+  name             String?
+  description      String?
+  profile_image_url String?
+  followers_count  Int?
+  following_count  Int?
+  tweet_count      Int?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@map("twitter_profiles")
+}
