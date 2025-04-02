@@ -65,13 +65,15 @@ export default function EarnPage() {
         
         const now = new Date().toISOString();
         const useCache = cachedCreators && savedLastFetchTime && 
-          (new Date(now).getTime() - new Date(savedLastFetchTime).getTime() < 15 * 60 * 1000); // 15 minutes
+          (new Date(now).getTime() - new Date(savedLastFetchTime).getTime() < 5 * 60 * 1000); // Reduced to 5 minutes
         
         if (useCache) {
-          console.log("Using cached creators data");
+          console.log("Using cached creators data from localStorage");
           setCreators(JSON.parse(cachedCreators));
           setIsLoading(false);
-          return;
+          // Continue fetching in the background to update with latest data
+        } else {
+          console.log("Cache expired or not available, fetching fresh data");
         }
         
         // Fetch from API with cache flag - this tells the backend to prioritize cached data
@@ -99,6 +101,9 @@ export default function EarnPage() {
         setLastFetchTime(now);
         
         setCreators(enhancedData);
+        
+        // Log the fetched data
+        console.log("Fetched creators data:", enhancedData);
       } catch (error) {
         console.error("Failed to fetch creators:", error);
         // Try to use cached data if available, even if it's older than 15 minutes
@@ -177,6 +182,20 @@ export default function EarnPage() {
               {refreshStatus?.nextRefresh && (
                 <div className="text-xs text-muted-foreground mt-2">
                   Next creator data refresh: {new Date(refreshStatus.nextRefresh).toLocaleTimeString()}
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="ml-2 text-xs"
+                    onClick={() => {
+                      // Clear cache and reload data
+                      localStorage.removeItem('cached_creators');
+                      sessionStorage.removeItem('creators_last_fetch');
+                      setIsLoading(true);
+                      fetchCreators();
+                    }}
+                  >
+                    Refresh Now
+                  </Button>
                 </div>
               )}
             </div>

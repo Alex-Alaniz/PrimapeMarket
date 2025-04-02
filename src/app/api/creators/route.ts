@@ -41,13 +41,16 @@ export async function GET(request: Request) {
     const enhancedCreators = await Promise.all(
       creators.map(async (creator) => {
         try {
-          // Always check cached data first
+          // Always check cached data first - force refresh from DB
+          const cleanUsername = creator.handle.replace('@', '');
+          console.log(`Fetching cached profile for ${cleanUsername}`);
+          
           const cachedProfile = await twitterDb.twitterProfile.findUnique({
-            where: { username: creator.handle.replace('@', '') }
+            where: { username: cleanUsername }
           });
           
           if (cachedProfile) {
-            console.log(`Using cached Twitter data for ${creator.handle}`);
+            console.log(`Using cached Twitter data for ${cleanUsername}`);
             return {
               ...creator,
               name: cachedProfile.name || creator.handle,
