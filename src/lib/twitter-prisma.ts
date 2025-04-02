@@ -6,10 +6,13 @@ import { PrismaClient as DefaultPrismaClient } from "@prisma/client";
 import type { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 
 let PrismaClient: any;
+let hasTwitterClient = false;
+
 try {
   // Dynamic import to avoid build errors when the module doesn't exist yet
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   PrismaClient = require("@prisma/twitter-client").PrismaClient;
+  hasTwitterClient = true;
 } catch {
   // Fallback to regular PrismaClient if the Twitter client is not generated yet
   console.warn("Twitter client not found, using regular Prisma client as fallback");
@@ -25,5 +28,158 @@ const twitterDb = new PrismaClient({
     },
   },
 }) as TwitterPrismaClient;
+
+// Create proxy methods for fallback operation if Twitter client isn't available
+if (!hasTwitterClient) {
+  // Add proxy methods to handle Twitter-specific operations
+  // Use type assertion to avoid the read-only property error
+  (twitterDb as any).twitterWhitelist = {
+    findMany: async () => {
+      try {
+        // Use raw query to get Twitter whitelist data
+        const data = await twitterDb.$queryRaw`SELECT * FROM "TwitterWhitelist"`;
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error("Error executing findMany on TwitterWhitelist:", error);
+        return [];
+      }
+    },
+    findUnique: async ({ where }: any) => {
+      try {
+        // Use raw query to find a specific Twitter whitelist entry
+        const data = await twitterDb.$queryRaw`
+          SELECT * FROM "TwitterWhitelist" 
+          WHERE "username" = ${where.username}
+          LIMIT 1
+        `;
+        return Array.isArray(data) && data.length > 0 ? data[0] : null;
+      } catch (error) {
+        console.error("Error executing findUnique on TwitterWhitelist:", error);
+        return null;
+      }
+    },
+    create: async ({ data }: any) => {
+      try {
+        // Use raw query to create a new Twitter whitelist entry
+        await twitterDb.$executeRaw`
+          INSERT INTO "TwitterWhitelist" ("username", "category", "points", "is_onboarded", "added_by")
+          VALUES (${data.username}, ${data.category}, ${data.points}, ${data.is_onboarded || false}, ${data.added_by || null})
+        `;
+        
+        return { ...data, id: 0 }; // Return simulated result
+      } catch (error) {
+        console.error("Error executing create on TwitterWhitelist:", error);
+        throw error;
+      }
+    },
+    update: async ({ where, data }: any) => {
+      try {
+        // Build update query parts
+        const setClauses = [];
+        // Remove unused values array
+        
+        if (data.is_onboarded !== undefined) {
+          setClauses.push(`"is_onboarded" = ${data.is_onboarded}`);
+        }
+        
+        if (setClauses.length === 0) {
+          return { id: 0, username: where.username };
+        }
+        
+        // Use raw query to update a Twitter whitelist entry
+        const setClause = setClauses.join(', ');
+        await twitterDb.$executeRawUnsafe(
+          `UPDATE "TwitterWhitelist" SET ${setClause} WHERE "username" = $1`,
+          where.username
+        );
+        
+        return { id: 0, username: where.username, ...data };
+      } catch (error) {
+        console.error("Error executing update on TwitterWhitelist:", error);
+        throw error;
+      }
+    }
+  };
+  
+  // Use type assertion to avoid the read-only property error
+  (twitterDb as any).twitterProfile = {
+    findUnique: async ({ where }: any) => {
+      try {
+        // Use raw query to find a specific Twitter profile
+        let data;
+        if (where.id) {
+          data = await twitterDb.$queryRaw`
+            SELECT * FROM "TwitterProfile" 
+            WHERE "id" = ${where.id}
+            LIMIT 1
+          `;
+        } else {
+          data = await twitterDb.$queryRaw`
+            SELECT * FROM "TwitterProfile" 
+            WHERE "username" = ${where.username}
+            LIMIT 1
+          `;
+        }
+        return Array.isArray(data) && data.length > 0 ? data[0] : null;
+      } catch (error) {
+        console.error("Error executing findUnique on TwitterProfile:", error);
+        return null;
+      }
+    },
+    findFirst: async ({ where }: any) => {
+      try {
+        // Use raw query to find the first matching Twitter profile
+        let query = `SELECT * FROM "TwitterProfile" LIMIT 1`;
+        let params: any[] = [];
+        
+        if (where) {
+          // Build WHERE clause manually
+          const conditions = [];
+          if (where.username) {
+            conditions.push(`"username" = $${params.length + 1}`);
+            params.push(where.username);
+          }
+          
+          if (conditions.length) {
+            query = `SELECT * FROM "TwitterProfile" WHERE ${conditions.join(' AND ')} LIMIT 1`;
+          }
+        }
+        
+        const data = await twitterDb.$queryRawUnsafe(query, ...params);
+        return Array.isArray(data) && data.length > 0 ? data[0] : null;
+      } catch (error) {
+        console.error("Error executing findFirst on TwitterProfile:", error);
+        return null;
+      }
+    },
+    create: async ({ data }: any) => {
+      try {
+        // Extract the fields from data
+        const fields = Object.keys(data);
+        const values = Object.values(data);
+        
+        // Generate the field list
+        const fieldList = fields.map(f => `"${f}"`).join(', ');
+        // Removed unused placeholders variable
+        
+        // Use raw query to create a new Twitter profile entry
+        const valuesPlaceholders = values.map((_, i) => `$${i+1}`).join(', ');
+        // Use executeRawUnsafe instead of template literals with $raw
+        await twitterDb.$executeRawUnsafe(
+          `INSERT INTO "TwitterProfile" (${fieldList}) VALUES (${valuesPlaceholders})`,
+          ...values
+        );
+        
+        // This line is redundant since we're already executing the query above
+        // No need for a second query execution
+        
+        return data;
+      } catch (error) {
+        console.error("Error executing create on TwitterProfile:", error);
+        throw error;
+      }
+    }
+  };
+}
 
 export { twitterDb };
