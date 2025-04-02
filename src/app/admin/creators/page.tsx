@@ -158,33 +158,29 @@ export default function AdminCreatorsPage() {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <>
-        <Navbar />
-        <main className="container mx-auto py-10">
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Access Required</CardTitle>
-              <CardDescription>
-                You need to connect with an admin wallet to access this page.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Please connect with an authorized wallet to manage creators.</p>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  // Page is accessible but functionality is restricted
+  const isAdminView = isAdmin; // Store the admin status to control functionality
 
   return (
     <>
       <Navbar />
       <main className="container mx-auto py-10">
         <h1 className="text-3xl font-bold mb-6">Creator Management</h1>
+        
+        {!isAdminView && (
+          <Card className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30">
+            <CardHeader>
+              <CardTitle className="text-yellow-700 dark:text-yellow-400">Admin Access Required</CardTitle>
+              <CardDescription className="text-yellow-600 dark:text-yellow-500">
+                You are viewing this page as a non-admin user. Admin wallet connection is required to manage creators.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Your wallet address: {activeAccount?.address || "Not connected"}</p>
+              <p className="mt-2">Please connect with an authorized wallet to perform admin actions.</p>
+            </CardContent>
+          </Card>
+        )}
         
         <Card className="mb-6">
           <CardHeader>
@@ -203,6 +199,7 @@ export default function AdminCreatorsPage() {
                   placeholder="username (without @)" 
                   value={newCreator.username}
                   onChange={(e) => setNewCreator(prev => ({ ...prev, username: e.target.value.replace('@', '') }))}
+                  disabled={!isAdminView}
                 />
               </div>
               <div className="w-32">
@@ -213,6 +210,7 @@ export default function AdminCreatorsPage() {
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={newCreator.category}
                   onChange={(e) => setNewCreator(prev => ({ ...prev, category: e.target.value }))}
+                  disabled={!isAdminView}
                 >
                   <option>Spaces</option>
                   <option>Podcasts</option>
@@ -227,12 +225,19 @@ export default function AdminCreatorsPage() {
                   type="number" 
                   value={newCreator.points}
                   onChange={(e) => setNewCreator(prev => ({ ...prev, points: parseInt(e.target.value) || 0 }))}
+                  disabled={!isAdminView}
                 />
               </div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={handleAddCreator}>Add to Whitelist</Button>
+            <Button 
+                onClick={handleAddCreator}
+                disabled={!isAdminView}
+                title={!isAdminView ? "Admin access required" : "Add to whitelist"}
+              >
+                Add to Whitelist
+              </Button>
           </CardFooter>
         </Card>
         
@@ -279,6 +284,8 @@ export default function AdminCreatorsPage() {
                           variant="destructive" 
                           size="sm"
                           onClick={() => handleRemoveCreator(creator.username)}
+                          disabled={!isAdminView}
+                          title={!isAdminView ? "Admin access required" : "Remove creator"}
                         >
                           Remove
                         </Button>
