@@ -1,6 +1,6 @@
 
 import { twitterDb } from './twitter-prisma';
-import { getTwitterProfileData, cacheTwitterProfile } from './twitter-api';
+import { getTwitterProfileData, cacheTwitterProfile, canMakeApiCall } from './twitter-api';
 
 // Constants for batch processing
 const BATCH_SIZE = 3; // Process 3 creators at a time
@@ -82,9 +82,21 @@ export async function processBatch() {
             skipped++;
             continue;
           }
+          console.log(`Profile for ${creator.username} is ${hoursSinceUpdate.toFixed(2)} hours old - updating`);
         }
         
+        // Only reach this point if the profile doesn't exist or is older than 24 hours
         console.log(`Fetching Twitter data for ${creator.username}`);
+        
+        // Check if we should use the cached data instead of making an API call
+        if (existingProfile && !canMakeApiCall()) {
+          console.log(`Rate limited - using existing data for ${creator.username} instead of API call`);
+          // Still count it as processed since we're handling it
+          processed++;
+          continue;
+        }
+        
+        // Now make the API call if needed
         const twitterData = await getTwitterProfileData(creator.username);
         
         if (twitterData) {

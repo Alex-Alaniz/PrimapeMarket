@@ -21,7 +21,7 @@ function checkAndResetRateLimit() {
 }
 
 // Check if we're within rate limits
-function canMakeApiCall() {
+export function canMakeApiCall() {
   checkAndResetRateLimit();
   return apiCallsInWindow < 3; // 3 requests per 15 minutes
 }
