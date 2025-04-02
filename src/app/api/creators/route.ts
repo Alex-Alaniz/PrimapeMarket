@@ -6,15 +6,26 @@ import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 export async function GET() {
   try {
     // Get whitelisted creators from the database
-    const whitelistedCreators = await twitterDb.twitterWhitelist.findMany();
+    let whitelistedCreators = [];
+    try {
+      whitelistedCreators = await twitterDb.twitterWhitelist.findMany();
+    } catch (error) {
+      console.error("Failed to fetch from twitterWhitelist:", error);
+      // Fallback to hardcoded creators if database fetch fails
+      whitelistedCreators = [
+        { username: "apecoin", category: "News", points: 250, is_onboarded: true },
+        { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
+        { username: "yugalabs", category: "News", points: 250, is_onboarded: true }
+      ];
+    }
     
     // Map to the format expected by the frontend
     const creators = whitelistedCreators.map(creator => ({
       id: creator.username, // Using username as ID for now
       handle: creator.username,
       name: '',  // Will be populated from Twitter data
-      points: creator.points,
-      category: creator.category,
+      points: creator.points || 200,
+      category: creator.category || "Creator",
       engagementTypes: ['listen', 'share', 'comment'], // Default engagement types
       twitterId: '',
       description: '', 
