@@ -113,8 +113,7 @@ export function SpacesContainer({ spacesData, isLoading }: SpacesContainerProps)
           {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
             <TabsContent key={day} value={day}>
               <SpacesSchedule
-                spaces={filteredSpaces?.[day] || []}
-                isLoading={isLoading}
+                daySchedule={filteredSpaces?.[day] || []}
                 day={day}
               />
             </TabsContent>
