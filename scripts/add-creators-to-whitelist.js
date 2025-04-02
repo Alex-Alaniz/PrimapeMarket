@@ -2,8 +2,23 @@
 // Script to add Twitter creators to the whitelist
 require('dotenv').config();
 
-// Import the Twitter Prisma client using a direct path
-const { twitterDb } = require('../src/lib/twitter-prisma');
+// Import Twitter DB client similar to backup-twitter-profiles.js
+let PrismaClient;
+try {
+  PrismaClient = require('@prisma/twitter-client').PrismaClient;
+} catch (error) {
+  // Fallback to regular PrismaClient if the Twitter client is not generated yet
+  console.warn("Twitter client not found, using regular Prisma client as fallback");
+  PrismaClient = require('@prisma/client').PrismaClient;
+}
+
+const twitterDb = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.TWITTER_POSTGRES_URL || process.env.DATABASE_URL
+    }
+  }
+});
 
 // List of creators to add to whitelist
 const creators = [
