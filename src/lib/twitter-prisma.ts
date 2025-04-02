@@ -32,7 +32,8 @@ const twitterDb = new PrismaClient({
 // Create proxy methods for fallback operation if Twitter client isn't available
 if (!hasTwitterClient) {
   // Add proxy methods to handle Twitter-specific operations
-  twitterDb.twitterWhitelist = {
+  // Use type assertion to avoid the read-only property error
+  (twitterDb as any).twitterWhitelist = {
     findMany: async () => {
       try {
         // Use raw query to get Twitter whitelist data
@@ -75,7 +76,7 @@ if (!hasTwitterClient) {
       try {
         // Build update query parts
         const setClauses = [];
-        const values = [];
+        // Remove unused values array
         
         if (data.is_onboarded !== undefined) {
           setClauses.push(`"is_onboarded" = ${data.is_onboarded}`);
@@ -156,9 +157,9 @@ if (!hasTwitterClient) {
         const fields = Object.keys(data);
         const values = Object.values(data);
         
-        // Generate the field list and placeholders
+        // Generate the field list
         const fieldList = fields.map(f => `"${f}"`).join(', ');
-        const placeholders = fields.map((_, i) => `$${i+1}`).join(', ');
+        // Removed unused placeholders variable
         
         // Use raw query to create a new Twitter profile entry
         const valuesPlaceholders = values.map((_, i) => `$${i+1}`).join(', ');

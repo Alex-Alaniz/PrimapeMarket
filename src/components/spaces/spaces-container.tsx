@@ -31,7 +31,7 @@ interface SpacesContainerProps {
   isLoading: boolean;
 }
 
-export function SpacesContainer({ spacesData, isLoading }: SpacesContainerProps) {
+export function SpacesContainer({ spacesData, isLoading: _ }: SpacesContainerProps) {
   const [activeTab, setActiveTab] = useState("Monday");
   const [selectedHost, setSelectedHost] = useState<string | null>(null);
 
