@@ -62,9 +62,28 @@ export async function processBatch() {
     // Process each creator in the batch
     console.log(`Processing batch of ${currentBatch.length} creators (${currentBatchIndex+1}-${endIndex} of ${creators.length})`);
     let processed = 0;
+    let skipped = 0;
     
     for (const creator of currentBatch) {
       try {
+        // Check if profile already exists in cache
+        const existingProfile = await twitterDb.twitterProfile.findUnique({
+          where: { username: creator.username }
+        });
+        
+        if (existingProfile && existingProfile.updated_at) {
+          // Get the difference in hours
+          const lastUpdated = new Date(existingProfile.updated_at).getTime();
+          const hoursSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60);
+          
+          // Only update profiles older than 24 hours
+          if (hoursSinceUpdate < 24) {
+            console.log(`Skipping ${creator.username} - cached profile is less than 24 hours old`);
+            skipped++;
+            continue;
+          }
+        }
+        
         console.log(`Fetching Twitter data for ${creator.username}`);
         const twitterData = await getTwitterProfileData(creator.username);
         
@@ -90,7 +109,8 @@ export async function processBatch() {
     const remainingCreators = creators.length - currentBatchIndex;
     
     return { 
-      processed, 
+      processed,
+      skipped,
       remaining: remainingCreators,
       total: creators.length,
       nextBatchTime,

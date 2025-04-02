@@ -134,7 +134,7 @@ export default function AdminCreatorsPage() {
         setRefreshStatus(data);
         toast({
           title: 'Batch Refresh Triggered',
-          description: `Processed ${data.processed} creators${data.remaining ? `, ${data.remaining} remaining` : ''}`,
+          description: `Processed ${data.processed} creators${data.skipped ? `, ${data.skipped} skipped` : ''}${data.remaining ? `, ${data.remaining} remaining` : ''}`,
           variant: 'default'
         });
       } else {
@@ -332,6 +332,15 @@ export default function AdminCreatorsPage() {
                     <span>Current Index:</span>
                     <span>{refreshStatus.currentBatchIndex}</span>
                   </div>
+                  {refreshStatus.processed !== undefined && (
+                    <div className="flex justify-between text-sm">
+                      <span>Last Batch Results:</span>
+                      <span>
+                        {refreshStatus.processed} processed
+                        {refreshStatus.skipped !== undefined && `, ${refreshStatus.skipped} skipped`}
+                      </span>
+                    </div>
+                  )}
                 </>
               ) : (
                 <p>Loading status...</p>
