@@ -170,11 +170,8 @@ if (!hasTwitterClient) {
           ...values
         );
         
-        // Execute with values
-        await twitterDb.$executeRaw({
-          sql: `INSERT INTO "TwitterProfile" (${fieldList}) VALUES (${valuesPlaceholders})`,
-          values: values
-        });
+        // This line is redundant since we're already executing the query above
+        // No need for a second query execution
         
         return data;
       } catch (error) {
