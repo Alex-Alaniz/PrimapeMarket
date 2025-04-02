@@ -1,10 +1,62 @@
 import { NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
+import { format } from 'date-fns';
 
 // Days of week in order for sorting
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Mock data is now used as fallback when database connection fails
+export async function GET() {
+  try {
+    // Fetch all Twitter spaces with their hosts
+    const spaces = await twitterDb.twitterSpace.findMany({
+      include: {
+        hosts: true
+      },
+      orderBy: [
+        // Order by day of week according to our custom order
+        {
+          day_of_week: 'asc'
+        },
+        // Then by start time
+        {
+          start_time: 'asc'
+        }
+      ]
+    });
+
+    // Get the current day of week
+    const today = format(new Date(), 'EEEE');
+    
+    // Group spaces by day of week
+    const spacesByDay = DAYS_OF_WEEK.reduce((acc, day) => {
+      acc[day] = spaces.filter(space => space.day_of_week === day);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Format response
+    const response = {
+      spaces,
+      spacesByDay,
+      currentDay: today
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Error fetching Twitter spaces:", error);
+    
+    // Return empty data in case of error
+    const emptyResponse = {
+      spaces: [],
+      spacesByDay: DAYS_OF_WEEK.reduce((acc, day) => {
+        acc[day] = [];
+        return acc;
+      }, {} as Record<string, any[]>),
+      currentDay: format(new Date(), 'EEEE')
+    };
+    
+    return NextResponse.json(emptyResponse);
+  }
+}
 const FALLBACK_SPACES = [
   {
     id: 'fallback-1',
