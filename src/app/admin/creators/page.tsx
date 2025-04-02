@@ -27,6 +27,8 @@ export default function AdminCreatorsPage() {
   const [loading, setLoading] = useState(true);
   const [newCreator, setNewCreator] = useState({ username: '', category: 'Spaces', points: 250 });
   const [isAdmin, setIsAdmin] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Check if the connected wallet is an admin wallet
   useEffect(() => {
@@ -86,20 +88,6 @@ export default function AdminCreatorsPage() {
 
     fetchWhitelist();
   }, [isAdmin, activeAccount?.address, toast]);
-
-  const handleToggleStatus = async (username: string, newStatus: boolean) => {
-    try {
-      const response = await fetch('/api/admin/creators/whitelist/status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-wallet': activeAccount?.address || ''
-        },
-        body: JSON.stringify({
-          username,
-
-  const [refreshStatus, setRefreshStatus] = useState<any>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Check refresh status
   useEffect(() => {
@@ -168,6 +156,16 @@ export default function AdminCreatorsPage() {
     }
   };
 
+  const handleToggleStatus = async (username: string, newStatus: boolean) => {
+    try {
+      const response = await fetch('/api/admin/creators/whitelist/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-wallet': activeAccount?.address || ''
+        },
+        body: JSON.stringify({
+          username,
           isOnboarded: newStatus
         })
       });
