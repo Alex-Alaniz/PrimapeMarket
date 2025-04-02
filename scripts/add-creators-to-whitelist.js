@@ -12,6 +12,7 @@ try {
   PrismaClient = require('@prisma/client').PrismaClient;
 }
 
+// Create a new instance of PrismaClient with the Twitter database URL
 const twitterDb = new PrismaClient({
   datasources: {
     db: {
@@ -61,38 +62,139 @@ async function addCreatorsToWhitelist() {
   let added = 0;
   let skipped = 0;
 
-  for (const creator of creators) {
-    try {
-      // Check if already exists
-      const existing = await twitterDb.twitterWhitelist.findUnique({
-        where: { username: creator.username }
-      });
+  try {
+    // First, make sure the twitterWhitelist table exists
+    // This is necessary because we're using a generic client that might not have the schema
+    await ensureTwitterWhitelistTable();
 
-      if (existing) {
-        console.log(`Skipping ${creator.username} - already in whitelist`);
-        skipped++;
-        continue;
-      }
+    for (const creator of creators) {
+      try {
+        // Check if already exists
+        const existing = await findTwitterWhitelistByUsername(creator.username);
 
-      // Add to whitelist
-      await twitterDb.twitterWhitelist.create({
-        data: {
-          username: creator.username,
-          category: creator.category,
-          points: creator.points,
-          is_onboarded: creator.is_onboarded,
-          added_by: "admin_script"
+        if (existing) {
+          console.log(`Skipping ${creator.username} - already in whitelist`);
+          skipped++;
+          continue;
         }
-      });
 
-      console.log(`Added ${creator.username} to whitelist`);
-      added++;
-    } catch (error) {
-      console.error(`Error adding ${creator.username}:`, error);
+        // Add to whitelist
+        await createTwitterWhitelistEntry(creator);
+
+        console.log(`Added ${creator.username} to whitelist`);
+        added++;
+      } catch (error) {
+        console.error(`Error adding ${creator.username}:`, error);
+      }
     }
+  } catch (error) {
+    console.error('Script error:', error);
   }
 
   console.log(`Completed: Added ${added} creators, skipped ${skipped} existing creators`);
+}
+
+// Helper function to ensure the twitterWhitelist table exists (for fallback client)
+async function ensureTwitterWhitelistTable() {
+  try {
+    // If using the twitter-specific client, this should already exist
+    // If using fallback, we need to check and potentially create it
+    
+    // Try to query the table to see if it exists
+    await twitterDb.$queryRaw`SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public'
+      AND table_name = 'TwitterWhitelist'
+    )`;
+    
+    // If we get here, the table exists in some form
+    console.log("TwitterWhitelist table exists");
+    
+  } catch (error) {
+    console.warn("TwitterWhitelist table check failed:", error.message);
+    console.log("Creating TwitterWhitelist table...");
+    
+    // Create the table if it doesn't exist
+    try {
+      await twitterDb.$executeRaw`
+        CREATE TABLE IF NOT EXISTS "TwitterWhitelist" (
+          "id" SERIAL PRIMARY KEY,
+          "username" TEXT UNIQUE NOT NULL,
+          "category" TEXT NOT NULL,
+          "points" INTEGER NOT NULL DEFAULT 0,
+          "is_onboarded" BOOLEAN NOT NULL DEFAULT false,
+          "added_by" TEXT,
+          "added_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+      console.log("Created TwitterWhitelist table");
+    } catch (createError) {
+      console.error("Failed to create TwitterWhitelist table:", createError);
+      throw createError;
+    }
+  }
+}
+
+// Helper function to find a whitelist entry by username
+async function findTwitterWhitelistByUsername(username) {
+  const cleanUsername = username.replace('@', '');
+  
+  try {
+    // First try with the presumed model name from the Twitter client
+    return await twitterDb.twitterWhitelist.findUnique({
+      where: { username: cleanUsername }
+    });
+  } catch (error) {
+    // If that fails, try with raw SQL
+    try {
+      const results = await twitterDb.$queryRaw`
+        SELECT * FROM "TwitterWhitelist" WHERE "username" = ${cleanUsername}
+      `;
+      return results.length > 0 ? results[0] : null;
+    } catch (sqlError) {
+      console.error("Raw SQL query failed:", sqlError);
+      return null;
+    }
+  }
+}
+
+// Helper function to create a whitelist entry
+async function createTwitterWhitelistEntry(creator) {
+  const cleanUsername = creator.username.replace('@', '');
+  
+  try {
+    // First try with the presumed model name from the Twitter client
+    return await twitterDb.twitterWhitelist.create({
+      data: {
+        username: cleanUsername,
+        category: creator.category,
+        points: creator.points,
+        is_onboarded: creator.is_onboarded,
+        added_by: "admin_script"
+      }
+    });
+  } catch (error) {
+    // If that fails, try with raw SQL
+    try {
+      await twitterDb.$executeRaw`
+        INSERT INTO "TwitterWhitelist" ("username", "category", "points", "is_onboarded", "added_by")
+        VALUES (${cleanUsername}, ${creator.category}, ${creator.points}, ${creator.is_onboarded}, 'admin_script')
+      `;
+      
+      // Return something that looks like what the client would return
+      return {
+        username: cleanUsername,
+        category: creator.category,
+        points: creator.points,
+        is_onboarded: creator.is_onboarded,
+        added_by: "admin_script",
+        added_at: new Date()
+      };
+    } catch (sqlError) {
+      console.error("Raw SQL insert failed:", sqlError);
+      throw sqlError;
+    }
+  }
 }
 
 // Execute if run directly
