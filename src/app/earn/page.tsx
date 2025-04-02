@@ -291,7 +291,40 @@ export default function EarnPage() {
                     <div key={i} className="bg-card h-[200px] animate-pulse rounded-xl"></div>
                   ))
                 ) : (
-                  creators.map(creator => (
+                  // Split creators into two groups: those with avatar (cached data) and those without
+                  [...creators]
+                    .sort((a, b) => {
+                      // Put creators with avatar (cached data) at the top
+                      if (a.avatar && !b.avatar) return -1;
+                      if (!a.avatar && b.avatar) return 1;
+                      return 0;
+                    })
+                    .map(creator => (
+                      <CreatorCard 
+                        key={creator.id} 
+                        creator={{
+                          ...creator,
+                          engagementTypes: creator.engagementTypes as EngagementType[]
+                        }} 
+                        onEngage={handleEngagement}
+                      />
+                    ))
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Spaces tab with prioritized cached profiles */}
+            <TabsContent value="spaces" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...creators]
+                  .filter(c => c.category === 'Spaces')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
                     <CreatorCard 
                       key={creator.id} 
                       creator={{
@@ -300,28 +333,57 @@ export default function EarnPage() {
                       }} 
                       onEngage={handleEngagement}
                     />
-                  ))
-                )}
+                  ))}
               </div>
             </TabsContent>
 
-            {/* Other tabs content would filter by category */}
-            <TabsContent value="spaces" className="mt-6">
+            {/* Podcast tab with prioritized cached profiles */}
+            <TabsContent value="podcast" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {creators.filter(c => c.category === 'Spaces').map(creator => (
-                  <CreatorCard 
-                    key={creator.id} 
-                    creator={{
-                      ...creator,
-                      engagementTypes: creator.engagementTypes as EngagementType[]
-                    }} 
-                    onEngage={handleEngagement}
-                  />
-                ))}
+                {[...creators]
+                  .filter(c => c.category === 'Podcast')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
+                    <CreatorCard 
+                      key={creator.id} 
+                      creator={{
+                        ...creator,
+                        engagementTypes: creator.engagementTypes as EngagementType[]
+                      }} 
+                      onEngage={handleEngagement}
+                    />
+                  ))}
               </div>
             </TabsContent>
-
-            {/* Similar implementation for other tabs */}
+            
+            {/* News tab with prioritized cached profiles */}
+            <TabsContent value="news" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...creators]
+                  .filter(c => c.category === 'News')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
+                    <CreatorCard 
+                      key={creator.id} 
+                      creator={{
+                        ...creator,
+                        engagementTypes: creator.engagementTypes as EngagementType[]
+                      }} 
+                      onEngage={handleEngagement}
+                    />
+                  ))}
+              </div>
+            </TabsContent>
           </Tabs>
 
           {activeAccount && (
