@@ -1,6 +1,5 @@
 
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/prisma';
 import { twitterDb } from '@/lib/twitter-prisma';
 import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 

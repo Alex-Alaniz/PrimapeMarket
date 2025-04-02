@@ -85,7 +85,7 @@ export default function AdminCreatorsPage() {
     };
 
     fetchWhitelist();
-  }, [isAdmin, activeAccount?.address]);
+  }, [isAdmin, activeAccount?.address, toast]);
 
   const handleToggleStatus = async (username: string, newStatus: boolean) => {
     try {

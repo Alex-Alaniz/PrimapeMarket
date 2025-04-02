@@ -5,13 +5,32 @@ import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { SpacesSchedule } from "@/components/spaces/spaces-schedule";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SpacesPage() {
   const { toast } = useToast();
-  const [spacesData, setSpacesData] = useState<Record<string, any[]>>({});
+  interface TwitterSpace {
+    id: string;
+    title: string;
+    description?: string | null;
+    start_time: string;
+    end_time?: string | null;
+    day_of_week: string;
+    recurring: boolean;
+    formatted_start_time: string;
+    formatted_end_time: string;
+    display_time: string;
+    points: number;
+    hosts: {
+      id: string;
+      username: string;
+      name?: string | null;
+      profile_image_url?: string | null;
+    }[];
+  }
+
+  const [spacesData, setSpacesData] = useState<Record<string, TwitterSpace[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
