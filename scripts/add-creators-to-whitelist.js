@@ -1,19 +1,41 @@
+
 // Script to add Twitter creators to the whitelist
 require('dotenv').config();
 const { twitterDb } = require('../src/lib/twitter-prisma');
 
 // List of creators to add to whitelist
 const creators = [
-  { username: "ApeChainOrg", category: "Spaces", points: 500, is_onboarded: true },
-  { username: "degentraland", category: "Spaces", points: 250, is_onboarded: true },
-  { username: "poapxyz", category: "Spaces", points: 250, is_onboarded: true },
-  { username: "BoredApeYC", category: "News", points: 400, is_onboarded: true },
-  { username: "yugalabs", category: "News", points: 300, is_onboarded: true },
-  { username: "ApeCoin", category: "News", points: 350, is_onboarded: true },
-  { username: "OthersideMeta", category: "Spaces", points: 300, is_onboarded: true },
-  { username: "nftfolk", category: "Podcasts", points: 200, is_onboarded: true },
-  { username: "DeezeFi", category: "Spaces", points: 250, is_onboarded: true },
-  { username: "Web3Station", category: "Spaces", points: 275, is_onboarded: true }
+  // News accounts
+  { username: "apecoin", category: "News", points: 250, is_onboarded: true },
+  { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+  { username: "ApeWhaleNFT", category: "News", points: 250, is_onboarded: true },
+  { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+  { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
+  { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+  
+  // Spaces hosts
+  { username: "iampapito_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ChrisJourdan", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "SteveKBark", category: "Spaces", points: 250, is_onboarded: true },
+  { username: "Geist254", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "SanaeMolly", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "Shiba_King1991", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ernestleedotcom", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "justchespie", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "GratefulApe_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "beast_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "jerodsm_", category: "Spaces", points: 250, is_onboarded: true },
+  { username: "BoredApeGazette", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ChainZilla_", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ryancsmith2222", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "BOObotcher", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "QuinnFT_", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "Eddie_ShoBiz", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "supa_raw", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "lawofthesaw", category: "Spaces", points: 200, is_onboarded: true },
+  
+  // Streamers
+  { username: "blueeye_queen", category: "Streamer", points: 200, is_onboarded: true }
 ];
 
 async function addCreatorsToWhitelist() {
