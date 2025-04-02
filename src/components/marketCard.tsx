@@ -14,7 +14,6 @@ import { MarketBuyInterface } from "./market-buy-interface";
 import { MarketSharesDisplay } from "./market-shares-display";
 import { Market, MarketFilter, MARKET_CATEGORIES } from "@/types/prediction-market";
 import { Button } from "./ui/button";
-import { toEther as _toEther } from "thirdweb";
 import { Badge as _Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
@@ -188,7 +187,8 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                                     {/* Add padding space at bottom for markets with few options */}
                                     {market.options.length < 3 && <div className="h-2"></div>}
                                 </div>
-                            </div>
+                                
+                                </div>
                         )}
 
                         {/* Hidden component for handling buys */}
@@ -200,13 +200,15 @@ export function MarketCard({ index, filter, category = 'all', featured = false, 
                         />
                     </CardContent>
 
-                    {account && (
-                        <CardFooter className="p-3 pt-1 border-t border-border/30">
-                            {market && userShares && (
-                                <MarketSharesDisplay market={market} userShares={userShares} />
-                            )}
-                        </CardFooter>
-                    )}
+                    <CardFooter className="p-3 pt-1 border-t border-border/30">
+                        {market && (
+                            <MarketSharesDisplay 
+                                market={market} 
+                                userShares={userShares || []}
+                                showVolumeOnly={!account}
+                            />
+                        )}
+                    </CardFooter>
                 </>
             )}
         </Card>

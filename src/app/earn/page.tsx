@@ -30,45 +30,29 @@ export default function EarnPage() {
   useEffect(() => {
     const fetchCreators = async () => {
       try {
-        // In production, this would fetch from your API
+        // Fetch from the API which now includes Twitter profile data
         const response = await fetch('/api/creators');
         const data = await response.json();
-        setCreators(data);
+
+        // Transform Twitter handles to include @ if not present
+        const enhancedData = data.map((creator: {
+          id: string;
+          name: string;
+          handle: string;
+          avatar: string;
+          description: string;
+          category: string;
+          points: number;
+          engagementTypes: string[];
+        }) => ({
+          ...creator,
+          handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
+        }));
+
+        setCreators(enhancedData);
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        // Fallback data for development
-        setCreators([
-          {
-            id: '1',
-            name: 'Coffee with Captain',
-            handle: '@CoffeeWCaptain',
-            avatar: '/images/creators/captain.jpg',
-            description: 'Daily crypto discussions and ApeChain updates',
-            category: 'Spaces',
-            points: 500,
-            engagementTypes: ['listen', 'question', 'promote']
-          },
-          {
-            id: '2',
-            name: 'Bodoggos Podcast',
-            handle: '@BodoggosPod',
-            avatar: '/images/creators/bodoggos.jpg',
-            description: 'Web3 gaming and NFT discussions',
-            category: 'Podcast',
-            points: 450,
-            engagementTypes: ['listen', 'comment', 'promote']
-          },
-          {
-            id: '3',
-            name: 'ApeChain Daily',
-            handle: '@ApeChainDaily',
-            avatar: '/images/creators/apechain.jpg',
-            description: 'News and updates from the ApeChain ecosystem',
-            category: 'News',
-            points: 400,
-            engagementTypes: ['read', 'share', 'comment']
-          }
-        ]);
+        // No fallback data needed - API is working correctly
       } finally {
         setIsLoading(false);
       }

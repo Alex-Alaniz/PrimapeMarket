@@ -73,10 +73,14 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
           <div className="absolute -bottom-10 left-4">
             <div className="relative w-20 h-20 rounded-full border-4 border-background overflow-hidden">
               <Image 
-                src={creator.avatar || '/images/creators/default.jpg'} 
+                src={creator.avatar || '/images/pm.PNG'} 
                 alt={creator.name}
                 fill
                 className="object-cover"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  e.currentTarget.src = '/images/pm.PNG';
+                }}
               />
             </div>
           </div>
@@ -95,10 +99,14 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
         </div>
         
         <div className="p-6 pt-12">
-          <h3 className="font-bold text-lg">{creator.name}</h3>
+          <h3 className="font-bold text-lg">
+            {creator.name || `${creator.handle.replace('@', '')} | ApeChain Creator`}
+          </h3>
           <p className="text-sm text-muted-foreground">{creator.handle}</p>
           
-          <p className="mt-2 text-sm">{creator.description}</p>
+          <p className="mt-2 text-sm">
+            {creator.description || 'An awesome ApeChain creator building the future of Web3 social engagement. Check back soon for their full profile!'}
+          </p>
           
           <div className="mt-4 flex items-center gap-2">
             <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
