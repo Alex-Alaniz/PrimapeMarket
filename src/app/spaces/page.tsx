@@ -13,9 +13,9 @@ export default function SpacesPage() {
   interface TwitterSpace {
     id: string;
     title: string;
-    description?: string | null;
+    description: string | null;
     start_time: string;
-    end_time?: string | null;
+    end_time: string | null;
     day_of_week: string;
     recurring: boolean;
     formatted_start_time: string;
@@ -25,8 +25,8 @@ export default function SpacesPage() {
     hosts: {
       id: string;
       username: string;
-      name?: string | null;
-      profile_image_url?: string | null;
+      name: string | null;
+      profile_image_url: string | null;
     }[];
   }
 
@@ -108,7 +108,10 @@ export default function SpacesPage() {
               {weekDays.map((day) => (
                 <TabsContent key={day} value={day.toLowerCase()} className="mt-6">
                   <SpacesSchedule 
-                    daySchedule={spacesData[day] || []} 
+                    daySchedule={(spacesData[day] || []).map(space => ({
+                      ...space,
+                      description: space.description || null // Ensure description is never undefined
+                    }))} 
                     day={day} 
                   />
                 </TabsContent>
