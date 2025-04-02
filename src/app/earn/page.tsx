@@ -58,58 +58,77 @@ export default function EarnPage() {
   useEffect(() => {
     const fetchCreators = async () => {
       try {
+        setIsLoading(true);
+        
         // Check if we have cached creators in localStorage and when they were last fetched
         const cachedCreators = localStorage.getItem('cached_creators');
         const savedLastFetchTime = sessionStorage.getItem('creators_last_fetch');
         setLastFetchTime(savedLastFetchTime);
         
         const now = new Date().toISOString();
-        const useCache = cachedCreators && savedLastFetchTime && 
-          (new Date(now).getTime() - new Date(savedLastFetchTime).getTime() < 5 * 60 * 1000); // Reduced to 5 minutes
+        const cacheAge = savedLastFetchTime 
+          ? (new Date(now).getTime() - new Date(savedLastFetchTime).getTime()) 
+          : Infinity;
         
-        if (useCache) {
+        // Use cache for UI immediately if available (regardless of age)
+        if (cachedCreators) {
           console.log("Using cached creators data from localStorage");
           setCreators(JSON.parse(cachedCreators));
           setIsLoading(false);
-          // Continue fetching in the background to update with latest data
-        } else {
-          console.log("Cache expired or not available, fetching fresh data");
         }
         
-        // Fetch from API with cache flag - this tells the backend to prioritize cached data
-        const response = await fetch('/api/creators?use_cache=true');
-        const data = await response.json();
-        
-        // Transform Twitter handles to include @ if not present
-        const enhancedData = data.map((creator: {
-          id: string;
-          name: string;
-          handle: string;
-          avatar: string;
-          description: string;
-          category: string;
-          points: number;
-          engagementTypes: string[];
-        }) => ({
-          ...creator,
-          handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
-        }));
-
-        // Store in localStorage for future use
-        localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
-        sessionStorage.setItem('creators_last_fetch', now);
-        setLastFetchTime(now);
-        
-        setCreators(enhancedData);
-        
-        // Log the fetched data
-        console.log("Fetched creators data:", enhancedData);
+        // Only fetch from API if cache is older than 5 minutes or doesn't exist
+        if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
+          console.log("Cache expired or not available, fetching fresh data");
+          
+          // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
+          const response = await fetch('/api/creators?use_cache=true');
+          
+          if (!response.ok) {
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          
+          // Transform Twitter handles to include @ if not present
+          const enhancedData = data.map((creator: {
+            id: string;
+            name: string;
+            handle: string;
+            avatar: string;
+            description: string;
+            category: string;
+            points: number;
+            engagementTypes: string[];
+          }) => ({
+            ...creator,
+            handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
+          }));
+          
+          // Store in localStorage for future use
+          localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
+          sessionStorage.setItem('creators_last_fetch', now);
+          setLastFetchTime(now);
+          
+          // Only update state if we got valid data
+          if (enhancedData.length > 0) {
+            console.log("Updating UI with fresh data from API");
+            setCreators(enhancedData);
+          }
+          
+          // Log the fetched data
+          console.log("Fetched creators data:", enhancedData);
+        }
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        // Try to use cached data if available, even if it's older than 15 minutes
-        const cachedCreators = localStorage.getItem('cached_creators');
-        if (cachedCreators) {
-          setCreators(JSON.parse(cachedCreators));
+        
+        // Try to use cached data if available and we haven't already set it
+        if (creators.length === 0) {
+          const cachedCreators = localStorage.getItem('cached_creators');
+          if (cachedCreators) {
+            console.log("Using fallback cached data after API error");
+            setCreators(JSON.parse(cachedCreators));
+          }
         }
       } finally {
         setIsLoading(false);
@@ -191,7 +210,45 @@ export default function EarnPage() {
                       localStorage.removeItem('cached_creators');
                       sessionStorage.removeItem('creators_last_fetch');
                       setIsLoading(true);
-                      fetchCreators();
+                      
+                      // Fetch creators function
+                      const refreshCreators = async () => {
+                        try {
+                          const response = await fetch('/api/creators?use_cache=true&force_refresh=true');
+                          if (!response.ok) {
+                            throw new Error(`API returned ${response.status}`);
+                          }
+                          
+                          const data = await response.json();
+                          
+                          // Transform Twitter handles to include @ if not present
+                          const enhancedData = data.map((creator: any) => ({
+                            ...creator,
+                            handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
+                          }));
+                          
+                          // Store in localStorage and update state
+                          localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
+                          sessionStorage.setItem('creators_last_fetch', new Date().toISOString());
+                          setCreators(enhancedData);
+                          
+                          toast({
+                            title: "Refresh Complete",
+                            description: "Creator data has been refreshed."
+                          });
+                        } catch (error) {
+                          console.error("Error refreshing data:", error);
+                          toast({
+                            title: "Refresh Failed",
+                            description: "Could not refresh creator data. Please try again later.",
+                            variant: "destructive"
+                          });
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      };
+                      
+                      refreshCreators();
                     }}
                   >
                     Refresh Now

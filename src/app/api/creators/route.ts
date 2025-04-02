@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   // Get URL parameters
   const url = new URL(request.url);
   const useCache = url.searchParams.get('use_cache') === 'true';
+  const forceRefresh = url.searchParams.get('force_refresh') === 'true';
   
   try {
     // Get whitelisted creators from the database
