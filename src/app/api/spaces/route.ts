@@ -1,11 +1,82 @@
-
 import { NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
 
-export async function GET() {
+// Days of week in order for sorting
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+// Mock data for testing when no spaces are available
+const MOCK_SPACES = [
+  {
+    id: 'mock-1',
+    title: 'ApeChain Weekly Update',
+    description: 'Join us for the latest updates on ApeChain',
+    day_of_week: 'Monday',
+    start_time: new Date().setHours(14, 0, 0, 0),
+    end_time: new Date().setHours(15, 0, 0, 0),
+    hosts: [
+      {
+        id: 'mock-host-1',
+        username: 'ApeChainDev',
+        name: 'ApeChain Dev',
+        profile_image_url: '/images/pm.PNG',
+      }
+    ],
+    recurring: true,
+    points: 120
+  },
+  {
+    id: 'mock-2',
+    title: 'Web3 Social Media Future',
+    description: 'Discussion on the future of social media in Web3',
+    day_of_week: 'Wednesday',
+    start_time: new Date().setHours(18, 30, 0, 0),
+    end_time: new Date().setHours(19, 30, 0, 0),
+    hosts: [
+      {
+        id: 'mock-host-2',
+        username: 'BlueEyeQueen',
+        name: 'Blue Eye Queen',
+        profile_image_url: '/images/pm.PNG',
+      }
+    ],
+    recurring: true,
+    points: 150
+  },
+  {
+    id: 'mock-3',
+    title: 'Crypto Market Analysis',
+    description: 'Analysis of the current crypto market trends',
+    day_of_week: 'Friday',
+    start_time: new Date().setHours(17, 0, 0, 0),
+    end_time: new Date().setHours(18, 0, 0, 0),
+    hosts: [
+      {
+        id: 'mock-host-3',
+        username: 'RedGoatQueen',
+        name: 'Red Goat Queen',
+        profile_image_url: '/images/pm.PNG',
+      }
+    ],
+    recurring: true,
+    points: 130
+  }
+];
+
+export async function GET(req: Request) {
   try {
-    // Get all spaces with host information
-    const spaces = await twitterDb.twitterSpace.findMany({
+    const { searchParams } = new URL(req.url);
+    const useMock = searchParams.get('mock') === 'true';
+    const hostFilter = searchParams.get('host');
+
+    // Fetch all spaces from database
+    let spaces = await twitterDb.twitterSpace.findMany({
+      where: hostFilter ? {
+        hosts: {
+          some: {
+            username: hostFilter.replace('@', '')
+          }
+        }
+      } : undefined,
       include: {
         hosts: {
           select: {
@@ -16,88 +87,61 @@ export async function GET() {
           },
         },
       },
+      orderBy: [
+        { day_of_week: "asc" },
+        { start_time: "asc" },
+      ],
     });
 
-    // Define interface for enhanced space data
-    interface EnhancedSpace {
-      id: string;
-      space_id?: string | null;
-      title: string;
-      description?: string | null;
-      start_time: Date;
-      end_time?: Date | null;
-      day_of_week: string;
-      recurring: boolean;
-      points: number;
-      created_at: Date;
-      updated_at: Date;
-      hosts: {
-        id: string;
-        username: string;
-        name: string | null;
-        profile_image_url: string | null;
-      }[];
-      formatted_start_time: string;
-      formatted_end_time: string;
-      display_time: string;
+    // If no spaces found and mock parameter is true, use mock data
+    if (spaces.length === 0 && useMock) {
+      spaces = MOCK_SPACES as any;
+      console.log('Using mock data for spaces');
     }
 
-    // Group spaces by day of week
-    const spacesByDay = spaces.reduce((acc, space) => {
-      if (!acc[space.day_of_week]) {
-        acc[space.day_of_week] = [];
-      }
-      
-      // Format start and end times for display
+    // Format the spaces for the frontend
+    const formattedSpaces = spaces.map(space => {
+      // Format start time for display
       const startTime = new Date(space.start_time);
-      const startHour = startTime.getHours();
-      const startMinute = startTime.getMinutes();
-      
-      const formattedStartTime = `${startHour}:${startMinute.toString().padStart(2, '0')}`;
-      
+      const formattedStartTime = startTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      // Format end time if it exists
       let formattedEndTime = '';
+      let displayTime = formattedStartTime;
+
       if (space.end_time) {
         const endTime = new Date(space.end_time);
-        const endHour = endTime.getHours();
-        const endMinute = endTime.getMinutes();
-        formattedEndTime = `${endHour}:${endMinute.toString().padStart(2, '0')}`;
+        formattedEndTime = endTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+        displayTime = `${formattedStartTime} - ${formattedEndTime}`;
       }
-      
-      // Add time display to space object
-      const enhancedSpace = {
+
+      return {
         ...space,
         formatted_start_time: formattedStartTime,
         formatted_end_time: formattedEndTime,
-        display_time: formattedEndTime 
-          ? `${formattedStartTime} - ${formattedEndTime}`
-          : formattedStartTime,
+        display_time: displayTime
       };
-      
-      acc[space.day_of_week].push(enhancedSpace);
-      return acc;
-    }, {} as Record<string, EnhancedSpace[]>);
-
-    // Sort spaces within each day by start time
-    Object.keys(spacesByDay).forEach(day => {
-      spacesByDay[day].sort((a, b) => {
-        const aTime = new Date(a.start_time);
-        const bTime = new Date(b.start_time);
-        return aTime.getTime() - bTime.getTime();
-      });
     });
 
-    // Ensure we have all days of the week in the response, even if empty
-    const orderedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const orderedSpacesByDay = orderedDays.reduce((acc, day) => {
-      acc[day] = spacesByDay[day] || [];
+    // Group spaces by day of the week
+    const spacesByDay = DAYS_OF_WEEK.reduce((acc, day) => {
+      acc[day] = formattedSpaces.filter(space => space.day_of_week === day);
       return acc;
-    }, {} as Record<string, EnhancedSpace[]>);
+    }, {} as Record<string, any[]>);
 
-    return NextResponse.json(orderedSpacesByDay);
+    return NextResponse.json(spacesByDay);
   } catch (error) {
-    console.error("Error fetching spaces schedule:", error);
+    console.error("Error fetching Twitter spaces:", error);
     return NextResponse.json(
-      { error: "Failed to fetch Twitter spaces schedule" },
+      { error: "Failed to fetch Twitter spaces" },
       { status: 500 },
     );
   }
