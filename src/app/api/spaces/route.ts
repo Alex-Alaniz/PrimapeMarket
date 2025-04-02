@@ -31,7 +31,12 @@ export async function GET() {
       points: number;
       created_at: Date;
       updated_at: Date;
-      hosts: any[];
+      hosts: {
+        id: string;
+        username: string;
+        name: string | null;
+        profile_image_url: string | null;
+      }[];
       formatted_start_time: string;
       formatted_end_time: string;
       display_time: string;
