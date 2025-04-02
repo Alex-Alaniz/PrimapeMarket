@@ -1,7 +1,8 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/prisma';
-import { getTwitterProfileData } from '@/lib/twitter-api';
+import { twitterDb } from '@/lib/twitter-prisma';
+import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 
 export async function GET() {
   try {
@@ -26,8 +27,28 @@ export async function GET() {
     const enhancedCreators = await Promise.all(
       creators.map(async (creator) => {
         try {
-          // Get Twitter profile data for this creator
+          // Check if we have cached data first
+          const cachedProfile = await twitterDb.twitterProfile.findUnique({
+            where: { username: creator.handle.replace('@', '') }
+          });
+          
+          if (cachedProfile) {
+            console.log(`Using cached Twitter data for ${creator.handle}`);
+            return {
+              ...creator,
+              twitterId: cachedProfile.id,
+              avatar: cachedProfile.profile_image_url || '/images/pm.PNG',
+              description: cachedProfile.description || 'Creator information not available at this time.'
+            };
+          }
+          
+          // If no cached data, fetch from Twitter API
           const twitterData = await getTwitterProfileData(creator.handle);
+          
+          // Cache the Twitter data for future use
+          if (twitterData) {
+            await cacheTwitterProfile(twitterData);
+          }
           
           return {
             ...creator,
