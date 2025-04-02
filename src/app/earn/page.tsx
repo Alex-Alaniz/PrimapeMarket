@@ -294,12 +294,22 @@ export default function EarnPage() {
                   // Split creators into two groups: those with avatar (cached data) and those without
                   [...creators]
                     .sort((a, b) => {
-                      // Put creators with avatar (cached data) at the top
-                      const hasAvatarA = a.avatar && a.avatar.trim() !== '';
-                      const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+                      // Check for placeholder data
+                      const isPlaceholderA = 
+                        !a.avatar || 
+                        a.avatar === '/images/pm.PNG' || 
+                        a.description?.includes('Profile data will be loaded soon') ||
+                        a.description?.includes('Check back later');
 
-                      if (hasAvatarA && !hasAvatarB) return -1;
-                      if (!hasAvatarA && hasAvatarB) return 1;
+                      const isPlaceholderB = 
+                        !b.avatar || 
+                        b.avatar === '/images/pm.PNG' || 
+                        b.description?.includes('Profile data will be loaded soon') ||
+                        b.description?.includes('Check back later');
+
+                      // True profiles first, placeholders last
+                      if (!isPlaceholderA && isPlaceholderB) return -1;
+                      if (isPlaceholderA && !isPlaceholderB) return 1;
                       return 0;
                     })
                     .map(creator => (
@@ -322,12 +332,22 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Spaces')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
-                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+                    // Check for placeholder data
+                    const isPlaceholderA = 
+                      !a.avatar || 
+                      a.avatar === '/images/pm.PNG' || 
+                      a.description?.includes('Profile data will be loaded soon') ||
+                      a.description?.includes('Check back later');
 
-                    if (hasAvatarA && !hasAvatarB) return -1;
-                    if (!hasAvatarA && hasAvatarB) return 1;
+                    const isPlaceholderB = 
+                      !b.avatar || 
+                      b.avatar === '/images/pm.PNG' || 
+                      b.description?.includes('Profile data will be loaded soon') ||
+                      b.description?.includes('Check back later');
+
+                    // True profiles first, placeholders last
+                    if (!isPlaceholderA && isPlaceholderB) return -1;
+                    if (isPlaceholderA && !isPlaceholderB) return 1;
                     return 0;
                   })
                   .map(creator => (
@@ -349,12 +369,22 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Podcast')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
-                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+                    // Check for placeholder data
+                    const isPlaceholderA = 
+                      !a.avatar || 
+                      a.avatar === '/images/pm.PNG' || 
+                      a.description?.includes('Profile data will be loaded soon') ||
+                      a.description?.includes('Check back later');
 
-                    if (hasAvatarA && !hasAvatarB) return -1;
-                    if (!hasAvatarA && hasAvatarB) return 1;
+                    const isPlaceholderB = 
+                      !b.avatar || 
+                      b.avatar === '/images/pm.PNG' || 
+                      b.description?.includes('Profile data will be loaded soon') ||
+                      b.description?.includes('Check back later');
+
+                    // True profiles first, placeholders last
+                    if (!isPlaceholderA && isPlaceholderB) return -1;
+                    if (isPlaceholderA && !isPlaceholderB) return 1;
                     return 0;
                   })
                   .map(creator => (
@@ -376,12 +406,22 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'News')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    const hasAvatarA = a.avatar && a.avatar.trim() !== '';
-                    const hasAvatarB = b.avatar && b.avatar.trim() !== '';
+                    // Check for placeholder data
+                    const isPlaceholderA = 
+                      !a.avatar || 
+                      a.avatar === '/images/pm.PNG' || 
+                      a.description?.includes('Profile data will be loaded soon') ||
+                      a.description?.includes('Check back later');
 
-                    if (hasAvatarA && !hasAvatarB) return -1;
-                    if (!hasAvatarA && hasAvatarB) return 1;
+                    const isPlaceholderB = 
+                      !b.avatar || 
+                      b.avatar === '/images/pm.PNG' || 
+                      b.description?.includes('Profile data will be loaded soon') ||
+                      b.description?.includes('Check back later');
+
+                    // True profiles first, placeholders last
+                    if (!isPlaceholderA && isPlaceholderB) return -1;
+                    if (isPlaceholderA && !isPlaceholderB) return 1;
                     return 0;
                   })
                   .map(creator => (
