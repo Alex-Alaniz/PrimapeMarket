@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server';
 import { twitterDb } from '@/lib/twitter-prisma';
 import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Get URL parameters
+  const url = new URL(request.url);
+  const useCache = url.searchParams.get('use_cache') === 'true';
+  const _forceRefresh = url.searchParams.get('force_refresh') === 'true';
+  
   try {
     // Get whitelisted creators from the database
     let whitelistedCreators = [];
@@ -37,13 +42,16 @@ export async function GET() {
     const enhancedCreators = await Promise.all(
       creators.map(async (creator) => {
         try {
-          // Check if we have cached data first
+          // Always check cached data first - force refresh from DB
+          const cleanUsername = creator.handle.replace('@', '');
+          console.log(`Fetching cached profile for ${cleanUsername}`);
+          
           const cachedProfile = await twitterDb.twitterProfile.findUnique({
-            where: { username: creator.handle.replace('@', '') }
+            where: { username: cleanUsername }
           });
           
           if (cachedProfile) {
-            console.log(`Using cached Twitter data for ${creator.handle}`);
+            console.log(`Using cached Twitter data for ${cleanUsername}`);
             return {
               ...creator,
               name: cachedProfile.name || creator.handle,
@@ -53,7 +61,18 @@ export async function GET() {
             };
           }
           
-          // If no cached data, fetch from Twitter API
+          // If useCache is true, don't try to fetch from Twitter API for uncached profiles
+          // This respects rate limits by only using cached data
+          if (useCache) {
+            return {
+              ...creator,
+              name: `${creator.handle.replace('@', '')} | ApeChain Creator`,
+              avatar: '/images/pm.PNG',
+              description: 'Profile data will be loaded soon. Check back later for full details!'
+            };
+          }
+          
+          // If no cached data and we're allowed to fetch from API, do so
           try {
             const twitterData = await getTwitterProfileData(creator.handle);
             

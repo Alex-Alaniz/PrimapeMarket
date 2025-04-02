@@ -26,40 +26,117 @@ export default function EarnPage() {
     engagementTypes: string[];
   }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshStatus, setRefreshStatus] = useState<{
+    refreshInProgress: boolean;
+    nextRefresh: string | null;
+  } | null>(null);
 
+  // Track last fetch time in session storage to avoid repeated fetches
+  const [_lastFetchTime, setLastFetchTime] = useState<string | null>(null);
+  
+  // Check refresh status periodically
+  useEffect(() => {
+    const checkRefreshStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/creators/refresh');
+        if (response.ok) {
+          const data = await response.json();
+          setRefreshStatus(data);
+        }
+      } catch (error) {
+        console.error("Failed to check refresh status:", error);
+      }
+    };
+    
+    // Check immediately and then every minute
+    checkRefreshStatus();
+    const interval = setInterval(checkRefreshStatus, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   useEffect(() => {
     const fetchCreators = async () => {
       try {
-        // Fetch from the API which now includes Twitter profile data
-        const response = await fetch('/api/creators');
-        const data = await response.json();
-
-        // Transform Twitter handles to include @ if not present
-        const enhancedData = data.map((creator: {
-          id: string;
-          name: string;
-          handle: string;
-          avatar: string;
-          description: string;
-          category: string;
-          points: number;
-          engagementTypes: string[];
-        }) => ({
-          ...creator,
-          handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
-        }));
-
-        setCreators(enhancedData);
+        setIsLoading(true);
+        
+        // Check if we have cached creators in localStorage and when they were last fetched
+        const cachedCreators = localStorage.getItem('cached_creators');
+        const savedLastFetchTime = sessionStorage.getItem('creators_last_fetch');
+        setLastFetchTime(savedLastFetchTime);
+        
+        const now = new Date().toISOString();
+        const cacheAge = savedLastFetchTime 
+          ? (new Date(now).getTime() - new Date(savedLastFetchTime).getTime()) 
+          : Infinity;
+        
+        // Use cache for UI immediately if available (regardless of age)
+        if (cachedCreators) {
+          console.log("Using cached creators data from localStorage");
+          setCreators(JSON.parse(cachedCreators));
+          setIsLoading(false);
+        }
+        
+        // Only fetch from API if cache is older than 5 minutes or doesn't exist
+        if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
+          console.log("Cache expired or not available, fetching fresh data");
+          
+          // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
+          const response = await fetch('/api/creators?use_cache=true');
+          
+          if (!response.ok) {
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          
+          // Transform Twitter handles to include @ if not present
+          const enhancedData = data.map((creator: {
+            id: string;
+            name: string;
+            handle: string;
+            avatar: string;
+            description: string;
+            category: string;
+            points: number;
+            engagementTypes: string[];
+          }) => ({
+            ...creator,
+            handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
+          }));
+          
+          // Store in localStorage for future use
+          localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
+          sessionStorage.setItem('creators_last_fetch', now);
+          setLastFetchTime(now);
+          
+          // Only update state if we got valid data
+          if (enhancedData.length > 0) {
+            console.log("Updating UI with fresh data from API");
+            setCreators(enhancedData);
+          }
+          
+          // Log the fetched data
+          console.log("Fetched creators data:", enhancedData);
+        }
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        // No fallback data needed - API is working correctly
+        
+        // Try to use cached data if available and we haven't already set it
+        if (creators.length === 0) {
+          const cachedCreators = localStorage.getItem('cached_creators');
+          if (cachedCreators) {
+            console.log("Using fallback cached data after API error");
+            setCreators(JSON.parse(cachedCreators));
+          }
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCreators();
-  }, []);
+  }, [creators.length]);
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {
@@ -121,6 +198,63 @@ export default function EarnPage() {
                 Engage with top ApeChain creators and earn points redeemable for $APE tokens, 
                 exclusive NFTs, and platform features.
               </p>
+              {refreshStatus?.nextRefresh && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  Next creator data refresh: {new Date(refreshStatus.nextRefresh).toLocaleTimeString()}
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="ml-2 text-xs"
+                    onClick={() => {
+                      // Clear cache and reload data
+                      localStorage.removeItem('cached_creators');
+                      sessionStorage.removeItem('creators_last_fetch');
+                      setIsLoading(true);
+                      
+                      // Fetch creators function
+                      const refreshCreators = async () => {
+                        try {
+                          const response = await fetch('/api/creators?use_cache=true&force_refresh=true');
+                          if (!response.ok) {
+                            throw new Error(`API returned ${response.status}`);
+                          }
+                          
+                          const data = await response.json();
+                          
+                          // Transform Twitter handles to include @ if not present
+                          const enhancedData = data.map((creator: any) => ({
+                            ...creator,
+                            handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
+                          }));
+                          
+                          // Store in localStorage and update state
+                          localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
+                          sessionStorage.setItem('creators_last_fetch', new Date().toISOString());
+                          setCreators(enhancedData);
+                          
+                          toast({
+                            title: "Refresh Complete",
+                            description: "Creator data has been refreshed."
+                          });
+                        } catch (error) {
+                          console.error("Error refreshing data:", error);
+                          toast({
+                            title: "Refresh Failed",
+                            description: "Could not refresh creator data. Please try again later.",
+                            variant: "destructive"
+                          });
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      };
+                      
+                      refreshCreators();
+                    }}
+                  >
+                    Refresh Now
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="bg-card p-4 rounded-lg w-full lg:w-auto">
@@ -157,7 +291,40 @@ export default function EarnPage() {
                     <div key={i} className="bg-card h-[200px] animate-pulse rounded-xl"></div>
                   ))
                 ) : (
-                  creators.map(creator => (
+                  // Split creators into two groups: those with avatar (cached data) and those without
+                  [...creators]
+                    .sort((a, b) => {
+                      // Put creators with avatar (cached data) at the top
+                      if (a.avatar && !b.avatar) return -1;
+                      if (!a.avatar && b.avatar) return 1;
+                      return 0;
+                    })
+                    .map(creator => (
+                      <CreatorCard 
+                        key={creator.id} 
+                        creator={{
+                          ...creator,
+                          engagementTypes: creator.engagementTypes as EngagementType[]
+                        }} 
+                        onEngage={handleEngagement}
+                      />
+                    ))
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Spaces tab with prioritized cached profiles */}
+            <TabsContent value="spaces" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...creators]
+                  .filter(c => c.category === 'Spaces')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
                     <CreatorCard 
                       key={creator.id} 
                       creator={{
@@ -166,28 +333,57 @@ export default function EarnPage() {
                       }} 
                       onEngage={handleEngagement}
                     />
-                  ))
-                )}
+                  ))}
               </div>
             </TabsContent>
 
-            {/* Other tabs content would filter by category */}
-            <TabsContent value="spaces" className="mt-6">
+            {/* Podcast tab with prioritized cached profiles */}
+            <TabsContent value="podcast" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {creators.filter(c => c.category === 'Spaces').map(creator => (
-                  <CreatorCard 
-                    key={creator.id} 
-                    creator={{
-                      ...creator,
-                      engagementTypes: creator.engagementTypes as EngagementType[]
-                    }} 
-                    onEngage={handleEngagement}
-                  />
-                ))}
+                {[...creators]
+                  .filter(c => c.category === 'Podcast')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
+                    <CreatorCard 
+                      key={creator.id} 
+                      creator={{
+                        ...creator,
+                        engagementTypes: creator.engagementTypes as EngagementType[]
+                      }} 
+                      onEngage={handleEngagement}
+                    />
+                  ))}
               </div>
             </TabsContent>
-
-            {/* Similar implementation for other tabs */}
+            
+            {/* News tab with prioritized cached profiles */}
+            <TabsContent value="news" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...creators]
+                  .filter(c => c.category === 'News')
+                  .sort((a, b) => {
+                    // Put creators with avatar (cached data) at the top
+                    if (a.avatar && !b.avatar) return -1;
+                    if (!a.avatar && b.avatar) return 1;
+                    return 0;
+                  })
+                  .map(creator => (
+                    <CreatorCard 
+                      key={creator.id} 
+                      creator={{
+                        ...creator,
+                        engagementTypes: creator.engagementTypes as EngagementType[]
+                      }} 
+                      onEngage={handleEngagement}
+                    />
+                  ))}
+              </div>
+            </TabsContent>
           </Tabs>
 
           {activeAccount && (

@@ -27,6 +27,8 @@ export default function AdminCreatorsPage() {
   const [loading, setLoading] = useState(true);
   const [newCreator, setNewCreator] = useState({ username: '', category: 'Spaces', points: 250 });
   const [isAdmin, setIsAdmin] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Check if the connected wallet is an admin wallet
   useEffect(() => {
@@ -86,6 +88,73 @@ export default function AdminCreatorsPage() {
 
     fetchWhitelist();
   }, [isAdmin, activeAccount?.address, toast]);
+
+  // Check refresh status
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const checkRefreshStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/creators/refresh', {
+          headers: {
+            'x-admin-wallet': activeAccount?.address || ''
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setRefreshStatus(data);
+        }
+      } catch (error) {
+        console.error('Error checking refresh status:', error);
+      }
+    };
+    
+    checkRefreshStatus();
+    const interval = setInterval(checkRefreshStatus, 10000);
+    
+    return () => clearInterval(interval);
+  }, [isAdmin, activeAccount?.address]);
+
+  // Trigger batch refresh
+  const triggerRefresh = async () => {
+    if (!isAdmin) return;
+    
+    try {
+      setIsRefreshing(true);
+      const response = await fetch('/api/admin/creators/refresh', {
+        method: 'POST',
+        headers: {
+          'x-admin-wallet': activeAccount?.address || ''
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRefreshStatus(data);
+        toast({
+          title: 'Batch Refresh Triggered',
+          description: `Processed ${data.processed} creators${data.skipped ? `, ${data.skipped} skipped` : ''}${data.remaining ? `, ${data.remaining} remaining` : ''}`,
+          variant: 'default'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to trigger batch refresh',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error triggering refresh:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to trigger batch refresh',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleToggleStatus = async (username: string, newStatus: boolean) => {
     try {
@@ -223,6 +292,140 @@ export default function AdminCreatorsPage() {
             </CardContent>
           </Card>
         )}
+        
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle>Twitter API Status</CardTitle>
+              <CardDescription>
+                Manage Twitter API rate limits and data refresh
+              </CardDescription>
+            </div>
+            <Button 
+              onClick={triggerRefresh} 
+              disabled={!isAdminView || isRefreshing || (refreshStatus?.timeUntilNextBatchMs > 0 && refreshStatus?.timeUntilNextBatchMs < 60000)}
+            >
+              {isRefreshing ? 'Refreshing...' : 'Refresh Batch Now'}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {refreshStatus ? (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span>Status:</span>
+                    <span>{refreshStatus.isFetchingBatch ? 'Refreshing' : 'Idle'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Last Batch:</span>
+                    <span>{refreshStatus.lastBatchTime ? new Date(refreshStatus.lastBatchTime).toLocaleString() : 'Never'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Next Batch:</span>
+                    <span>{refreshStatus.nextBatchTime ? new Date(refreshStatus.nextBatchTime).toLocaleString() : 'Not scheduled'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Wait Time:</span>
+                    <span>{refreshStatus.timeUntilNextBatchMinutes ? `${refreshStatus.timeUntilNextBatchMinutes} minutes` : 'Ready'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Current Index:</span>
+                    <span>{refreshStatus.currentBatchIndex}</span>
+                  </div>
+                  {refreshStatus.processed !== undefined && (
+                    <div className="flex justify-between text-sm">
+                      <span>Last Batch Results:</span>
+                      <span>
+                        {refreshStatus.processed} processed
+                        {refreshStatus.skipped !== undefined && `, ${refreshStatus.skipped} skipped`}
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p>Loading status...</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle>Manual Twitter Fetch</CardTitle>
+              <CardDescription>
+                Manually fetch a single Twitter profile
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex space-x-2 mb-2">
+              <Input 
+                placeholder="Twitter username (without @)" 
+                id="manualFetchInput"
+                disabled={!isAdminView}
+              />
+              <Button 
+                onClick={async () => {
+                  const username = (document.getElementById('manualFetchInput') as HTMLInputElement)?.value;
+                  if (!username) {
+                    toast({
+                      title: 'Error',
+                      description: 'Please enter a Twitter username',
+                      variant: 'destructive'
+                    });
+                    return;
+                  }
+                  
+                  try {
+                    toast({
+                      title: 'Fetching...',
+                      description: `Attempting to fetch data for ${username}`
+                    });
+                    
+                    const response = await fetch('/api/admin/creators/fetch-single', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-wallet': activeAccount?.address || ''
+                      },
+                      body: JSON.stringify({ username })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                      toast({
+                        title: 'Success',
+                        description: `Successfully fetched data for ${username}`
+                      });
+                    } else {
+                      toast({
+                        title: 'Error',
+                        description: data.error || 'Failed to fetch Twitter data',
+                        variant: 'destructive'
+                      });
+                    }
+                  } catch (error) {
+                    console.error('Error fetching profile:', error);
+                    toast({
+                      title: 'Error',
+                      description: 'An unexpected error occurred',
+                      variant: 'destructive'
+                    });
+                  }
+                }}
+                disabled={!isAdminView}
+              >
+                Fetch Profile
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              This bypasses the batch system and directly fetches a single Twitter profile. 
+              Use this when you need to immediately fetch data for a specific creator.
+            </p>
+          </CardContent>
+        </Card>
         
         <Card className="mb-6">
           <CardHeader>
