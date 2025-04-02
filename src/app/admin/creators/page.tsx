@@ -97,6 +97,77 @@ export default function AdminCreatorsPage() {
         },
         body: JSON.stringify({
           username,
+
+  const [refreshStatus, setRefreshStatus] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Check refresh status
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const checkRefreshStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/creators/refresh', {
+          headers: {
+            'x-admin-wallet': activeAccount?.address || ''
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setRefreshStatus(data);
+        }
+      } catch (error) {
+        console.error('Error checking refresh status:', error);
+      }
+    };
+    
+    checkRefreshStatus();
+    const interval = setInterval(checkRefreshStatus, 10000);
+    
+    return () => clearInterval(interval);
+  }, [isAdmin, activeAccount?.address]);
+
+  // Trigger batch refresh
+  const triggerRefresh = async () => {
+    if (!isAdmin) return;
+    
+    try {
+      setIsRefreshing(true);
+      const response = await fetch('/api/admin/creators/refresh', {
+        method: 'POST',
+        headers: {
+          'x-admin-wallet': activeAccount?.address || ''
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRefreshStatus(data);
+        toast({
+          title: 'Batch Refresh Triggered',
+          description: `Processed ${data.processed} creators${data.remaining ? `, ${data.remaining} remaining` : ''}`,
+          variant: 'default'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to trigger batch refresh',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error triggering refresh:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to trigger batch refresh',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
           isOnboarded: newStatus
         })
       });
@@ -223,6 +294,53 @@ export default function AdminCreatorsPage() {
             </CardContent>
           </Card>
         )}
+        
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle>Twitter API Status</CardTitle>
+              <CardDescription>
+                Manage Twitter API rate limits and data refresh
+              </CardDescription>
+            </div>
+            <Button 
+              onClick={triggerRefresh} 
+              disabled={!isAdminView || isRefreshing || (refreshStatus?.timeUntilNextBatchMs > 0 && refreshStatus?.timeUntilNextBatchMs < 60000)}
+            >
+              {isRefreshing ? 'Refreshing...' : 'Refresh Batch Now'}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {refreshStatus ? (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span>Status:</span>
+                    <span>{refreshStatus.isFetchingBatch ? 'Refreshing' : 'Idle'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Last Batch:</span>
+                    <span>{refreshStatus.lastBatchTime ? new Date(refreshStatus.lastBatchTime).toLocaleString() : 'Never'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Next Batch:</span>
+                    <span>{refreshStatus.nextBatchTime ? new Date(refreshStatus.nextBatchTime).toLocaleString() : 'Not scheduled'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Wait Time:</span>
+                    <span>{refreshStatus.timeUntilNextBatchMinutes ? `${refreshStatus.timeUntilNextBatchMinutes} minutes` : 'Ready'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Current Index:</span>
+                    <span>{refreshStatus.currentBatchIndex}</span>
+                  </div>
+                </>
+              ) : (
+                <p>Loading status...</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
         
         <Card className="mb-6">
           <CardHeader>

@@ -26,9 +26,34 @@ export default function EarnPage() {
     engagementTypes: string[];
   }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshStatus, setRefreshStatus] = useState<{
+    refreshInProgress: boolean;
+    nextRefresh: string | null;
+  } | null>(null);
 
   // Track last fetch time in session storage to avoid repeated fetches
   const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
+  
+  // Check refresh status periodically
+  useEffect(() => {
+    const checkRefreshStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/creators/refresh');
+        if (response.ok) {
+          const data = await response.json();
+          setRefreshStatus(data);
+        }
+      } catch (error) {
+        console.error("Failed to check refresh status:", error);
+      }
+    };
+    
+    // Check immediately and then every minute
+    checkRefreshStatus();
+    const interval = setInterval(checkRefreshStatus, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   useEffect(() => {
     const fetchCreators = async () => {
@@ -149,6 +174,11 @@ export default function EarnPage() {
                 Engage with top ApeChain creators and earn points redeemable for $APE tokens, 
                 exclusive NFTs, and platform features.
               </p>
+              {refreshStatus?.nextRefresh && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  Next creator data refresh: {new Date(refreshStatus.nextRefresh).toLocaleTimeString()}
+                </div>
+              )}
             </div>
 
             <div className="bg-card p-4 rounded-lg w-full lg:w-auto">
