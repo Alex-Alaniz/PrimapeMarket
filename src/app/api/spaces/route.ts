@@ -4,99 +4,74 @@ import { twitterDb } from "@/lib/twitter-prisma";
 // Days of week in order for sorting
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Mock data for testing when no spaces are available
-const MOCK_SPACES = [
+// Mock data is now used as fallback when database connection fails
+const FALLBACK_SPACES = [
   {
-    id: 'mock-1',
-    title: 'ApeChain Weekly Update',
+    id: 'fallback-1',
+    title: 'ApeChain Trenches',
     description: 'Join us for the latest updates on ApeChain',
     day_of_week: 'Monday',
     start_time: new Date().setHours(14, 0, 0, 0),
     end_time: new Date().setHours(15, 0, 0, 0),
     hosts: [
       {
-        id: 'mock-host-1',
-        username: 'ApeChainDev',
-        name: 'ApeChain Dev',
+        id: 'fallback-host-1',
+        username: 'ApeChain',
+        name: 'ApeChain',
         profile_image_url: '/images/pm.PNG',
       }
     ],
     recurring: true,
     points: 120
-  },
-  {
-    id: 'mock-2',
-    title: 'Web3 Social Media Future',
-    description: 'Discussion on the future of social media in Web3',
-    day_of_week: 'Wednesday',
-    start_time: new Date().setHours(18, 30, 0, 0),
-    end_time: new Date().setHours(19, 30, 0, 0),
-    hosts: [
-      {
-        id: 'mock-host-2',
-        username: 'BlueEyeQueen',
-        name: 'Blue Eye Queen',
-        profile_image_url: '/images/pm.PNG',
-      }
-    ],
-    recurring: true,
-    points: 150
-  },
-  {
-    id: 'mock-3',
-    title: 'Crypto Market Analysis',
-    description: 'Analysis of the current crypto market trends',
-    day_of_week: 'Friday',
-    start_time: new Date().setHours(17, 0, 0, 0),
-    end_time: new Date().setHours(18, 0, 0, 0),
-    hosts: [
-      {
-        id: 'mock-host-3',
-        username: 'RedGoatQueen',
-        name: 'Red Goat Queen',
-        profile_image_url: '/images/pm.PNG',
-      }
-    ],
-    recurring: true,
-    points: 130
   }
 ];
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const useMock = searchParams.get('mock') === 'true';
+    const useFallback = searchParams.get('fallback') === 'true';
     const hostFilter = searchParams.get('host');
 
     // Fetch all spaces from database
-    let spaces = await twitterDb.twitterSpace.findMany({
-      where: hostFilter ? {
-        hosts: {
-          some: {
-            username: hostFilter.replace('@', '')
+    let spaces = [];
+
+    try {
+      spaces = await twitterDb.twitterSpace.findMany({
+        where: hostFilter ? {
+          hosts: {
+            some: {
+              username: hostFilter.replace('@', '')
+            }
           }
-        }
-      } : undefined,
-      include: {
-        hosts: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            profile_image_url: true,
+        } : undefined,
+        include: {
+          hosts: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              profile_image_url: true,
+            },
           },
         },
-      },
-      orderBy: [
-        { day_of_week: "asc" },
-        { start_time: "asc" },
-      ],
-    });
+        orderBy: [
+          { day_of_week: "asc" },
+          { start_time: "asc" },
+        ],
+      });
+    } catch (error) {
+      console.error("Database error fetching spaces:", error);
 
-    // If no spaces found and mock parameter is true, use mock data
-    if (spaces.length === 0 && useMock) {
-      spaces = MOCK_SPACES as any;
-      console.log('Using mock data for spaces');
+      if (useFallback) {
+        console.log('Using fallback data due to database error');
+        spaces = FALLBACK_SPACES as any;
+      }
+    }
+
+    // If no spaces found and fallback parameter is true, use fallback data
+    if (spaces.length === 0 && useFallback) {
+      spaces = FALLBACK_SPACES as any;
+      console.log('Using fallback data - no spaces found');
     }
 
     // Format the spaces for the frontend
