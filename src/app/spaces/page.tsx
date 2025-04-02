@@ -67,13 +67,7 @@ export default function SpacesPage() {
     fetchSpaces();
   }, [toast]);
 
-  // Featured hosts that we want to highlight
-  const featuredHosts = [
-    { username: "BlueEyeQueen", profile: "/images/pm.PNG" },
-    { username: "RedGoatQueen", profile: "/images/pm.PNG" },
-    { username: "OVI_LIVE", profile: "/images/pm.PNG" },
-    { username: "Tater_Poutine", profile: "/images/pm.PNG" },
-  ];
+  // Featured hosts are displayed in the UI directly
 
   return (
     <div className="flex min-h-screen flex-col">

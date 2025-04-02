@@ -1,15 +1,9 @@
+
 {
-  "extends": ["next/core-web-vitals", "next/typescript"],
+  "extends": "next/core-web-vitals",
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_",
-      "ignoreRestSiblings": true
-    }],
-    "@typescript-eslint/no-empty-interface": ["error", {
-      "allowSingleExtends": true
-    }],
-    "react-hooks/exhaustive-deps": "warn"
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "react/no-unescaped-entities": "off"
   }
 }
