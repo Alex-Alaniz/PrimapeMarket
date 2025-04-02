@@ -3,9 +3,10 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Twitter } from "lucide-react";
+import { Twitter, Calendar, Clock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useActiveAccount } from "thirdweb/react";
+import { Badge } from "@/components/ui/badge";
 
 interface TwitterProfile {
   id: string;
@@ -52,11 +53,36 @@ export function SpacesSchedule({ daySchedule, day }: SpacesScheduleProps) {
       return;
     }
     
-    // In a real implementation, this would call your API
-    toast({
-      title: "RSVP Successful!",
-      description: `You've been added to the guest list for "${title}"`,
-    });
+    try {
+      const response = await fetch('/api/spaces/rsvp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          spaceId,
+          walletAddress: activeAccount.address,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "RSVP Successful!",
+          description: `You've been added to the guest list for "${title}"`,
+        });
+      } else {
+        throw new Error(data.error || 'Failed to RSVP');
+      }
+    } catch (error) {
+      console.error('RSVP error:', error);
+      toast({
+        title: "RSVP Failed",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive"
+      });
+    }
   };
   
   const isCurrentOrUpcoming = (space: Space) => {
@@ -80,21 +106,24 @@ export function SpacesSchedule({ daySchedule, day }: SpacesScheduleProps) {
     return true;
   };
 
-  if (daySchedule.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No scheduled spaces for {day}.</p>
-      </div>
-    );
+  // Sort spaces by start time
+  const sortedSchedule = [...daySchedule].sort((a, b) => {
+    const timeA = a.formatted_start_time.split(':').map(Number);
+    const timeB = b.formatted_start_time.split(':').map(Number);
+    return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+  });
+
+  if (sortedSchedule.length === 0) {
+    return null; // We'll handle empty state in the parent component
   }
 
   return (
     <div className="space-y-4">
-      {daySchedule.map((space) => (
+      {sortedSchedule.map((space) => (
         <Card 
           key={space.id} 
           className={`overflow-hidden transition-all ${
-            isCurrentOrUpcoming(space) ? 'border-primary/50' : ''
+            isCurrentOrUpcoming(space) ? 'border-primary/50 shadow-md' : ''
           }`}
         >
           <CardContent className="p-0">
@@ -108,74 +137,68 @@ export function SpacesSchedule({ daySchedule, day }: SpacesScheduleProps) {
                     <div className="text-xl font-bold">{space.formatted_end_time}</div>
                   </>
                 )}
+                <div className="mt-2 bg-primary/20 text-primary-foreground text-xs font-medium px-2 py-1 rounded-full">
+                  {space.points} points
+                </div>
               </div>
               
               {/* Content column */}
               <div className="p-4 md:p-6 flex-1">
                 <div className="flex flex-col md:flex-row justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold">{space.title}</h3>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold">{space.title}</h3>
+                      {isCurrentOrUpcoming(space) && day === ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()] && (
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500">
+                          Today
+                        </Badge>
+                      )}
+                    </div>
                     
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      {space.hosts.map((host) => (
-                        <div key={host.id} className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full overflow-hidden">
-                            <Image 
-                              src={host.profile_image_url || '/images/pm.PNG'} 
-                              alt={host.name || host.username}
-                              width={24}
-                              height={24}
-                              className="object-cover"
-                            />
+                    <div className="mt-3">
+                      <h4 className="text-sm font-semibold mb-2">Hosted by:</h4>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {space.hosts.map((host) => (
+                          <div key={host.id} className="flex items-center gap-2 bg-secondary/50 rounded-full pl-1 pr-3 py-1">
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <Image 
+                                src={host.profile_image_url || '/images/pm.PNG'} 
+                                alt={host.name || host.username}
+                                width={24}
+                                height={24}
+                                className="object-cover"
+                              />
+                            </div>
+                            <span className="text-sm">@{host.username}</span>
                           </div>
-                          <span className="text-sm">@{host.username}</span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                     
                     {expandedSpace === space.id && space.description && (
-                      <p className="mt-3 text-muted-foreground">{space.description}</p>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold mb-1">Description:</h4>
+                        <p className="text-muted-foreground">{space.description}</p>
+                      </div>
                     )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-3 md:mt-0">
-                    <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-                      {space.points} points
+
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>{day}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>{space.display_time}</span>
+                      </div>
                     </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="hidden md:flex"
-                      onClick={() => handleRSVP(space.id, space.title)}
-                    >
-                      RSVP
-                    </Button>
-                    
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      className="gap-1 hidden md:flex"
-                    >
-                      <Twitter className="h-4 w-4" />
-                      <span>Join</span>
-                    </Button>
                   </div>
-                </div>
-                
-                <div className="flex justify-between items-center mt-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => toggleExpand(space.id)}
-                  >
-                    {expandedSpace === space.id ? 'Show less' : 'Show more'}
-                  </Button>
                   
-                  <div className="flex gap-2 md:hidden">
+                  <div className="flex flex-col mt-4 md:mt-0 gap-2 md:items-end">
                     <Button 
                       variant="outline" 
                       size="sm"
+                      className="w-full md:w-auto"
                       onClick={() => handleRSVP(space.id, space.title)}
                     >
                       RSVP
@@ -184,10 +207,19 @@ export function SpacesSchedule({ daySchedule, day }: SpacesScheduleProps) {
                     <Button 
                       variant="secondary" 
                       size="sm"
-                      className="gap-1"
+                      className="w-full md:w-auto gap-1"
                     >
                       <Twitter className="h-4 w-4" />
                       <span>Join</span>
+                    </Button>
+
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => toggleExpand(space.id)}
+                      className="w-full md:w-auto mt-1"
+                    >
+                      {expandedSpace === space.id ? 'Show less' : 'Show more'}
                     </Button>
                   </div>
                 </div>

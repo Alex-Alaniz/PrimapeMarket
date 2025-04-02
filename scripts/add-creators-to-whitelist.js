@@ -1,54 +1,94 @@
 
-// Script to add creators to whitelist
-// Run with: node scripts/add-creators-to-whitelist.js
+// Script to add Twitter creators to the whitelist
+require('dotenv').config();
+const { twitterDb } = require('@/lib/twitter-prisma');
 
-const { PrismaClient } = require('./prisma/twitter-client');
-const twitterDb = new PrismaClient();
+// Fix module resolution for Node scripts
+require('module-alias/register');
 
-// List of Twitter usernames to add (without @ symbol)
-const CREATORS_TO_ADD = [
-  { username: 'AlexDotEth', category: 'Spaces', points: 250 },
-  // Add more creators here in the same format
-  // { username: 'handle', category: 'Spaces', points: 250 },
+// List of creators to add to whitelist
+const creators = [
+  // News accounts
+  { username: "apecoin", category: "News", points: 250, is_onboarded: true },
+  { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+  { username: "ApeWhaleNFT", category: "News", points: 250, is_onboarded: true },
+  { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+  { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
+  { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+  
+  // Spaces hosts
+  { username: "iampapito_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ChrisJourdan", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "SteveKBark", category: "Spaces", points: 250, is_onboarded: true },
+  { username: "Geist254", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "SanaeMolly", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "Shiba_King1991", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ernestleedotcom", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "justchespie", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "GratefulApe_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "beast_eth", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "jerodsm_", category: "Spaces", points: 250, is_onboarded: true },
+  { username: "BoredApeGazette", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ChainZilla_", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "ryancsmith2222", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "BOObotcher", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "QuinnFT_", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "Eddie_ShoBiz", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "supa_raw", category: "Spaces", points: 200, is_onboarded: true },
+  { username: "lawofthesaw", category: "Spaces", points: 200, is_onboarded: true },
+  
+  // Streamers
+  { username: "blueeye_queen", category: "Streamer", points: 200, is_onboarded: true }
 ];
 
 async function addCreatorsToWhitelist() {
-  console.log(`Adding ${CREATORS_TO_ADD.length} creators to whitelist...`);
-  
-  for (const creator of CREATORS_TO_ADD) {
+  console.log('Adding creators to whitelist...');
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const creator of creators) {
     try {
       // Check if already exists
       const existing = await twitterDb.twitterWhitelist.findUnique({
         where: { username: creator.username }
       });
-      
+
       if (existing) {
-        console.log(`Creator @${creator.username} already in whitelist. Skipping.`);
+        console.log(`Skipping ${creator.username} - already in whitelist`);
+        skipped++;
         continue;
       }
-      
+
       // Add to whitelist
       await twitterDb.twitterWhitelist.create({
         data: {
           username: creator.username,
-          category: creator.category || 'Spaces',
-          points: creator.points || 250,
-          added_by: 'script',
+          category: creator.category,
+          points: creator.points,
+          is_onboarded: creator.is_onboarded,
+          added_by: "admin_script"
         }
       });
-      
-      console.log(`Added @${creator.username} to whitelist.`);
+
+      console.log(`Added ${creator.username} to whitelist`);
+      added++;
     } catch (error) {
-      console.error(`Error adding @${creator.username}:`, error);
+      console.error(`Error adding ${creator.username}:`, error);
     }
   }
-  
-  console.log('Finished adding creators to whitelist.');
+
+  console.log(`Completed: Added ${added} creators, skipped ${skipped} existing creators`);
 }
 
-addCreatorsToWhitelist()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error('Script error:', error);
-    process.exit(1);
-  });
+// Execute if run directly
+if (require.main === module) {
+  addCreatorsToWhitelist()
+    .then(() => process.exit(0))
+    .catch(error => {
+      console.error('Script error:', error);
+      process.exit(1);
+    });
+}
+
+module.exports = { addCreatorsToWhitelist };

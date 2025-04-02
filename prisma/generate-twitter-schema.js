@@ -9,35 +9,42 @@ const path = require('path');
 console.log('Generating Twitter Prisma schema...');
 
 try {
-  // Generate the Twitter Prisma client
-  const generateOutput = execSync('npx prisma generate --schema=./prisma/twitter-schema.prisma');
-  console.log('Output:', generateOutput.toString());
-
-  // Run migrations for the Twitter schema
-  console.log('Running Twitter schema migration...');
-  try {
-    // First create the database if it doesn't exist
-    execSync('npx prisma db push --schema=./prisma/twitter-schema.prisma');
-    console.log('Database schema pushed successfully');
-
-    // Then generate the migration files
-    try {
-      const migrationOutput = execSync(
-        'npx prisma migrate dev --name twitter_cache_schema --schema=./prisma/twitter-schema.prisma --create-only',
-        { stdio: 'pipe' }
-      );
-      console.log('Migration Output:', migrationOutput.toString());
-    } catch (migrationError) {
-      console.error('Migration creation failed, but continuing:', migrationError.message);
-      // Continue with client generation only
-    }
-  } catch (dbPushError) {
-    console.error('Database push failed:', dbPushError.message);
-    console.log('Attempting to continue with client generation only');
+  console.log('Step 1: Generating Twitter Prisma client...');
+  const generateOutput = execSync('npx prisma generate --schema=./prisma/twitter-schema.prisma', {
+    stdio: 'inherit'
+  });
+  
+  console.log('Step 2: Pushing schema to database...');
+  // First create the database if it doesn't exist
+  execSync('npx prisma db push --schema=./prisma/twitter-schema.prisma --accept-data-loss', {
+    stdio: 'inherit'
+  });
+  
+  console.log('Database schema pushed successfully');
+  
+  // Generate a type definition file to help TypeScript recognize the models
+  console.log('Step 3: Ensuring TypeScript recognizes the models...');
+  const typesDir = path.join(__dirname, '../src/types');
+  if (!fs.existsSync(typesDir)) {
+    fs.mkdirSync(typesDir, { recursive: true });
   }
+  
+  const typesContent = `
+// Auto-generated types for Twitter schema
+import { PrismaClient } from '@prisma/twitter-client';
 
-  console.log('Twitter schema generation and migration complete.');
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace TwitterPrisma {
+    type TwitterClient = PrismaClient;
+  }
+}
+`;
+  
+  fs.writeFileSync(path.join(typesDir, 'twitter-prisma.d.ts'), typesContent);
+  
+  console.log('Twitter schema generation and push complete.');
 } catch (error) {
-  console.error('Error during Twitter schema generation:', error.message);
+  console.error('Error during Twitter schema generation:', error);
   process.exit(1);
 }

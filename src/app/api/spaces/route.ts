@@ -1,105 +1,130 @@
-
 import { NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
+import { format } from 'date-fns';
 
-export async function GET() {
+// Days of week in order for sorting
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const FALLBACK_SPACES = [
+  {
+    id: 'fallback-1',
+    title: 'ApeChain Trenches',
+    description: 'Join us for the latest updates on ApeChain',
+    day_of_week: 'Monday',
+    start_time: new Date().setHours(14, 0, 0, 0),
+    end_time: new Date().setHours(15, 0, 0, 0),
+    hosts: [
+      {
+        id: 'fallback-host-1',
+        username: 'ApeChain',
+        name: 'ApeChain',
+        profile_image_url: '/images/pm.PNG',
+      }
+    ],
+    recurring: true,
+    points: 120
+  }
+];
+
+export async function GET(req: Request) {
   try {
-    // Get all spaces with host information
-    const spaces = await twitterDb.twitterSpace.findMany({
-      include: {
-        hosts: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            profile_image_url: true,
+    const { searchParams } = new URL(req.url);
+    const useFallback = searchParams.get('fallback') === 'true';
+    const hostFilter = searchParams.get('host');
+
+    // Fetch all spaces from database
+    let spaces = [];
+
+    try {
+      spaces = await twitterDb.twitterSpace.findMany({
+        where: hostFilter ? {
+          hosts: {
+            some: {
+              username: hostFilter.replace('@', '')
+            }
+          }
+        } : undefined,
+        include: {
+          hosts: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              profile_image_url: true,
+            },
           },
         },
-      },
-    });
+        orderBy: [
+          { day_of_week: "asc" },
+          { start_time: "asc" },
+        ],
+      });
+    } catch (error) {
+      console.error("Database error fetching spaces:", error);
 
-    // Define interface for enhanced space data
-    interface EnhancedSpace {
-      id: string;
-      space_id?: string | null;
-      title: string;
-      description?: string | null;
-      start_time: Date;
-      end_time?: Date | null;
-      day_of_week: string;
-      recurring: boolean;
-      points: number;
-      created_at: Date;
-      updated_at: Date;
-      hosts: {
-        id: string;
-        username: string;
-        name: string | null;
-        profile_image_url: string | null;
-      }[];
-      formatted_start_time: string;
-      formatted_end_time: string;
-      display_time: string;
+      if (useFallback) {
+        console.log('Using fallback data due to database error');
+        spaces = FALLBACK_SPACES as any;
+      }
     }
 
-    // Group spaces by day of week
-    const spacesByDay = spaces.reduce((acc, space) => {
-      if (!acc[space.day_of_week]) {
-        acc[space.day_of_week] = [];
-      }
-      
-      // Format start and end times for display
+    // If no spaces found and fallback parameter is true, use fallback data
+    if (spaces.length === 0 && useFallback) {
+      spaces = FALLBACK_SPACES as any;
+      console.log('Using fallback data - no spaces found');
+    }
+
+    // Format the spaces for the frontend
+    const formattedSpaces = spaces.map((space: any) => {
+      // Format start time for display
       const startTime = new Date(space.start_time);
-      const startHour = startTime.getHours();
-      const startMinute = startTime.getMinutes();
-      
-      const formattedStartTime = `${startHour}:${startMinute.toString().padStart(2, '0')}`;
-      
+      const formattedStartTime = startTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      // Format end time if it exists
       let formattedEndTime = '';
+      let displayTime = formattedStartTime;
+
       if (space.end_time) {
         const endTime = new Date(space.end_time);
-        const endHour = endTime.getHours();
-        const endMinute = endTime.getMinutes();
-        formattedEndTime = `${endHour}:${endMinute.toString().padStart(2, '0')}`;
+        formattedEndTime = endTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+        displayTime = `${formattedStartTime} - ${formattedEndTime}`;
       }
-      
-      // Add time display to space object
-      const enhancedSpace = {
+
+      return {
         ...space,
         formatted_start_time: formattedStartTime,
         formatted_end_time: formattedEndTime,
-        display_time: formattedEndTime 
-          ? `${formattedStartTime} - ${formattedEndTime}`
-          : formattedStartTime,
+        display_time: displayTime
       };
-      
-      acc[space.day_of_week].push(enhancedSpace);
-      return acc;
-    }, {} as Record<string, EnhancedSpace[]>);
-
-    // Sort spaces within each day by start time
-    Object.keys(spacesByDay).forEach(day => {
-      spacesByDay[day].sort((a, b) => {
-        const aTime = new Date(a.start_time);
-        const bTime = new Date(b.start_time);
-        return aTime.getTime() - bTime.getTime();
-      });
     });
 
-    // Order days of the week
-    const orderedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const orderedSpacesByDay = orderedDays
-      .filter(day => spacesByDay[day])
-      .reduce((acc, day) => {
-        acc[day] = spacesByDay[day];
-        return acc;
-      }, {} as Record<string, EnhancedSpace[]>);
+    // Group spaces by day of the week
+    const spacesByDay = DAYS_OF_WEEK.reduce((acc, day) => {
+      acc[day] = formattedSpaces.filter((space: any) => space.day_of_week === day);
+      return acc;
+    }, {} as Record<string, any[]>);
 
-    return NextResponse.json(orderedSpacesByDay);
+    // Get the current day of week
+    const today = format(new Date(), 'EEEE');
+
+    // Return full response
+    return NextResponse.json({
+      spaces: formattedSpaces,
+      spacesByDay,
+      currentDay: today
+    });
   } catch (error) {
-    console.error("Error fetching spaces schedule:", error);
+    console.error("Error fetching Twitter spaces:", error);
     return NextResponse.json(
-      { error: "Failed to fetch Twitter spaces schedule" },
+      { error: "Failed to fetch Twitter spaces" },
       { status: 500 },
     );
   }
