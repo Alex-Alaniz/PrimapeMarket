@@ -101,7 +101,8 @@ if (!hasTwitterClient) {
     }
   };
   
-  twitterDb.twitterProfile = {
+  // Use type assertion to avoid the read-only property error
+  (twitterDb as any).twitterProfile = {
     findUnique: async ({ where }: any) => {
       try {
         // Use raw query to find a specific Twitter profile
