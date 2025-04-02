@@ -46,3 +46,13 @@ model TwitterSpace {
   created_at   DateTime         @default(now())
   updated_at   DateTime         @updatedAt
 }
+
+model spaceRSVP {
+  id             Int      @id @default(autoincrement())
+  spaceId        String
+  walletAddress  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([spaceId, walletAddress], name: "spaceId_walletAddress")
+}
