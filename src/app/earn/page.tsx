@@ -296,7 +296,7 @@ export default function EarnPage() {
             throw error;
           }
 
-          const data = await response.json();
+          const data = await res.json();
 
           // Transform Twitter handles to include @ if not present
           const enhancedData = data.map((creator: {
