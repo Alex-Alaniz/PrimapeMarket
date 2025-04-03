@@ -24,23 +24,24 @@ export async function GET(request: Request) {
           { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },
           { username: "apecoin", category: "News", points: 250, is_onboarded: true },
           { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+          { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
           { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
           { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
-          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-          { username: "yugalabs", category: "News", points: 250, is_onboarded: true }
+          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true }
         ];
       }
     } catch (error) {
       console.error("Failed to fetch from twitterWhitelist:", error);
       // Fallback to hardcoded creators if database fetch fails
       whitelistedCreators = [
-        { username: "apecoin", category: "News", points: 250, is_onboarded: true },
-        { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-        { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
         { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+        { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },
+        { username: "apecoin", category: "News", points: 250, is_onboarded: true },
         { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+        { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
         { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
-        { username: "boringmerch", category: "News", points: 250, is_onboarded: true }
+        { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+        { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true }
       ];
     }
     

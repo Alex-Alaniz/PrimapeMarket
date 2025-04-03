@@ -142,6 +142,17 @@ export default function EarnPage() {
           claimed: false
         },
         {
+          id: "yugalabs",
+          handle: "@yugalabs",
+          name: "Yuga Labs",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
           id: "ApewhaleNFT",
           handle: "@ApewhaleNFT",
           name: "ApeWhale",
@@ -167,17 +178,6 @@ export default function EarnPage() {
           id: "BoredApeYC",
           handle: "@BoredApeYC",
           name: "Bored Ape Yacht Club",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "yugalabs",
-          handle: "@yugalabs",
-          name: "Yuga Labs",
           points: 250,
           category: "News",
           engagementTypes: ["listen", "share", "comment"],
