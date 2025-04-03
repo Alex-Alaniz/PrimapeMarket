@@ -56,6 +56,14 @@ const safeTwitterDbWrapper = {
     upsert: async () => null,
     count: async () => 0,
   },
+  twitterWhitelist: {
+    findUnique: async () => null,
+    findMany: async () => [],
+    create: async () => null,
+    update: async () => null,
+    upsert: async () => null,
+    count: async () => 0,
+  },
 };
 
 // Export the Twitter database client
