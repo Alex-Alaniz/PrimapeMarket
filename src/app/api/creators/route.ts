@@ -25,6 +25,15 @@ export async function GET(request: Request) {
     // Get whitelisted creators from the database using our safety wrapper
     let whitelistedCreators = [];
     try {
+      // Check if we have a real Twitter DB connection
+      const usingRealDb = !!twitterDb;
+      console.log(`Twitter database connection: ${usingRealDb ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
+      
+      if (!usingRealDb) {
+        console.warn('Using fallback Twitter wrapper because no database connection is available');
+        console.warn('Check your DATABASE_URL_TWITTER or TWITTER_POSTGRES_URL environment variables');
+      }
+      
       // Use the safe wrapper which has built-in fallback for production
       const dbCreators = await db.twitterWhitelist.findMany();
       

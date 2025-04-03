@@ -1,18 +1,21 @@
 import { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 import 'dotenv/config';
 
-// Determine if Twitter client is available based on DATABASE_URL_TWITTER
-const hasTwitterClient = !!process.env.DATABASE_URL_TWITTER;
+// Determine if Twitter client is available based on environment variables
+// Try multiple possible environment variable names
+const twitterDbUrl = process.env.DATABASE_URL_TWITTER || process.env.TWITTER_POSTGRES_URL;
+const hasTwitterClient = !!twitterDbUrl;
 
 // Initialize Twitter Prisma client if available
 let twitterPrismaInstance: TwitterPrismaClient | null = null;
 
 if (hasTwitterClient) {
   try {
+    console.log(`Attempting to connect to Twitter database with URL ${twitterDbUrl?.substring(0, 12)}...`);
     twitterPrismaInstance = new TwitterPrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL_TWITTER || '',
+          url: twitterDbUrl,
         },
       },
     });
@@ -21,6 +24,8 @@ if (hasTwitterClient) {
     console.error('Failed to initialize Twitter Prisma client:', error);
     twitterPrismaInstance = null;
   }
+} else {
+  console.error('No Twitter database URL found. Please set DATABASE_URL_TWITTER or TWITTER_POSTGRES_URL environment variable.');
 }
 
 // Create safe fallback wrapper for Twitter operations
