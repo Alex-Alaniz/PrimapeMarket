@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,6 +32,7 @@ export default function EarnPage() {
           const parsedCreators = JSON.parse(cachedCreators);
           if (parsedCreators && parsedCreators.length > 0) {
             setCreators(parsedCreators);
+            setIsLoading(false);
             return;
           } else {
             console.log('Cached data was empty, fetching fresh data');
@@ -57,6 +59,7 @@ export default function EarnPage() {
             // Cache the successful data
             localStorage.setItem('cachedCreators', JSON.stringify(data));
             localStorage.setItem('cacheTime', now.toString());
+            setIsLoading(false);
             return;
           } else {
             console.warn('Main API returned empty data, trying simple fallback API');
@@ -80,16 +83,11 @@ export default function EarnPage() {
             // Cache the fallback data
             localStorage.setItem('cachedCreators', JSON.stringify(fallbackData));
             localStorage.setItem('cacheTime', now.toString());
+            setIsLoading(false);
             return;
           }
           
-          throw new Error('Both main and fallback APIs failed to return valid data');
-        }
-
-          // Cache the data
-          localStorage.setItem('cachedCreators', JSON.stringify(data));
-          localStorage.setItem('cacheTime', now.toString());
-        } else {
+          // If we get here, both APIs failed to return valid data
           console.warn('API returned empty creators array or invalid data');
           // Use fallback data if API returns empty array
           const fallbackCreators = [
