@@ -48,22 +48,34 @@ export async function GET(req: NextRequest) {
       })
     );
     
-    // Get top hosts
-    const topHosts = await db.twitterSpace.groupBy({
-      by: ['host_username'],
-      _count: {
-        id: true
+    // Get hosts from spaces with join
+    const spaces = await db.twitterSpace.findMany({
+      include: {
+        hosts: true
       },
-      orderBy: {
-        _count: {
-          id: 'desc'
-        }
-      },
-      take: 5
+      take: 100 // Limit to recent spaces
     });
     
-    // Get host details
-    const hostUsernames = topHosts.map(host => host.host_username);
+    // Count frequencies of hosts
+    const hostCounts: Record<string, number> = {};
+    spaces.forEach(space => {
+      if (space.hosts && space.hosts.length > 0) {
+        space.hosts.forEach(host => {
+          if (host.username) {
+            hostCounts[host.username] = (hostCounts[host.username] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    // Sort hosts by count
+    const topHostsArray = Object.entries(hostCounts)
+      .map(([username, count]) => ({username, count}))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    // Get host profiles for top hosts
+    const hostUsernames = topHostsArray.map(host => host.username);
     const hostProfiles = await db.twitterProfile.findMany({
       where: {
         username: {
@@ -79,10 +91,10 @@ export async function GET(req: NextRequest) {
     }, {} as Record<string, any>);
     
     // Format top hosts with profile data
-    const formattedTopHosts = topHosts.map(host => ({
-      username: host.host_username,
-      count: host._count.id,
-      profile: profileMap[host.host_username] || null
+    const formattedTopHosts = topHostsArray.map(host => ({
+      username: host.username,
+      count: host.count,
+      profile: profileMap[host.username] || null
     }));
     
     // RSVPs stats

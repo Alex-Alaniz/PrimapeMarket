@@ -41,14 +41,18 @@ export async function GET() {
       // Format the time as 12-hour with AM/PM
       const formattedStartTime = format(startDate, 'h:mm a');
       
+      const hostUsername = space.hosts && space.hosts.length > 0 ? space.hosts[0].username : '';
+      const hostName = space.hosts && space.hosts.length > 0 ? space.hosts[0].name || hostUsername : '';
+      const hostProfileImage = space.hosts && space.hosts.length > 0 ? space.hosts[0].profile_image_url || '' : '';
+      
       return {
         id: space.id,
         title: space.title,
         description: space.description || '',
         host: {
-          username: space.host_username || '',
-          name: space.hosts && space.hosts.length > 0 ? space.hosts[0].name || space.host_username : space.host_username || '',
-          profileImageUrl: space.hosts && space.hosts.length > 0 ? space.hosts[0].profile_image_url || '' : ''
+          username: hostUsername || '',
+          name: hostName || '',
+          profileImageUrl: hostProfileImage
         },
         dayOfWeek: space.day_of_week,
         startTime,

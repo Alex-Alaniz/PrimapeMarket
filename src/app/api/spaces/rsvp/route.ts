@@ -39,10 +39,13 @@ export async function POST(req: NextRequest) {
       });
     }
     
+    // Create a unique ID for the RSVP with type-safe string
+    const rsvpId = `rsvp_${Date.now().toString()}_${walletAddress.substring(0, 8)}`;
+    
     // Create the RSVP
     await db.twitterSpaceRSVP.create({
       data: {
-        id: `rsvp_${Date.now()}_${walletAddress.substring(0, 8)}`,
+        id: rsvpId,
         space_id: spaceId,
         wallet_address: walletAddress,
         twitter_username: twitterUsername || null,

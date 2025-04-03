@@ -188,7 +188,6 @@ export async function PUT(req: NextRequest) {
         id: space.id
       },
       data: {
-        host_username: cleanUsername,
         title: space.title,
         description: space.description,
         day_of_week: space.day_of_week,
