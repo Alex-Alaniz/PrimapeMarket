@@ -1,3 +1,4 @@
+
 import { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 import 'dotenv/config';
 
@@ -5,11 +6,11 @@ import 'dotenv/config';
 const hasTwitterClient = !!process.env.DATABASE_URL_TWITTER;
 
 // Initialize Twitter Prisma client if available
-let twitterDb: TwitterPrismaClient | null = null;
+let twitterPrismaInstance: TwitterPrismaClient | null = null;
 
 if (hasTwitterClient) {
   try {
-    twitterDb = new TwitterPrismaClient({
+    twitterPrismaInstance = new TwitterPrismaClient({
       datasources: {
         db: {
           url: process.env.DATABASE_URL_TWITTER || '',
@@ -19,7 +20,7 @@ if (hasTwitterClient) {
     console.log('Twitter Prisma client initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Twitter Prisma client:', error);
-    twitterDb = null;
+    twitterPrismaInstance = null;
   }
 }
 
@@ -58,10 +59,10 @@ const safeTwitterDbWrapper = {
 };
 
 // Export the Twitter database client
-export const twitterDb = hasTwitterClient ? twitterDb : null;
+export const twitterDb = hasTwitterClient ? twitterPrismaInstance : null;
 
 // Export a safe wrapper for when the Twitter client isn't available
-export const db = hasTwitterClient ? twitterDb || safeTwitterDbWrapper : safeTwitterDbWrapper;
+export const db = hasTwitterClient ? twitterPrismaInstance || safeTwitterDbWrapper : safeTwitterDbWrapper;
 
 // Log warning if Twitter client isn't available
 if (!hasTwitterClient) {
