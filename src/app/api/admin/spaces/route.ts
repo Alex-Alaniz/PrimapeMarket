@@ -192,11 +192,10 @@ export async function PUT(req: NextRequest) {
         description: space.description,
         day_of_week: space.day_of_week,
         start_time: space.scheduled_date ? new Date(space.scheduled_date) : undefined,
-        duration_minutes: space.duration_minutes !== undefined ? 
-          Number(space.duration_minutes) : 
-          undefined,
+        // Remove duration_minutes as it's not in the schema
         recurring: !!space.is_recurring,
-        space_url: space.space_url,
+        // Add points field which is expected in schema
+        points: space.points || 100,
         updated_at: new Date()
       }
     });

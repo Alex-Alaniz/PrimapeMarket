@@ -1,17 +1,16 @@
-
 import { NextResponse } from "next/server";
 import { db } from "@/lib/twitter-prisma";
 import { format } from 'date-fns';
 
 // Days of week in order for sorting
-const DAYS_ORDER = {
-  'Monday': 0,
-  'Tuesday': 1,
-  'Wednesday': 2,
-  'Thursday': 3,
-  'Friday': 4,
-  'Saturday': 5,
-  'Sunday': 6
+const DAYS_ORDER: Record<string, number> = {
+  Monday: 0,
+  Tuesday: 1,
+  Wednesday: 2,
+  Thursday: 3,
+  Friday: 4,
+  Saturday: 5,
+  Sunday: 6
 };
 
 export async function GET() {
@@ -26,11 +25,11 @@ export async function GET() {
         hosts: true
       }
     });
-    
+
     // Group by day of week
     const now = new Date();
     const currentDay = format(now, 'EEEE'); // Gets the full name of the day (Monday, Tuesday, etc.)
-    
+
     // Format spaces for display and sort by day of week starting with current day
     const formattedSpaces = spaces.map(space => {
       // Handle null or undefined start_time
@@ -38,16 +37,16 @@ export async function GET() {
       const startTime = format(startDate, 'HH:mm');
       const endTime = space.end_time ? format(space.end_time, 'HH:mm') : 
                     format(new Date(startDate.getTime() + 60 * 60 * 1000), 'HH:mm'); // Default 1hr
-      
+
       // Format the time as 12-hour with AM/PM
       const formattedStartTime = format(startDate, 'h:mm a');
-      
+
       // Safely access host information
       const primaryHost = space.hosts && space.hosts.length > 0 ? space.hosts[0] : null;
       const hostUsername = primaryHost?.username || '';
       const hostName = primaryHost?.name || hostUsername;
       const hostProfileImage = primaryHost?.profile_image_url || '';
-      
+
       return {
         id: space.id,
         title: space.title,
@@ -66,25 +65,25 @@ export async function GET() {
         rsvpCount: 0 // Placeholder, will be filled in later
       };
     });
-    
+
     // Sort spaces by day of week starting with current day
     formattedSpaces.sort((a, b) => {
       const aDayOrder = DAYS_ORDER[a.dayOfWeek];
       const bDayOrder = DAYS_ORDER[b.dayOfWeek];
       const currentDayOrder = DAYS_ORDER[currentDay];
-      
+
       // Calculate distance from current day (0 to 6)
       const aDist = (aDayOrder - currentDayOrder + 7) % 7;
       const bDist = (bDayOrder - currentDayOrder + 7) % 7;
-      
+
       if (aDist !== bDist) {
         return aDist - bDist;
       }
-      
+
       // If same day, sort by time
       return a.startTime.localeCompare(b.startTime);
     });
-    
+
     // Get RSVP counts for each space
     const rsvpCounts = await Promise.all(
       formattedSpaces.map(async (space) => {
@@ -101,7 +100,7 @@ export async function GET() {
         }
       })
     );
-    
+
     // Add RSVP counts to formatted spaces
     const spacesWithRSVP = formattedSpaces.map(space => {
       const rsvpData = rsvpCounts.find(rsvp => rsvp.id === space.id);
@@ -110,7 +109,7 @@ export async function GET() {
         rsvpCount: rsvpData?.count || 0
       };
     });
-    
+
     // Group by day of week
     const spacesByDay = spacesWithRSVP.reduce<Record<string, any[]>>((acc, space) => {
       const day = space.dayOfWeek || 'Unknown';
@@ -120,7 +119,7 @@ export async function GET() {
       acc[day].push(space);
       return acc;
     }, {} as Record<string, any[]>);
-    
+
     return NextResponse.json({
       success: true,
       spaces: spacesWithRSVP,

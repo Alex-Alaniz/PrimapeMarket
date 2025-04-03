@@ -382,7 +382,7 @@ export default function EarnPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json(); //This line is changed
 
       if (response.ok) {
         toast({

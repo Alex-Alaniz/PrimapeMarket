@@ -31,6 +31,9 @@ const safeTwitterDbWrapper = {
     create: async () => null,
     update: async () => null,
     upsert: async () => null,
+    count: async () => 0,
+    delete: async () => null,
+    findFirst: async () => null,
   },
   twitterSpace: {
     findUnique: async () => null,
@@ -38,6 +41,9 @@ const safeTwitterDbWrapper = {
     create: async () => null,
     update: async () => null,
     upsert: async () => null,
+    count: async () => 0,
+    delete: async () => null,
+    findFirst: async () => null,
   },
   twitterSpaceRSVP: {
     findUnique: async () => null,
@@ -46,6 +52,8 @@ const safeTwitterDbWrapper = {
     update: async () => null,
     upsert: async () => null,
     count: async () => 0,
+    delete: async () => null,
+    findFirst: async () => null,
   },
   whitelistedCreator: {
     findUnique: async () => null,
@@ -54,6 +62,7 @@ const safeTwitterDbWrapper = {
     update: async () => null,
     upsert: async () => null,
     count: async () => 0,
+    delete: async () => null,
   },
   twitterWhitelist: {
     findUnique: async () => null,
