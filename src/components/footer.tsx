@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import { Github, Twitter } from "lucide-react";
 import Image from "next/image";
@@ -9,10 +8,10 @@ import { Discord } from "./ui/icons"; // We'll create this icon component
 
 // Custom Discord icon component
 const DiscordIcon = () => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="20" 
-    height="20" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
     viewBox="0 0 127.14 96.36"
     fill="currentColor"
   >
@@ -22,14 +21,14 @@ const DiscordIcon = () => (
 
 export function Footer() {
   const { theme } = useTheme();
-  
+
   // Determine which ApeChain logo to use based on theme
   const getApeChainLogo = () => {
-    if (theme === 'light') {
-      return "/apechain-branding/apechain-blue.png";
+    if (theme === "light") {
+      return "/apechain-branding/apechain-blk.png";
     } else {
       // dark or ape mode
-      return "/apechain-branding/apechain-white.png";
+      return "/apechain-branding/apechain-blue.png";
     }
   };
 
@@ -62,65 +61,95 @@ export function Footer() {
               />
             </div>
           </div>
-          
+
           {/* Links section */}
           <div className="md:col-span-2 grid grid-cols-2 gap-8">
             <div>
-              <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">Platform</h4>
+              <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">
+                Platform
+              </h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Markets
                   </Link>
                 </li>
                 <li>
-                  <Link href="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/leaderboard"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Leaderboard
                   </Link>
                 </li>
                 <li>
-                  <Link href="/earn" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/earn"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Earn
                   </Link>
                 </li>
                 <li>
-                  <Link href="/spaces" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    href="/spaces"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Spaces
                   </Link>
                 </li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">Company</h4>
+              <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">
+                Company
+              </h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Terms of Use
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Docs
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Careers
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-          
+
           {/* Social links */}
           <div className="md:col-span-1">
-            <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">Connect</h4>
+            <h4 className="text-sm font-medium mb-3 uppercase tracking-wider">
+              Connect
+            </h4>
             <div className="flex items-center gap-4">
               <a
                 href="https://x.com"
@@ -152,7 +181,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-        
+
         {/* Copyright section */}
         <div className="mt-8 pt-6 border-t">
           <p className="text-xs text-muted-foreground text-center">
