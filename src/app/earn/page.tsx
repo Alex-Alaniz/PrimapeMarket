@@ -233,8 +233,9 @@ export default function EarnPage() {
             console.log("Using hardcoded fallback creator data");
             setCreators(fallbackCreators);
             // Store fallback data in cache so it's available next time
+            const currentTime = new Date().toISOString();
             localStorage.setItem('cached_creators', JSON.stringify(fallbackCreators));
-            sessionStorage.setItem('creators_last_fetch', now);
+            sessionStorage.setItem('creators_last_fetch', currentTime);
           }
         }
       } finally {
@@ -243,7 +244,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, [creators.length]);
+  }, [creators.length, fallbackCreators]);
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {
