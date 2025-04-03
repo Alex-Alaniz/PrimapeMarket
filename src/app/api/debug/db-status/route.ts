@@ -17,8 +17,8 @@ export async function GET() {
   try {
     await mainDb.$connect();
     mainDbStatus = 'Connected';
-  } catch (error) {
-    mainDbStatus = `Error: ${error.message}`;
+  } catch (error: any) {
+    mainDbStatus = `Error: ${error?.message || 'Unknown error'}`;
   }
 
   // Test Twitter database connection
@@ -39,8 +39,8 @@ export async function GET() {
     twitterDbStatus = creators ? 
       `Connected (found ${creatorCount} creators and ${profileCount} profiles)` : 
       'Connected but no records found';
-  } catch (error) {
-    twitterDbStatus = `Error: ${error.message}`;
+  } catch (error: any) {
+    twitterDbStatus = `Error: ${error?.message || 'Unknown error'}`;
   }
 
   return NextResponse.json({
