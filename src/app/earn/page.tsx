@@ -54,6 +54,9 @@ export default function EarnPage() {
 
     return () => clearInterval(interval);
   }, []);
+  
+  // Fallback creators data
+  const fallbackCreators = [
     {
       id: "AlexDotEth",
       handle: "@AlexDotEth",
