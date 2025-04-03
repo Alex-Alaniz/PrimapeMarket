@@ -17,6 +17,19 @@ type Creator = {
 export function CreatorCard({ creator }: { creator: Creator }) {
   // Format handle for display and links
   const cleanHandle = creator.handle.replace('@', '');
+  
+  // Ensure we have proper display values even if API data is incomplete
+  const displayName = creator.name && creator.name.trim() !== '' 
+    ? creator.name 
+    : `${cleanHandle} | ApeChain Creator`;
+    
+  const displayAvatar = creator.avatar && creator.avatar !== '' 
+    ? creator.avatar 
+    : '/images/pm.PNG';
+    
+  const displayDescription = creator.description && creator.description.trim() !== ''
+    ? creator.description
+    : 'Profile data will be loaded soon. Check back later for full details!';
 
   return (
     <Card className="overflow-hidden bg-card border-0 shadow-md">
@@ -25,27 +38,27 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         <div className="absolute -bottom-10 left-4">
           <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
             <img 
-              src={creator.avatar || '/images/pm.PNG'} 
-              alt={creator.name} 
+              src={displayAvatar} 
+              alt={displayName} 
               className="h-full w-full object-cover"
             />
           </div>
         </div>
       </div>
 
-      <CardContent className="pt-20 p-4">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-bold">{creator.name || `${cleanHandle} | ApeChain Creator`}</h3>
-            <p className="text-sm text-muted-foreground">{creator.handle}</p>
+      <CardContent className="pt-28 p-4">
+        <div className="flex justify-between items-start mb-4">
+          <div className="max-w-[75%]">
+            <h3 className="font-bold truncate">{displayName}</h3>
+            <p className="text-sm text-muted-foreground">@{cleanHandle}</p>
           </div>
           <div className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded text-xs font-medium">
             {creator.category}
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 h-14 overflow-y-auto">
-          {creator.description || 'Profile data will be loaded soon. Check back later for full details!'}
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 min-h-[3.6rem]">
+          {displayDescription}
         </p>
 
         <div className="flex items-center justify-between mb-4">
