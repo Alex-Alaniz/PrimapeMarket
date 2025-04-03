@@ -68,6 +68,7 @@ const safeTwitterDbWrapper = {
     findUnique: async () => null,
     findMany: async () => {
       // Return fallback data for whitelisted creators in the specified order
+      console.log("Using fallback creator data from twitter-prisma.ts");
       return [
         { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
         { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },

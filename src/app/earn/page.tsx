@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,186 +11,92 @@ export default function EarnPage() {
   const activeAccount = useActiveAccount();
   const [isLoading, setIsLoading] = useState(true);
   const [creators, setCreators] = useState([]);
+  const [mounted, setMounted] = useState(false); // Added for useEffect cleanup
 
   useEffect(() => {
+    setMounted(true); // Set mounted to true after component mounts
     // Function to fetch creators data
     const fetchCreators = async () => {
+      if (!mounted) return;
+
       try {
-        setIsLoading(true);
-        // Try to get from localStorage first for faster rendering
-        const cachedData = localStorage.getItem('creatorsData');
-        const cacheTimestamp = localStorage.getItem('creatorsTimestamp');
-        const now = Date.now();
-        const cacheExpired = !cacheTimestamp || (now - parseInt(cacheTimestamp)) > 300000; // 5 minutes
-        
-        if (cachedData && !cacheExpired) {
-          const parsedData = JSON.parse(cachedData);
-          if (parsedData && parsedData.length > 0) {
-            console.log("Using cached creators data from localStorage");
-            setCreators(parsedData);
-            setIsLoading(false);
-            // Refresh in the background
-            fetchFreshData();
+        // Try using cached data first
+        const cachedCreators = localStorage.getItem('cachedCreators');
+        const cacheTime = localStorage.getItem('cacheTime');
+        const now = new Date().getTime();
+
+        // Check if cache is valid (less than 5 minutes old)
+        if (cachedCreators && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
+          console.log('Using cached creators data from localStorage');
+          const parsedCreators = JSON.parse(cachedCreators);
+          if (parsedCreators && parsedCreators.length > 0) {
+            setCreators(parsedCreators);
             return;
+          } else {
+            console.log('Cached data was empty, fetching fresh data');
           }
+        } else {
+          console.log('Cache expired or not available, fetching fresh data');
         }
-        
-        console.log("Cache expired or not available, fetching fresh data");
-        await fetchFreshData();
-      } catch (error) {
-        console.error("Error fetching creators:", error);
-        // Try fallback data if everything else fails
-        useFallbackData();
-        setIsLoading(false);
-      }
-    };
-    
-    const fetchFreshData = async () => {
-      try {
-        // First try the regular endpoint
-        const response = await fetch('/api/creators?use_cache=true');
+
+        // Force refresh from API with cache parameter
+        const response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
+
         if (!response.ok) {
-          throw new Error('Regular API failed');
+          throw new Error(`API request failed with status ${response.status}`);
         }
+
         const data = await response.json();
-        console.log("Fetched creators data:", data);
-        
-        if (data && data.length > 0) {
-          // Update state and save to cache
+        console.log('Fetched creators data:', data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('Updating UI with fresh data from API');
           setCreators(data);
-          localStorage.setItem('creatorsData', JSON.stringify(data));
-          localStorage.setItem('creatorsTimestamp', Date.now().toString());
-          console.log("Updating UI with fresh data from API");
-          setIsLoading(false);
-          return;
+
+          // Cache the data
+          localStorage.setItem('cachedCreators', JSON.stringify(data));
+          localStorage.setItem('cacheTime', now.toString());
+        } else {
+          console.warn('API returned empty creators array or invalid data');
+          // Use fallback data if API returns empty array
+          const fallbackCreators = [
+            { 
+              id: "PrimapeMarkets", 
+              handle: "@PrimapeMarkets", 
+              name: "PRIMAPE",
+              points: 690, 
+              category: "News", 
+              engagementTypes: ["listen", "share", "comment"],
+              avatar: '/images/pm.PNG',
+              description: "The premier prediction markets platform in the Ape ecosystem."
+            },
+            { 
+              id: "AlexDotEth", 
+              handle: "@AlexDotEth", 
+              name: "Alex | ApeChain",
+              points: 500, 
+              category: "Spaces", 
+              engagementTypes: ["listen", "share", "comment"],
+              avatar: '/images/pm.PNG',
+              description: "Building ApeChain - The future of Web3 social engagement."
+            },
+            // Add other fallback creators here as needed.
+          ];
+          setCreators(fallbackCreators);
         }
-        throw new Error('Empty data from regular API');
-      } catch (firstError) {
-        console.error("Error with primary API, trying fallback:", firstError);
-        
-        // Try fallback endpoint if first one fails
-        try {
-          const fallbackResponse = await fetch('/api/creators/simple');
-          if (!fallbackResponse.ok) {
-            throw new Error('Fallback API also failed');
-          }
-          const fallbackData = await fallbackResponse.json();
-          if (fallbackData && fallbackData.length > 0) {
-            setCreators(fallbackData);
-            localStorage.setItem('creatorsData', JSON.stringify(fallbackData));
-            localStorage.setItem('creatorsTimestamp', Date.now().toString());
-            setIsLoading(false);
-            return;
-          }
-          throw new Error('Empty data from fallback API');
-        } catch (fallbackError) {
-          console.error("Both APIs failed:", fallbackError);
-          // Use hardcoded creators if all API attempts fail
-          useFallbackData();
-        }
+      } catch (error) {
+        console.error('Error fetching creators:', error);
+        // Handle error state -  Consider adding a more user-friendly error message here.
       } finally {
         setIsLoading(false);
       }
     };
-    
-    // Hardcoded fallback data when all else fails
-    const useFallbackData = () => {
-      const fallbackCreators = [
-        {
-          id: "PrimapeMarkets",
-          handle: "@PrimapeMarkets",
-          name: "PRIMAPE",
-          points: 690,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "The premier prediction market platform on ApeChain",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "AlexDotEth",
-          handle: "@AlexDotEth",
-          name: "Alex",
-          points: 500,
-          category: "Spaces",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "ApeChain Developer",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "apecoin",
-          handle: "@apecoin",
-          name: "ApeCoin",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "ApeChainHUB",
-          handle: "@ApeChainHUB",
-          name: "ApeChain HUB",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "yugalabs",
-          handle: "@yugalabs",
-          name: "Yuga Labs",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "ApewhaleNFT",
-          handle: "@ApewhaleNFT",
-          name: "ApeWhale",
-          points: 250,
-          category: "Spaces",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "boringmerch",
-          handle: "@boringmerch",
-          name: "Boring Merch",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        },
-        {
-          id: "BoredApeYC",
-          handle: "@BoredApeYC",
-          name: "Bored Ape Yacht Club",
-          points: 250,
-          category: "News",
-          engagementTypes: ["listen", "share", "comment"],
-          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
-          avatar: "/images/pm.PNG",
-          claimed: false
-        }
-      ];
-      
-      console.log("Using hardcoded fallback creator data");
-      setCreators(fallbackCreators);
-    };
 
     fetchCreators();
+
+    return () => {
+      setMounted(false); // Clean up mounted state on unmount
+    };
   }, []);
 
   return (
@@ -228,7 +133,7 @@ export default function EarnPage() {
               <h2 className="text-2xl font-bold">Featured Creators</h2>
               <span className="bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-sm">Points Coming Soon!</span>
             </div>
-            
+
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -296,7 +201,7 @@ export default function EarnPage() {
               </div>
             )}
           </div>
-          
+
           {/* Program Info Tabs - Moved to the bottom */}
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-4">Program Information</h2>

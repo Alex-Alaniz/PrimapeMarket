@@ -98,8 +98,8 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
           </div>
         </div>
         
-        <div className="p-6 pt-12">
-          <h3 className="font-bold text-lg">
+        <div className="p-6 pt-16">
+          <h3 className="font-bold text-lg mt-2">
             {creator.name || `${creator.handle.replace('@', '')} | ApeChain Creator`}
           </h3>
           <p className="text-sm text-muted-foreground">{creator.handle}</p>

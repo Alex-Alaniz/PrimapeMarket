@@ -10,14 +10,47 @@ export async function GET(request: Request) {
   const _forceRefresh = url.searchParams.get('force_refresh') === 'true';
   
   try {
+    // Define the specific order for creators
+    const orderedCreators = [
+      "PrimapeMarkets",
+      "AlexDotEth",
+      "apecoin",
+      "ApeChainHUB",
+      "yugalabs",
+      "ApewhaleNFT",
+      "boringmerch",
+      "BoredApeYC"
+    ];
+    
     // Get whitelisted creators from the database using our safety wrapper
     let whitelistedCreators = [];
     try {
       // Use the safe wrapper which has built-in fallback for production
-      whitelistedCreators = await db.twitterWhitelist.findMany();
+      const dbCreators = await db.twitterWhitelist.findMany();
       
-      // Check if we got any data, if not use fallback
-      if (!whitelistedCreators || whitelistedCreators.length === 0) {
+      // If we have creators from DB, sort them according to our preferred order
+      if (dbCreators && dbCreators.length > 0) {
+        console.log(`Found ${dbCreators.length} creators in database`);
+        
+        // Sort creators in the specified order
+        const creatorMap = {};
+        dbCreators.forEach(creator => {
+          creatorMap[creator.username] = creator;
+        });
+        
+        // First add creators in our specific order
+        whitelistedCreators = orderedCreators
+          .filter(username => creatorMap[username])
+          .map(username => creatorMap[username]);
+        
+        // Then add any remaining creators
+        const remainingCreators = dbCreators.filter(
+          creator => !orderedCreators.includes(creator.username)
+        );
+        
+        whitelistedCreators = [...whitelistedCreators, ...remainingCreators];
+      } else {
+        // Fallback to hardcoded creators if no data in database
         console.log("No creators found in database, using fallback data");
         whitelistedCreators = [
           { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
