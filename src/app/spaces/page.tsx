@@ -12,6 +12,12 @@ import Link from "next/link";
 
 export default function SpacesPage() {
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure proper hydration in PWA environment
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   interface XSpace {
     id: string;
@@ -68,6 +74,20 @@ export default function SpacesPage() {
   }, [toast]);
 
   // Featured hosts are displayed in the UI directly
+
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <div className="container py-4">
+          <Navbar />
+          <div className="mt-8">
+            <h1 className="text-3xl font-bold">ApeChain 𝕏 Spaces Schedule</h1>
+            <p className="text-muted-foreground mt-2">Loading spaces...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

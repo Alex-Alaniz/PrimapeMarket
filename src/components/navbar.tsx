@@ -200,6 +200,19 @@ export function Navbar() {
                                 <span>Spaces</span>
                             </Button>
                         </Link>
+                        <Link
+                            href="/earn"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start gap-2"
+                            >
+                                <Award className="h-4 w-4"/>
+                                <span>Earn</span>
+                            </Button>
+                        </Link>
                         {account && (
                             <Link
                                 href="/profile"

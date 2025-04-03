@@ -26,6 +26,26 @@ export default function EarnPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure proper hydration in PWA environment
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Earn with Creators</h1>
+            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   useEffect(() => {
     const fetchCreators = async () => {
