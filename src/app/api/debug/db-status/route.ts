@@ -17,8 +17,9 @@ export async function GET() {
   try {
     await mainDb.$connect();
     mainDbStatus = 'Connected';
-  } catch (error: any) {
-    mainDbStatus = `Error: ${error?.message || 'Unknown error'}`;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    mainDbStatus = `Error: ${errorMessage}`;
   }
 
   // Test Twitter database connection
