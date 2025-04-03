@@ -22,8 +22,8 @@ type Creator = {
 export function CreatorCard({ creator }: { creator: Creator }) {
   // Function to get a background image based on creator ID
   const getBgImage = (id: string) => {
-    // Use creator ID to select one of the 4 background images consistently
-    const bgImages = ['cheetah.png', 'dmt.png', 'trippy.png', 'zombie.png'];
+    // Use creator ID to select one of the background images consistently
+    const bgImages = ['cheetah.png', 'dmt.png', 'trippy.png', 'zombie.png', 'deathbot.png', 'noise.png'];
     
     // Use the sum of character codes to create a deterministic selection
     const charSum = id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
