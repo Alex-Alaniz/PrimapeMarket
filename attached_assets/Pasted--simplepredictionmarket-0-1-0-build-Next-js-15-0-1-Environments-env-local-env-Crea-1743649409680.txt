@@ -1,0 +1,1151 @@
+
+> simplepredictionmarket@0.1.0 build
+  ▲ Next.js 15.0.1
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: /home/runner/workspace/node_modules/next-pwa/register.js
+> [PWA] Service worker: /home/runner/workspace/public/sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+Failed to compile.
+
+./src/app/api/admin/spaces/route.ts
+Error:   × the name `NextResponse` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:1:1]
+   1 │ import { NextRequest, NextResponse } from "next/server";
+     ·                       ──────┬─────
+     ·                             ╰── previous definition of `NextResponse` here
+   2 │ import { twitterDb } from "@/lib/twitter-prisma";
+   3 │ 
+   4 │ // Admin wallet addresses - keep this list secure and limited
+   5 │ const ADMIN_WALLETS = [
+   6 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+   7 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+   8 │ ];
+   9 │ 
+  10 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+  11 │   const adminWallet = req.headers.get("x-admin-wallet");
+  12 │   if (!adminWallet) return false;
+  13 │   const normalizedWallet = adminWallet.toLowerCase();
+  14 │   return ADMIN_WALLETS.includes(normalizedWallet);
+  15 │ }
+  16 │ 
+  17 │ // GET /api/admin/spaces - List all spaces
+  18 │ export async function GET(req: NextRequest) {
+  19 │   try {
+  20 │     // Validate admin access
+  21 │     if (!(await validateAdmin(req))) {
+  22 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  23 │     }
+  24 │ 
+  25 │     const spaces = await twitterDb.twitterSpace.findMany({
+  26 │       include: {
+  27 │         hosts: true,
+  28 │       },
+  29 │       orderBy: [
+  30 │         { day_of_week: "asc" },
+  31 │         { start_time: "asc" },
+  32 │       ],
+  33 │     });
+  34 │ 
+  35 │     return NextResponse.json(spaces);
+  36 │   } catch (error) {
+  37 │     console.error("Error fetching spaces:", error);
+  38 │     return NextResponse.json(
+  39 │       { error: "Failed to fetch Twitter spaces" },
+  40 │       { status: 500 },
+  41 │     );
+  42 │   }
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+     ·                       ──────┬─────
+     ·                             ╰── `NextResponse` redefined here
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+     ╰────
+  × the name `twitterDb` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:2:1]
+   1 │ import { NextRequest, NextResponse } from "next/server";
+   2 │ import { twitterDb } from "@/lib/twitter-prisma";
+     ·          ────┬────
+     ·              ╰── previous definition of `twitterDb` here
+   3 │ 
+   4 │ // Admin wallet addresses - keep this list secure and limited
+   5 │ const ADMIN_WALLETS = [
+   6 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+   7 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+   8 │ ];
+   9 │ 
+  10 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+  11 │   const adminWallet = req.headers.get("x-admin-wallet");
+  12 │   if (!adminWallet) return false;
+  13 │   const normalizedWallet = adminWallet.toLowerCase();
+  14 │   return ADMIN_WALLETS.includes(normalizedWallet);
+  15 │ }
+  16 │ 
+  17 │ // GET /api/admin/spaces - List all spaces
+  18 │ export async function GET(req: NextRequest) {
+  19 │   try {
+  20 │     // Validate admin access
+  21 │     if (!(await validateAdmin(req))) {
+  22 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  23 │     }
+  24 │ 
+  25 │     const spaces = await twitterDb.twitterSpace.findMany({
+  26 │       include: {
+  27 │         hosts: true,
+  28 │       },
+  29 │       orderBy: [
+  30 │         { day_of_week: "asc" },
+  31 │         { start_time: "asc" },
+  32 │       ],
+  33 │     });
+  34 │ 
+  35 │     return NextResponse.json(spaces);
+  36 │   } catch (error) {
+  37 │     console.error("Error fetching spaces:", error);
+  38 │     return NextResponse.json(
+  39 │       { error: "Failed to fetch Twitter spaces" },
+  40 │       { status: 500 },
+  41 │     );
+  42 │   }
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+     ·          ────┬────
+     ·              ╰── `twitterDb` redefined here
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+     ╰────
+  × the name `ADMIN_WALLETS` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:5:1]
+   2 │ import { twitterDb } from "@/lib/twitter-prisma";
+   3 │ 
+   4 │ // Admin wallet addresses - keep this list secure and limited
+   5 │ const ADMIN_WALLETS = [
+     ·       ──────┬──────
+     ·             ╰── previous definition of `ADMIN_WALLETS` here
+   6 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+   7 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+   8 │ ];
+   9 │ 
+  10 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+  11 │   const adminWallet = req.headers.get("x-admin-wallet");
+  12 │   if (!adminWallet) return false;
+  13 │   const normalizedWallet = adminWallet.toLowerCase();
+  14 │   return ADMIN_WALLETS.includes(normalizedWallet);
+  15 │ }
+  16 │ 
+  17 │ // GET /api/admin/spaces - List all spaces
+  18 │ export async function GET(req: NextRequest) {
+  19 │   try {
+  20 │     // Validate admin access
+  21 │     if (!(await validateAdmin(req))) {
+  22 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  23 │     }
+  24 │ 
+  25 │     const spaces = await twitterDb.twitterSpace.findMany({
+  26 │       include: {
+  27 │         hosts: true,
+  28 │       },
+  29 │       orderBy: [
+  30 │         { day_of_week: "asc" },
+  31 │         { start_time: "asc" },
+  32 │       ],
+  33 │     });
+  34 │ 
+  35 │     return NextResponse.json(spaces);
+  36 │   } catch (error) {
+  37 │     console.error("Error fetching spaces:", error);
+  38 │     return NextResponse.json(
+  39 │       { error: "Failed to fetch Twitter spaces" },
+  40 │       { status: 500 },
+  41 │     );
+  42 │   }
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+     ·       ──────┬──────
+     ·             ╰── `ADMIN_WALLETS` redefined here
+ 154 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+ 155 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 156 │ ];
+     ╰────
+  × the name `validateAdmin` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:10:1]
+   7 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+   8 │ ];
+   9 │ 
+  10 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+     ·                ──────┬──────
+     ·                      ╰── previous definition of `validateAdmin` here
+  11 │   const adminWallet = req.headers.get("x-admin-wallet");
+  12 │   if (!adminWallet) return false;
+  13 │   const normalizedWallet = adminWallet.toLowerCase();
+  14 │   return ADMIN_WALLETS.includes(normalizedWallet);
+  15 │ }
+  16 │ 
+  17 │ // GET /api/admin/spaces - List all spaces
+  18 │ export async function GET(req: NextRequest) {
+  19 │   try {
+  20 │     // Validate admin access
+  21 │     if (!(await validateAdmin(req))) {
+  22 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  23 │     }
+  24 │ 
+  25 │     const spaces = await twitterDb.twitterSpace.findMany({
+  26 │       include: {
+  27 │         hosts: true,
+  28 │       },
+  29 │       orderBy: [
+  30 │         { day_of_week: "asc" },
+  31 │         { start_time: "asc" },
+  32 │       ],
+  33 │     });
+  34 │ 
+  35 │     return NextResponse.json(spaces);
+  36 │   } catch (error) {
+  37 │     console.error("Error fetching spaces:", error);
+  38 │     return NextResponse.json(
+  39 │       { error: "Failed to fetch Twitter spaces" },
+  40 │       { status: 500 },
+  41 │     );
+  42 │   }
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+ 154 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+ 155 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 156 │ ];
+ 157 │ 
+ 158 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+     ·                ──────┬──────
+     ·                      ╰── `validateAdmin` redefined here
+ 159 │   const adminWallet = req.headers.get("x-admin-wallet");
+ 160 │   if (!adminWallet) return false;
+ 161 │   const normalizedWallet = adminWallet.toLowerCase();
+     ╰────
+  × the name `GET` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:18:1]
+  15 │ }
+  16 │ 
+  17 │ // GET /api/admin/spaces - List all spaces
+  18 │ export async function GET(req: NextRequest) {
+     ·                       ─┬─
+     ·                        ╰── previous definition of `GET` here
+  19 │   try {
+  20 │     // Validate admin access
+  21 │     if (!(await validateAdmin(req))) {
+  22 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  23 │     }
+  24 │ 
+  25 │     const spaces = await twitterDb.twitterSpace.findMany({
+  26 │       include: {
+  27 │         hosts: true,
+  28 │       },
+  29 │       orderBy: [
+  30 │         { day_of_week: "asc" },
+  31 │         { start_time: "asc" },
+  32 │       ],
+  33 │     });
+  34 │ 
+  35 │     return NextResponse.json(spaces);
+  36 │   } catch (error) {
+  37 │     console.error("Error fetching spaces:", error);
+  38 │     return NextResponse.json(
+  39 │       { error: "Failed to fetch Twitter spaces" },
+  40 │       { status: 500 },
+  41 │     );
+  42 │   }
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+ 154 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+ 155 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 156 │ ];
+ 157 │ 
+ 158 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+ 159 │   const adminWallet = req.headers.get("x-admin-wallet");
+ 160 │   if (!adminWallet) return false;
+ 161 │   const normalizedWallet = adminWallet.toLowerCase();
+ 162 │   return ADMIN_WALLETS.includes(normalizedWallet);
+ 163 │ }
+ 164 │ 
+ 165 │ // GET /api/admin/spaces - List all spaces
+ 166 │ export async function GET(req: NextRequest) {
+     ·                       ─┬─
+     ·                        ╰── `GET` redefined here
+ 167 │   try {
+ 168 │     // Validate admin access
+ 169 │     if (!(await validateAdmin(req))) {
+     ╰────
+  × the name `POST` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:46:1]
+  43 │ }
+  44 │ 
+  45 │ // POST /api/admin/spaces - Create a new space
+  46 │ export async function POST(req: NextRequest) {
+     ·                       ──┬─
+     ·                         ╰── previous definition of `POST` here
+  47 │   try {
+  48 │     // Validate admin access
+  49 │     if (!(await validateAdmin(req))) {
+  50 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  51 │     }
+  52 │ 
+  53 │     const body = await req.json();
+  54 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+  55 │ 
+  56 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+  57 │       return NextResponse.json(
+  58 │         { error: "Missing required fields" },
+  59 │         { status: 400 },
+  60 │       );
+  61 │     }
+  62 │ 
+  63 │     // Find Twitter profiles for all hosts
+  64 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+  65 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+  66 │       where: {
+  67 │         username: {
+  68 │           in: hostUsernames,
+  69 │         },
+  70 │       },
+  71 │     });
+  72 │ 
+  73 │     // Check if all hosts exist
+  74 │     if (existingHosts.length !== hostUsernames.length) {
+  75 │       const missingHosts = hostUsernames.filter(
+  76 │         host => !existingHosts.some(h => h.username === host)
+  77 │       );
+  78 │ 
+  79 │       return NextResponse.json(
+  80 │         { 
+  81 │           error: "Some hosts are not found in our Twitter profiles", 
+  82 │           missingHosts 
+  83 │         },
+  84 │         { status: 400 },
+  85 │       );
+  86 │     }
+  87 │ 
+  88 │     // Create the space
+  89 │     const space = await twitterDb.twitterSpace.create({
+  90 │       data: {
+  91 │         title,
+  92 │         description,
+  93 │         start_time: new Date(start_time),
+  94 │         end_time: end_time ? new Date(end_time) : undefined,
+  95 │         day_of_week,
+  96 │         recurring: recurring !== undefined ? recurring : true,
+  97 │         points: points || 100,
+  98 │         space_id,
+  99 │         hosts: {
+ 100 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 101 │         },
+ 102 │       },
+ 103 │       include: {
+ 104 │         hosts: true,
+ 105 │       },
+ 106 │     });
+ 107 │ 
+ 108 │     return NextResponse.json(space, { status: 201 });
+ 109 │   } catch (error) {
+ 110 │     console.error("Error creating space:", error);
+ 111 │     return NextResponse.json(
+ 112 │       { error: "Failed to create Twitter space" },
+ 113 │       { status: 500 },
+ 114 │     );
+ 115 │   }
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+ 154 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+ 155 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 156 │ ];
+ 157 │ 
+ 158 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+ 159 │   const adminWallet = req.headers.get("x-admin-wallet");
+ 160 │   if (!adminWallet) return false;
+ 161 │   const normalizedWallet = adminWallet.toLowerCase();
+ 162 │   return ADMIN_WALLETS.includes(normalizedWallet);
+ 163 │ }
+ 164 │ 
+ 165 │ // GET /api/admin/spaces - List all spaces
+ 166 │ export async function GET(req: NextRequest) {
+ 167 │   try {
+ 168 │     // Validate admin access
+ 169 │     if (!(await validateAdmin(req))) {
+ 170 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 171 │     }
+ 172 │ 
+ 173 │     const spaces = await twitterDb.twitterSpace.findMany({
+ 174 │       include: {
+ 175 │         hosts: true,
+ 176 │       },
+ 177 │       orderBy: [
+ 178 │         { day_of_week: "asc" },
+ 179 │         { start_time: "asc" },
+ 180 │       ],
+ 181 │     });
+ 182 │ 
+ 183 │     return NextResponse.json(spaces);
+ 184 │   } catch (error) {
+ 185 │     console.error("Error fetching spaces:", error);
+ 186 │     return NextResponse.json(
+ 187 │       { error: "Failed to fetch Twitter spaces" },
+ 188 │       { status: 500 },
+ 189 │     );
+ 190 │   }
+ 191 │ }
+ 192 │ 
+ 193 │ // POST /api/admin/spaces - Create a new space
+ 194 │ export async function POST(req: NextRequest) {
+     ·                       ──┬─
+     ·                         ╰── `POST` redefined here
+ 195 │   try {
+ 196 │     // Validate admin access
+ 197 │     if (!(await validateAdmin(req))) {
+     ╰────
+  × the name `DELETE` is defined multiple times
+     ╭─[/home/runner/workspace/src/app/api/admin/spaces/route.ts:119:1]
+ 116 │ }
+ 117 │ 
+ 118 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 119 │ export async function DELETE(req: NextRequest) {
+     ·                       ───┬──
+     ·                          ╰── previous definition of `DELETE` here
+ 120 │   try {
+ 121 │     // Validate admin access
+ 122 │     if (!(await validateAdmin(req))) {
+ 123 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 124 │     }
+ 125 │ 
+ 126 │     const { searchParams } = new URL(req.url);
+ 127 │     const id = searchParams.get("id");
+ 128 │ 
+ 129 │     if (!id) {
+ 130 │       return NextResponse.json(
+ 131 │         { error: "Space ID is required" },
+ 132 │         { status: 400 },
+ 133 │       );
+ 134 │     }
+ 135 │ 
+ 136 │     await twitterDb.twitterSpace.delete({
+ 137 │       where: { id },
+ 138 │     });
+ 139 │ 
+ 140 │     return NextResponse.json({ success: true });
+ 141 │   } catch (error) {
+ 142 │     console.error("Error deleting space:", error);
+ 143 │     return NextResponse.json(
+ 144 │       { error: "Failed to delete Twitter space" },
+ 145 │       { status: 500 },
+ 146 │     );
+ 147 │   }
+ 148 │ }
+ 149 │ import { NextRequest, NextResponse } from "next/server";
+ 150 │ import { twitterDb } from "@/lib/twitter-prisma";
+ 151 │ 
+ 152 │ // Admin wallet addresses - keep this list secure and limited
+ 153 │ const ADMIN_WALLETS = [
+ 154 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+ 155 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 156 │ ];
+ 157 │ 
+ 158 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+ 159 │   const adminWallet = req.headers.get("x-admin-wallet");
+ 160 │   if (!adminWallet) return false;
+ 161 │   const normalizedWallet = adminWallet.toLowerCase();
+ 162 │   return ADMIN_WALLETS.includes(normalizedWallet);
+ 163 │ }
+ 164 │ 
+ 165 │ // GET /api/admin/spaces - List all spaces
+ 166 │ export async function GET(req: NextRequest) {
+ 167 │   try {
+ 168 │     // Validate admin access
+ 169 │     if (!(await validateAdmin(req))) {
+ 170 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 171 │     }
+ 172 │ 
+ 173 │     const spaces = await twitterDb.twitterSpace.findMany({
+ 174 │       include: {
+ 175 │         hosts: true,
+ 176 │       },
+ 177 │       orderBy: [
+ 178 │         { day_of_week: "asc" },
+ 179 │         { start_time: "asc" },
+ 180 │       ],
+ 181 │     });
+ 182 │ 
+ 183 │     return NextResponse.json(spaces);
+ 184 │   } catch (error) {
+ 185 │     console.error("Error fetching spaces:", error);
+ 186 │     return NextResponse.json(
+ 187 │       { error: "Failed to fetch Twitter spaces" },
+ 188 │       { status: 500 },
+ 189 │     );
+ 190 │   }
+ 191 │ }
+ 192 │ 
+ 193 │ // POST /api/admin/spaces - Create a new space
+ 194 │ export async function POST(req: NextRequest) {
+ 195 │   try {
+ 196 │     // Validate admin access
+ 197 │     if (!(await validateAdmin(req))) {
+ 198 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 199 │     }
+ 200 │ 
+ 201 │     const body = await req.json();
+ 202 │     const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
+ 203 │ 
+ 204 │     if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
+ 205 │       return NextResponse.json(
+ 206 │         { error: "Missing required fields" },
+ 207 │         { status: 400 },
+ 208 │       );
+ 209 │     }
+ 210 │ 
+ 211 │     // Find Twitter profiles for all hosts
+ 212 │     const hostUsernames = hosts.map(host => host.replace('@', ''));
+ 213 │     const existingHosts = await twitterDb.twitterProfile.findMany({
+ 214 │       where: {
+ 215 │         username: {
+ 216 │           in: hostUsernames,
+ 217 │         },
+ 218 │       },
+ 219 │     });
+ 220 │ 
+ 221 │     // Check if all hosts exist
+ 222 │     if (existingHosts.length !== hostUsernames.length) {
+ 223 │       const missingHosts = hostUsernames.filter(
+ 224 │         host => !existingHosts.some(h => h.username === host)
+ 225 │       );
+ 226 │ 
+ 227 │       return NextResponse.json(
+ 228 │         { 
+ 229 │           error: "Some hosts are not found in our Twitter profiles", 
+ 230 │           missingHosts 
+ 231 │         },
+ 232 │         { status: 400 },
+ 233 │       );
+ 234 │     }
+ 235 │ 
+ 236 │     // Create the space
+ 237 │     const space = await twitterDb.twitterSpace.create({
+ 238 │       data: {
+ 239 │         title,
+ 240 │         description,
+ 241 │         start_time: new Date(start_time),
+ 242 │         end_time: end_time ? new Date(end_time) : undefined,
+ 243 │         day_of_week,
+ 244 │         recurring: recurring !== undefined ? recurring : true,
+ 245 │         points: points || 100,
+ 246 │         space_id,
+ 247 │         hosts: {
+ 248 │           connect: existingHosts.map(host => ({ id: host.id })),
+ 249 │         },
+ 250 │       },
+ 251 │       include: {
+ 252 │         hosts: true,
+ 253 │       },
+ 254 │     });
+ 255 │ 
+ 256 │     return NextResponse.json(space, { status: 201 });
+ 257 │   } catch (error) {
+ 258 │     console.error("Error creating space:", error);
+ 259 │     return NextResponse.json(
+ 260 │       { error: "Failed to create Twitter space" },
+ 261 │       { status: 500 },
+ 262 │     );
+ 263 │   }
+ 264 │ }
+ 265 │ 
+ 266 │ // DELETE /api/admin/spaces/:id - Delete a space
+ 267 │ export async function DELETE(req: NextRequest) {
+     ·                       ───┬──
+     ·                          ╰── `DELETE` redefined here
+ 268 │   try {
+ 269 │     // Validate admin access
+ 270 │     if (!(await validateAdmin(req))) {
+     ╰────
+
+Import trace for requested module:
+./src/app/api/admin/spaces/route.ts
+
+
+> Build failed because of webpack errors
