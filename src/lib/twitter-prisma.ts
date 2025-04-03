@@ -63,8 +63,8 @@ const safeTwitterDbWrapper = {
     findUnique: async (params: any) => {
       try {
         return await twitterDb.twitterProfile.findUnique(params);
-      } catch (error) {
-        console.error("Error accessing Twitter profile DB, using fallback:", error);
+      } catch (err) {
+        console.error("Error accessing Twitter profile DB, using fallback:", err);
         // Return a default Twitter profile structure that won't break the app
         return null;
       }
@@ -75,7 +75,7 @@ const safeTwitterDbWrapper = {
     findMany: async () => {
       try {
         return await twitterDb.twitterWhitelist.findMany();
-      } catch (error) {
+      } catch (err) {
         console.error("Error accessing Twitter whitelist DB, using hardcoded fallback");
         // Return hardcoded creators as a fallback for production
         return [
@@ -88,11 +88,19 @@ const safeTwitterDbWrapper = {
         ];
       }
     },
+    findUnique: async (params: any) => {
+      try {
+        return await twitterDb.twitterWhitelist.findUnique(params);
+      } catch (err) {
+        console.error("Error finding unique Twitter whitelist entry:", err);
+        return null;
+      }
+    },
     update: async (params: any) => {
       try {
         return await twitterDb.twitterWhitelist.update(params);
-      } catch (error) {
-        console.error("Error updating Twitter whitelist DB:", error);
+      } catch (err) {
+        console.error("Error updating Twitter whitelist DB:", err);
         // Return a mock successful update
         return params.data;
       }
