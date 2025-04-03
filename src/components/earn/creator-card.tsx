@@ -20,6 +20,16 @@ type Creator = {
 };
 
 export function CreatorCard({ creator }: { creator: Creator }) {
+  // Function to get a background image based on creator ID
+  const getBgImage = (id: string) => {
+    // Use creator ID to select one of the 4 background images consistently
+    const bgImages = ['cheetah.png', 'dmt.png', 'trippy.png', 'zombie.png'];
+    
+    // Use the sum of character codes to create a deterministic selection
+    const charSum = id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return bgImages[charSum % bgImages.length];
+  };
+
   // Format handle for display and links
   const cleanHandle = creator.handle.replace("@", "");
 
@@ -40,7 +50,13 @@ export function CreatorCard({ creator }: { creator: Creator }) {
   return (
     <Card className="overflow-hidden bg-card border-0 shadow-md">
       <div className="relative">
-        <div className="h-32 bg-gradient-to-r from-blue-600 to-purple-600"></div>
+        <div 
+          className="h-32 bg-cover bg-center" 
+          style={{ 
+            backgroundImage: `url('/apechain/${getBgImage(creator.id)}')`,
+            backgroundSize: 'cover'
+          }}
+        ></div>
         <div className="absolute -bottom-7 left-4">
           <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
             <img
