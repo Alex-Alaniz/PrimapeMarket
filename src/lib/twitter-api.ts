@@ -133,7 +133,7 @@ export async function cacheTwitterProfile(profile: TwitterUserData): Promise<boo
         name: profile.name,
         description: profile.description,
         profile_image_url: profile.profile_image_url,
-        last_updated: new Date()
+        fetched_at: new Date()
       },
       create: {
         id: profile.id,
@@ -141,7 +141,7 @@ export async function cacheTwitterProfile(profile: TwitterUserData): Promise<boo
         name: profile.name,
         description: profile.description,
         profile_image_url: profile.profile_image_url,
-        last_updated: new Date()
+        fetched_at: new Date()
       }
     });
 

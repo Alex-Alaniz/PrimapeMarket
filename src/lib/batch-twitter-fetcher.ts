@@ -38,7 +38,7 @@ export async function processBatch() {
     isFetchingBatch = true;
 
     // Count total creators to process
-    const totalCreatorsCount = await db.whitelistedCreator.count();
+    const totalCreatorsCount = await db.twitterWhitelist.count();
 
     if (totalCreatorsCount === 0) {
       console.log('No creators to process');
@@ -47,7 +47,7 @@ export async function processBatch() {
     }
 
     // Get creators for this batch
-    const creators = await db.whitelistedCreator.findMany({
+    const creators = await db.twitterWhitelist.findMany({
       skip: currentBatchIndex,
       take: BATCH_SIZE,
       orderBy: { username: 'asc' }

@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
         space_id: spaceId,
         wallet_address: walletAddress,
         twitter_username: twitterUsername || null,
-        created_at: new Date()
+        created_at: new Date(),
+        updated_at: new Date()
       }
     });
     

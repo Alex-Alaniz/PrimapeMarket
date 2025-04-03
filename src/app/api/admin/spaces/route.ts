@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/twitter-prisma";
 
@@ -17,7 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     // Get the wallet address from URL params
     const walletAddress = req.nextUrl.searchParams.get('walletAddress');
-    
+
     // Validate admin wallet
     if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
@@ -33,7 +32,7 @@ export async function GET(req: NextRequest) {
         hosts: true
       }
     });
-    
+
     return NextResponse.json({
       success: true,
       spaces,
@@ -49,32 +48,32 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
     const { walletAddress, space } = data;
-    
+
     // Validate admin wallet
     if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
-    
+
     // Validate space data
     if (!space || !space.host_username || !space.title || !space.day_of_week) {
       return NextResponse.json({ error: 'Missing required space data' }, { status: 400 });
     }
-    
+
     // Validate day of week
     if (!DAYS_OF_WEEK.includes(space.day_of_week)) {
       return NextResponse.json({ error: 'Invalid day of week' }, { status: 400 });
     }
-    
+
     // Clean the username (remove @ if present)
     const cleanUsername = space.host_username.replace('@', '');
-    
+
     // Find or create the host profile
     let hostProfile = await db.twitterProfile.findUnique({
       where: {
         username: cleanUsername
       }
     });
-    
+
     if (!hostProfile) {
       // If host doesn't exist in our database, create a placeholder
       hostProfile = await db.twitterProfile.create({
@@ -88,7 +87,7 @@ export async function POST(req: NextRequest) {
         }
       });
     }
-    
+
     // Get the host profile for the relation
     const host = await db.twitterProfile.findUnique({
       where: {
@@ -115,7 +114,7 @@ export async function POST(req: NextRequest) {
         }
       }
     });
-    
+
     return NextResponse.json({
       success: true,
       space: createdSpace
@@ -130,45 +129,45 @@ export async function PUT(req: NextRequest) {
   try {
     const data = await req.json();
     const { walletAddress, space } = data;
-    
+
     // Validate admin wallet
     if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
-    
+
     // Validate space data
     if (!space || !space.id) {
       return NextResponse.json({ error: 'Missing space ID' }, { status: 400 });
     }
-    
+
     // Validate day of week if provided
     if (space.day_of_week && !DAYS_OF_WEEK.includes(space.day_of_week)) {
       return NextResponse.json({ error: 'Invalid day of week' }, { status: 400 });
     }
-    
+
     // Find the space to update
     const existingSpace = await db.twitterSpace.findUnique({
       where: {
         id: space.id
       }
     });
-    
+
     if (!existingSpace) {
       return NextResponse.json({ error: 'Space not found' }, { status: 404 });
     }
-    
+
     // Clean the username if provided (remove @ if present)
     let cleanUsername = undefined;
     if (space.host_username) {
       cleanUsername = space.host_username.replace('@', '');
-      
+
       // Check if host exists, create placeholder if not
       const hostProfile = await db.twitterProfile.findUnique({
         where: {
           username: cleanUsername
         }
       });
-      
+
       if (!hostProfile) {
         await db.twitterProfile.create({
           data: {
@@ -182,7 +181,7 @@ export async function PUT(req: NextRequest) {
         });
       }
     }
-    
+
     // Update the space
     const updatedSpace = await db.twitterSpace.update({
       where: {
@@ -204,7 +203,7 @@ export async function PUT(req: NextRequest) {
         updated_at: new Date()
       }
     });
-    
+
     return NextResponse.json({
       success: true,
       space: updatedSpace
@@ -219,35 +218,35 @@ export async function DELETE(req: NextRequest) {
   try {
     const data = await req.json();
     const { walletAddress, spaceId } = data;
-    
+
     // Validate admin wallet
     if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
-    
+
     // Validate space ID
     if (!spaceId) {
       return NextResponse.json({ error: 'Missing space ID' }, { status: 400 });
     }
-    
+
     // Find the space to delete
     const existingSpace = await db.twitterSpace.findUnique({
       where: {
         id: spaceId
       }
     });
-    
+
     if (!existingSpace) {
       return NextResponse.json({ error: 'Space not found' }, { status: 404 });
     }
-    
+
     // Delete the space
     await db.twitterSpace.delete({
       where: {
         id: spaceId
       }
     });
-    
+
     return NextResponse.json({
       success: true,
       message: 'Space deleted successfully'

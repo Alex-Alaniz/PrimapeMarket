@@ -22,7 +22,11 @@ export async function GET(req: NextRequest) {
 
     // Basic stats
     const totalSpaces = await db.twitterSpace.count();
-    const upcomingSpaces = await db.twitterSpace.count();
+    const upcomingSpaces = await db.twitterSpace.count({
+      where: {
+        end_time: null
+      }
+    });
     const completedSpaces = await db.twitterSpace.count({
       where: {
         end_time: {

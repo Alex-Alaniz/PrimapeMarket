@@ -44,11 +44,11 @@ export async function GET() {
       return {
         id: space.id,
         title: space.title,
-        description: space.description,
+        description: space.description || '',
         host: {
-          username: space.host_username,
-          name: space.host?.name || space.host_username,
-          profileImageUrl: space.host?.profile_image_url || ''
+          username: space.host_username || '',
+          name: space.hosts && space.hosts.length > 0 ? space.hosts[0].name || space.host_username : space.host_username || '',
+          profileImageUrl: space.hosts && space.hosts.length > 0 ? space.hosts[0].profile_image_url || '' : ''
         },
         dayOfWeek: space.day_of_week,
         startTime,
