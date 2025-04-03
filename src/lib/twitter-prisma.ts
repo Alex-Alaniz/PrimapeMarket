@@ -189,6 +189,9 @@ const safeTwitterDbWrapper = {
 // Export the safe wrapper in production, or the real client in development
 export const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb || safeTwitterDbWrapper;
 
+// Also export the raw twitterDb instance for direct access when needed
+export { twitterDb };
+
 // Create proxy methods for fallback operation if Twitter client isn't available
 if (!hasTwitterClient) {
   console.warn("Using fallback Twitter client. Limited functionality available.");

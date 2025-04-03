@@ -1,5 +1,5 @@
 
-import { twitterDb } from './twitter-prisma';
+import { db as twitterDb } from './twitter-prisma';
 import { getTwitterProfileData, cacheTwitterProfile, canMakeApiCall } from './twitter-api';
 
 // Constants for batch processing

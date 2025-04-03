@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getTwitterProfileData, cacheTwitterProfile } from "@/lib/twitter-api";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db as twitterDb } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses (same as in other admin routes)
 const ADMIN_WALLETS = [

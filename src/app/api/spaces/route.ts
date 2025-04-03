@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db as twitterDb } from "@/lib/twitter-prisma";
 import { format } from 'date-fns';
 
 // Days of week in order for sorting

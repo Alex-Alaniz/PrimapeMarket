@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db as twitterDb } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses - keep this list secure and limited
 const ADMIN_WALLETS = [

@@ -1,6 +1,6 @@
 
 import 'dotenv/config';
-import { twitterDb } from './twitter-prisma';
+import { db as twitterDb } from './twitter-prisma';
 
 // Twitter API v2 endpoint for user lookup
 const TWITTER_API_ENDPOINT = 'https://api.twitter.com/2/users/by/username/';
