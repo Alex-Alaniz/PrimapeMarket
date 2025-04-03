@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
@@ -84,7 +83,7 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
               />
             </div>
           </div>
-          
+
           {/* Twitter icon */}
           <div className="absolute top-4 right-4">
             <a 
@@ -97,17 +96,17 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
             </a>
           </div>
         </div>
-        
+
         <div className="p-6 pt-16">
           <h3 className="font-bold text-lg mt-2">
             {creator.name || `${creator.handle.replace('@', '')} | ApeChain Creator`}
           </h3>
           <p className="text-sm text-muted-foreground">{creator.handle}</p>
-          
+
           <p className="mt-2 text-sm">
             {creator.description || 'An awesome ApeChain creator building the future of Web3 social engagement. Check back soon for their full profile!'}
           </p>
-          
+
           <div className="mt-4 flex items-center gap-2">
             <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
               {creator.category}
@@ -118,7 +117,7 @@ export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage:
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex flex-wrap gap-2 p-4 pt-2 border-t">
         <TooltipProvider>
           {creator.engagementTypes.map(type => (

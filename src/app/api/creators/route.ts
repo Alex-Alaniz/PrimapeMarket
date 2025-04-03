@@ -31,6 +31,7 @@ export async function GET(request: Request) {
       // If we have creators from DB, sort them according to our preferred order
       if (dbCreators && dbCreators.length > 0) {
         console.log(`Found ${dbCreators.length} creators in database`);
+        console.log('Database creators:', JSON.stringify(dbCreators));
         
         // Sort creators in the specified order
         const creatorMap = {};
@@ -49,9 +50,11 @@ export async function GET(request: Request) {
         );
         
         whitelistedCreators = [...whitelistedCreators, ...remainingCreators];
+        console.log(`Sorted ${whitelistedCreators.length} creators in preferred order`);
       } else {
         // Fallback to hardcoded creators if no data in database
         console.log("No creators found in database, using fallback data");
+        console.log("This is the first fallback mechanism inside the main creators API");
         whitelistedCreators = [
           { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
           { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },

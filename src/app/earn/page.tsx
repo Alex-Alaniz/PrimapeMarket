@@ -39,19 +39,52 @@ export default function EarnPage() {
           console.log('Cache expired or not available, fetching fresh data');
         }
 
-        // Force refresh from API with cache parameter
-        const response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
-
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
+        // Try to fetch from main API first
+        try {
+          const response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
+          
+          if (!response.ok) {
+            console.warn(`Main API request failed with status ${response.status}, trying fallback`);
+            throw new Error(`API request failed with status ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('Fetched creators data:', data);
+          
+          if (Array.isArray(data) && data.length > 0) {
+            console.log('Updating UI with fresh data from API');
+            setCreators(data);
+            // Cache the successful data
+            localStorage.setItem('cachedCreators', JSON.stringify(data));
+            localStorage.setItem('cacheTime', now.toString());
+            return;
+          } else {
+            console.warn('Main API returned empty data, trying simple fallback API');
+            throw new Error('Empty data from main API');
+          }
+        } catch (error) {
+          console.warn('Falling back to simple API endpoint:', error);
+          // Try the simplified endpoint as fallback
+          const fallbackResponse = await fetch(`/api/creators/simple?_t=${now}`);
+          
+          if (!fallbackResponse.ok) {
+            throw new Error(`Fallback API request failed with status ${fallbackResponse.status}`);
+          }
+          
+          const fallbackData = await fallbackResponse.json();
+          console.log('Fetched fallback creators data:', fallbackData);
+          
+          if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+            console.log('Updating UI with fallback API data');
+            setCreators(fallbackData);
+            // Cache the fallback data
+            localStorage.setItem('cachedCreators', JSON.stringify(fallbackData));
+            localStorage.setItem('cacheTime', now.toString());
+            return;
+          }
+          
+          throw new Error('Both main and fallback APIs failed to return valid data');
         }
-
-        const data = await response.json();
-        console.log('Fetched creators data:', data);
-
-        if (Array.isArray(data) && data.length > 0) {
-          console.log('Updating UI with fresh data from API');
-          setCreators(data);
 
           // Cache the data
           localStorage.setItem('cachedCreators', JSON.stringify(data));
