@@ -3,23 +3,42 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Footer() {
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
+  const [currentTheme, setCurrentTheme] = useState<string | undefined>(undefined);
+
+  // Update current theme when theme changes or component mounts
+  useEffect(() => {
+    setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
+  }, [theme, resolvedTheme]);
 
   // Determine which ApeChain logo to use based on theme
   const getApeChainLogo = () => {
-    if (theme === "light") {
+    if (currentTheme === "light") {
       return "/apechain-branding/apechain-blue.png";
-    } else if (theme === "dark" || theme === "ape") {
+    } else if (currentTheme === "dark" || currentTheme === "ape") {
       return "/apechain-branding/apechain-white.png";
     }
     return "/apechain-branding/apechain-white.png";
   };
 
+  // Use current theme state for determining the styles
+  const getFooterBgClass = () => {
+    if (currentTheme === "light") {
+      return "bg-primary";
+    } else if (currentTheme === "dark") {
+      return "bg-primary";
+    } else if (currentTheme === "ape") {
+      return "bg-transparent";
+    }
+    return "bg-primary"; // Default
+  };
+
   return (
     <footer
-      className={`border-t py-2 ${theme === "light" ? "bg-primary" : theme === "dark" ? "bg-primary" : "bg-transparent"}`}
+      className={`border-t py-2 ${getFooterBgClass()}`}
     >
       <div className="container mx-auto">
         <div className="flex flex-row items-center justify-between px-4">
@@ -27,9 +46,9 @@ export function Footer() {
             <Image
               src={getApeChainLogo()}
               alt="Powered by ApeChain"
-              width={80}
-              height={16}
-              className="h-4 w-auto"
+              width={100}
+              height={20}
+              className="h-5 w-auto" 
             />
           </div>
 
