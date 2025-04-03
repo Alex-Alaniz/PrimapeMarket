@@ -56,7 +56,8 @@ export default function EarnPage() {
   }, []);
   
   // Fallback creators data
-  const fallbackCreators = [
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _fallbackCreators = [
     {
       id: "AlexDotEth",
       handle: "@AlexDotEth",
@@ -332,7 +333,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, [isLoading]); // Removed problematic dependencies, fallbackCreators is now inside
+  }, [isLoading, creators.length]); // Include creators.length as dependency
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {

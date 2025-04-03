@@ -1,7 +1,5 @@
-
 import { PrismaClient as DefaultPrismaClient } from "@prisma/client";
 
-// Try to import the Twitter-specific PrismaClient
 // Import the Twitter PrismaClient type directly to ensure proper typing
 import type { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 
@@ -16,7 +14,7 @@ const getPrismaClient = () => {
     // Dynamic import to avoid build errors when the module doesn't exist yet
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { PrismaClient: TwitterClient } = require("@prisma/twitter-client");
-    
+
     // For production environments like Vercel, we need to specify the output
     if (process.env.NODE_ENV === 'production') {
       return new TwitterClient({
@@ -29,7 +27,7 @@ const getPrismaClient = () => {
         errorFormat: 'minimal',
       });
     }
-    
+
     // For development, use standard initialization
     hasTwitterClient = true;
     return new TwitterClient({
@@ -42,226 +40,156 @@ const getPrismaClient = () => {
   } catch (error) {
     // Fallback to regular PrismaClient if the Twitter client is not generated yet
     console.warn("Twitter client not found, using regular Prisma client as fallback:", error);
-    return new DefaultPrismaClient({
-      datasources: {
-        db: {
-          url: process.env.TWITTER_POSTGRES_URL || process.env.DATABASE_URL,
-        },
-      },
-    });
+    return null;
   }
 };
 
-// Create a new PrismaClient instance specifically for Twitter data
-// Using the Twitter-specific connection URL
 // Initialize the client with our custom function
-const twitterDb = getPrismaClient() as TwitterPrismaClient;
+const twitterDb = getPrismaClient();
 
-// Add graceful fallback for Twitter profiles in production
+// Create a safe wrapper for Twitter client operations that gracefully falls back
+// This is used when we can't connect to Twitter's database
 const safeTwitterDbWrapper = {
   twitterProfile: {
     findUnique: async (params: any) => {
       try {
-        return await twitterDb.twitterProfile.findUnique(params);
+        if (twitterDb) return await twitterDb.twitterProfile.findUnique(params);
+        return null;
       } catch (err) {
-        console.error("Error accessing Twitter profile DB, using fallback:", err);
-        // Return a default Twitter profile structure that won't break the app
+        console.error("Error in twitterProfile.findUnique:", err);
         return null;
       }
     },
-    // Add other methods with similar safety wrappers
-  },
-  twitterWhitelist: {
-    findMany: async () => {
+    findMany: async (params?: any) => {
       try {
-        return await twitterDb.twitterWhitelist.findMany();
-      } catch (err) {
-        console.error("Error accessing Twitter whitelist DB, using hardcoded fallback");
-        // Return hardcoded creators as a fallback for production
-        return [
-          { username: "apecoin", category: "News", points: 250, is_onboarded: true },
-          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-          { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
-          { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
-          { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
-          { username: "boringmerch", category: "News", points: 250, is_onboarded: true }
-        ];
+        if (twitterDb) return await twitterDb.twitterProfile.findMany(params);
+        return [];
+      } catch (error) {
+        console.error("Error in twitterProfile.findMany:", error);
+        return [];
       }
     },
-    findUnique: async (params: any) => {
+    create: async (params: any) => {
       try {
-        return await twitterDb.twitterWhitelist.findUnique(params);
-      } catch (err) {
-        console.error("Error finding unique Twitter whitelist entry:", err);
+        if (twitterDb) return await twitterDb.twitterProfile.create(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterProfile.create:", error);
         return null;
       }
     },
     update: async (params: any) => {
       try {
-        return await twitterDb.twitterWhitelist.update(params);
-      } catch (err) {
-        console.error("Error updating Twitter whitelist DB:", err);
-        // Return a mock successful update
-        return params.data;
+        if (twitterDb) return await twitterDb.twitterProfile.update(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterProfile.update:", error);
+        return null;
+      }
+    },
+    upsert: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterProfile.upsert(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterProfile.upsert:", error);
+        return null;
+      }
+    }
+  },
+  twitterWhitelist: {
+    findMany: async (params?: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterWhitelist.findMany(params);
+        return [];
+      } catch (error) {
+        console.error("Error in twitterWhitelist.findMany:", error);
+        return [];
+      }
+    },
+    findUnique: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterWhitelist.findUnique(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterWhitelist.findUnique:", error);
+        return null;
+      }
+    },
+    create: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterWhitelist.create(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterWhitelist.create:", error);
+        return null;
+      }
+    },
+    update: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterWhitelist.update(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterWhitelist.update:", error);
+        return null;
+      }
+    },
+    upsert: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterWhitelist.upsert(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterWhitelist.upsert:", error);
+        return null;
+      }
+    }
+  },
+  twitterSpace: {
+    findMany: async (params?: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterSpace.findMany(params);
+        return [];
+      } catch (error) {
+        console.error("Error in twitterSpace.findMany:", error);
+        return [];
+      }
+    },
+    create: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.twitterSpace.create(params);
+        return null;
+      } catch (error) {
+        console.error("Error in twitterSpace.create:", error);
+        return null;
+      }
+    }
+  },
+  spaceRSVP: {
+    findMany: async (params?: any) => {
+      try {
+        if (twitterDb) return await twitterDb.spaceRSVP.findMany(params);
+        return [];
+      } catch (error) {
+        console.error("Error in spaceRSVP.findMany:", error);
+        return [];
+      }
+    },
+    create: async (params: any) => {
+      try {
+        if (twitterDb) return await twitterDb.spaceRSVP.create(params);
+        return null;
+      } catch (error) {
+        console.error("Error in spaceRSVP.create:", error);
+        return null;
       }
     }
   }
 };
 
 // Export the safe wrapper in production, or the real client in development
-export const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb;
+export const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb || safeTwitterDbWrapper;
 
 // Create proxy methods for fallback operation if Twitter client isn't available
 if (!hasTwitterClient) {
-  // Add proxy methods to handle Twitter-specific operations
-  // Use type assertion to avoid the read-only property error
-  (twitterDb as any).twitterWhitelist = {
-    findMany: async () => {
-      try {
-        // Use raw query to get Twitter whitelist data
-        const data = await twitterDb.$queryRaw`SELECT * FROM "TwitterWhitelist"`;
-        return Array.isArray(data) ? data : [];
-      } catch (error) {
-        console.error("Error executing findMany on TwitterWhitelist:", error);
-        return [];
-      }
-    },
-    findUnique: async ({ where }: any) => {
-      try {
-        // Use raw query to find a specific Twitter whitelist entry
-        const data = await twitterDb.$queryRaw`
-          SELECT * FROM "TwitterWhitelist" 
-          WHERE "username" = ${where.username}
-          LIMIT 1
-        `;
-        return Array.isArray(data) && data.length > 0 ? data[0] : null;
-      } catch (error) {
-        console.error("Error executing findUnique on TwitterWhitelist:", error);
-        return null;
-      }
-    },
-    create: async ({ data }: any) => {
-      try {
-        // Use raw query to create a new Twitter whitelist entry
-        await twitterDb.$executeRaw`
-          INSERT INTO "TwitterWhitelist" ("username", "category", "points", "is_onboarded", "added_by")
-          VALUES (${data.username}, ${data.category}, ${data.points}, ${data.is_onboarded || false}, ${data.added_by || null})
-        `;
-        
-        return { ...data, id: 0 }; // Return simulated result
-      } catch (error) {
-        console.error("Error executing create on TwitterWhitelist:", error);
-        throw error;
-      }
-    },
-    update: async ({ where, data }: any) => {
-      try {
-        // Build update query parts
-        const setClauses = [];
-        // Remove unused values array
-        
-        if (data.is_onboarded !== undefined) {
-          setClauses.push(`"is_onboarded" = ${data.is_onboarded}`);
-        }
-        
-        if (setClauses.length === 0) {
-          return { id: 0, username: where.username };
-        }
-        
-        // Use raw query to update a Twitter whitelist entry
-        const setClause = setClauses.join(', ');
-        await twitterDb.$executeRawUnsafe(
-          `UPDATE "TwitterWhitelist" SET ${setClause} WHERE "username" = $1`,
-          where.username
-        );
-        
-        return { id: 0, username: where.username, ...data };
-      } catch (error) {
-        console.error("Error executing update on TwitterWhitelist:", error);
-        throw error;
-      }
-    }
-  };
-  
-  // Use type assertion to avoid the read-only property error
-  (twitterDb as any).twitterProfile = {
-    findUnique: async ({ where }: any) => {
-      try {
-        // Use raw query to find a specific Twitter profile
-        let data;
-        if (where.id) {
-          data = await twitterDb.$queryRaw`
-            SELECT * FROM "TwitterProfile" 
-            WHERE "id" = ${where.id}
-            LIMIT 1
-          `;
-        } else {
-          data = await twitterDb.$queryRaw`
-            SELECT * FROM "TwitterProfile" 
-            WHERE "username" = ${where.username}
-            LIMIT 1
-          `;
-        }
-        return Array.isArray(data) && data.length > 0 ? data[0] : null;
-      } catch (error) {
-        console.error("Error executing findUnique on TwitterProfile:", error);
-        return null;
-      }
-    },
-    findFirst: async ({ where }: any) => {
-      try {
-        // Use raw query to find the first matching Twitter profile
-        let query = `SELECT * FROM "TwitterProfile" LIMIT 1`;
-        let params: any[] = [];
-        
-        if (where) {
-          // Build WHERE clause manually
-          const conditions = [];
-          if (where.username) {
-            conditions.push(`"username" = $${params.length + 1}`);
-            params.push(where.username);
-          }
-          
-          if (conditions.length) {
-            query = `SELECT * FROM "TwitterProfile" WHERE ${conditions.join(' AND ')} LIMIT 1`;
-          }
-        }
-        
-        const data = await twitterDb.$queryRawUnsafe(query, ...params);
-        return Array.isArray(data) && data.length > 0 ? data[0] : null;
-      } catch (error) {
-        console.error("Error executing findFirst on TwitterProfile:", error);
-        return null;
-      }
-    },
-    create: async ({ data }: any) => {
-      try {
-        // Extract the fields from data
-        const fields = Object.keys(data);
-        const values = Object.values(data);
-        
-        // Generate the field list
-        const fieldList = fields.map(f => `"${f}"`).join(', ');
-        // Removed unused placeholders variable
-        
-        // Use raw query to create a new Twitter profile entry
-        const valuesPlaceholders = values.map((_, i) => `$${i+1}`).join(', ');
-        // Use executeRawUnsafe instead of template literals with $raw
-        await twitterDb.$executeRawUnsafe(
-          `INSERT INTO "TwitterProfile" (${fieldList}) VALUES (${valuesPlaceholders})`,
-          ...values
-        );
-        
-        // This line is redundant since we're already executing the query above
-        // No need for a second query execution
-        
-        return data;
-      } catch (error) {
-        console.error("Error executing create on TwitterProfile:", error);
-        throw error;
-      }
-    }
-  };
+  console.warn("Using fallback Twitter client. Limited functionality available.");
 }
-
-export { twitterDb };
