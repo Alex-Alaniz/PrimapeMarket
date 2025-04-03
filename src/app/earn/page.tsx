@@ -55,6 +55,106 @@ export default function EarnPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Production fallback data in case API completely fails
+  const fallbackCreators = [
+    {
+      id: "PrimapeMarkets",
+      handle: "@PrimapeMarkets",
+      name: "PRIMAPE",
+      points: 690,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "1788583582811766785",
+      description: "The premier prediction market platform on ApeChain",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "AlexDotEth",
+      handle: "@AlexDotEth",
+      name: "Alex",
+      points: 500,
+      category: "Spaces",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "ApeChain Developer",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "apecoin",
+      handle: "@apecoin",
+      name: "ApeCoin",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "ApeChainHUB",
+      handle: "@ApeChainHUB",
+      name: "ApeChain HUB",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "ApewhaleNFT",
+      handle: "@ApewhaleNFT",
+      name: "ApeWhale",
+      points: 250,
+      category: "Spaces",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "boringmerch",
+      handle: "@boringmerch",
+      name: "Boring Merch",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "BoredApeYC",
+      handle: "@BoredApeYC",
+      name: "Bored Ape Yacht Club",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "yugalabs",
+      handle: "@yugalabs",
+      name: "Yuga Labs",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    }
+  ];
+  
   useEffect(() => {
     const fetchCreators = async () => {
       try {
@@ -128,6 +228,13 @@ export default function EarnPage() {
           if (cachedCreators) {
             console.log("Using fallback cached data after API error");
             setCreators(JSON.parse(cachedCreators));
+          } else {
+            // No cached data but we still need to show something in production
+            console.log("Using hardcoded fallback creator data");
+            setCreators(fallbackCreators);
+            // Store fallback data in cache so it's available next time
+            localStorage.setItem('cached_creators', JSON.stringify(fallbackCreators));
+            sessionStorage.setItem('creators_last_fetch', now);
           }
         }
       } finally {
