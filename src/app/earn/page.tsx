@@ -54,7 +54,7 @@ export default function EarnPage() {
 
     return () => clearInterval(interval);
   }, []);
-  
+
   // Fallback creators data
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _fallbackCreators = [
@@ -245,10 +245,10 @@ export default function EarnPage() {
         claimed: false
       }
     ];
-    
+
     // Start with fallback data immediately to ensure something always displays
     setCreators(fallbackCreators);
-    
+
     const fetchCreators = async () => {
       try {
         setIsLoading(true);
@@ -277,19 +277,19 @@ export default function EarnPage() {
           try {
             // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
             const response = await fetch('/api/creators?use_cache=true');
-            
+
             if (!response.ok) {
               console.warn("Main API failed, trying simplified API");
               // Try the simplified API as fallback
               const fallbackResponse = await fetch('/api/creators/simple');
-              
+
               if (!fallbackResponse.ok) {
                 throw new Error(`API returned ${fallbackResponse.status}: ${fallbackResponse.statusText}`);
               }
-              
+
               return await fallbackResponse.json();
             }
-            
+
             return await response.json();
           } catch (error) {
             console.error("Both APIs failed:", error);

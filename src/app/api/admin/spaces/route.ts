@@ -177,7 +177,7 @@ export async function PUT(req: NextRequest) {
             name: cleanUsername,
             description: '',
             profile_image_url: '',
-            last_updated: new Date()
+            fetched_at: new Date()
           }
         });
       }

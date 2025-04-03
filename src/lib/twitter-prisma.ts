@@ -1,4 +1,3 @@
-
 import { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 import 'dotenv/config';
 
@@ -76,4 +75,28 @@ export const db = hasTwitterClient ? twitterPrismaInstance || safeTwitterDbWrapp
 // Log warning if Twitter client isn't available
 if (!hasTwitterClient) {
   console.warn("Using fallback Twitter client. Limited functionality available.");
+}
+
+export async function getCreatorsData({ useCachedData = false }: { useCachedData?: boolean } = {}) {
+  try {
+    const whitelistedCreators = await db.twitterWhitelist.findMany({
+      orderBy: {
+        username: 'asc'
+      }
+    });
+
+    // Get all profiles in one query
+    const twitterProfiles = await db.twitterProfile.findMany({
+      where: {
+        username: {
+          in: whitelistedCreators.map(creator => creator.username)
+        }
+      }
+    });
+
+    return { whitelistedCreators, twitterProfiles };
+  } catch (error) {
+    console.error('Error fetching creators data:', error);
+    return { whitelistedCreators: [], twitterProfiles: [] };
+  }
 }
