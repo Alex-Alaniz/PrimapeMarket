@@ -27,13 +27,13 @@ export function Footer() {
   // Use current theme state for determining the styles
   const getFooterBgClass = () => {
     if (currentTheme === "light") {
-      return "bg-primary";
+      return "bg-white";
     } else if (currentTheme === "dark") {
-      return "bg-primary";
+      return "bg-black";
     } else if (currentTheme === "ape") {
       return "bg-transparent";
     }
-    return "bg-primary"; // Default
+    return "bg-white"; // Default
   };
 
   return (
