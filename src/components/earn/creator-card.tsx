@@ -46,9 +46,9 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         </div>
       </div>
 
-      <CardContent className="pt-28 p-4">
+      <CardContent className="pt-32 p-4">
         <div className="flex justify-between items-start mb-4">
-          <div className="max-w-[75%]">
+          <div className="max-w-[70%]">
             <h3 className="font-bold truncate">{displayName}</h3>
             <p className="text-sm text-muted-foreground">@{cleanHandle}</p>
           </div>
