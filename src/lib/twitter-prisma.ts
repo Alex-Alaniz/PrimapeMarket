@@ -63,6 +63,7 @@ const safeTwitterDbWrapper = {
     update: async () => null,
     upsert: async () => null,
     count: async () => 0,
+    delete: async () => null,
   },
 };
 
