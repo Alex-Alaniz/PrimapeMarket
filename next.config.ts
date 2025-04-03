@@ -16,30 +16,45 @@ const pwaConfig = withPWA({
   },
   disableDevLogs: true,
   // Add navigation handler for PWA
-  navigationPreload: true,
-  // Add additional PWA settings
-  manifest: {
-    name: 'Primape',
-    short_name: 'Primape',
-    description: 'The premier prediction marketplace on ApeChain',
-    display: 'standalone',
-    start_url: '/',
-    background_color: '#000000',
-    theme_color: '#000000',
-    icons: [
-      {
-        src: '/images/pm.PNG',
-        sizes: '192x192',
-        type: 'image/png'
-      },
-      {
-        src: '/images/pm.PNG',
-        sizes: '512x512',
-        type: 'image/png'
-      }
-    ]
-  }
+  navigationPreload: true
 });
+
+// Create manifest.json separately - PWA will use this from the public directory
+const fs = require('fs');
+const path = require('path');
+
+// Ensure the manifest exists in the public directory
+const manifestContent = {
+  name: 'Primape',
+  short_name: 'Primape',
+  description: 'The premier prediction marketplace on ApeChain',
+  display: 'standalone',
+  start_url: '/',
+  background_color: '#000000',
+  theme_color: '#000000',
+  icons: [
+    {
+      src: '/images/pm.PNG',
+      sizes: '192x192',
+      type: 'image/png'
+    },
+    {
+      src: '/images/pm.PNG',
+      sizes: '512x512',
+      type: 'image/png'
+    }
+  ]
+};
+
+// This will create the manifest file during build time
+try {
+  fs.writeFileSync(
+    path.join(__dirname, 'public', 'manifest.json'),
+    JSON.stringify(manifestContent, null, 2)
+  );
+} catch (error) {
+  console.error('Error writing manifest file:', error);
+}
 
 const nextConfig: NextConfig = {
   // Add output config to ensure proper Vercel deployment with Prisma
