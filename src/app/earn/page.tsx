@@ -428,7 +428,6 @@ export default function EarnPage() {
                       sessionStorage.removeItem('creators_last_fetch');
                       setIsLoading(true);
 
-                      // Fetch creators function
                       const refreshCreators = async () => {
                         try {
                           const res = await fetch('/api/creators?use_cache=true&force_refresh=true');
