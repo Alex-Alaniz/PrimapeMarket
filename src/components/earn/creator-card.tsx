@@ -35,7 +35,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
     <Card className="overflow-hidden bg-card border-0 shadow-md">
       <div className="relative">
         <div className="h-32 bg-gradient-to-r from-blue-600 to-purple-600"></div>
-        <div className="absolute -bottom-10 left-4">
+        <div className="absolute -bottom-16 left-4">
           <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
             <img 
               src={displayAvatar} 
@@ -46,8 +46,8 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         </div>
       </div>
 
-      <CardContent className="pt-32 p-4">
-        <div className="flex justify-between items-start mb-4">
+      <CardContent className="pt-16 p-4">
+        <div className="flex justify-between items-start mb-4 mt-8">
           <div className="max-w-[70%]">
             <h3 className="font-bold truncate">{displayName}</h3>
             <p className="text-sm text-muted-foreground">@{cleanHandle}</p>
