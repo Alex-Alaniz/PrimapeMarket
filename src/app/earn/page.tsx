@@ -33,21 +33,10 @@ export default function EarnPage() {
     setMounted(true);
   }, []);
   
-  if (!mounted) {
-    return (
-      <>
-        <Navbar />
-        <main className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Earn with Creators</h1>
-            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-          </div>
-        </main>
-      </>
-    );
-  }
-
+  // Fetch creators data - moved up before any conditionals to avoid hook order issues
   useEffect(() => {
+    // Skip fetching if not mounted yet
+    if (!mounted) return;
     const fetchCreators = async () => {
       try {
         setLoading(true);
@@ -164,7 +153,22 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, []);
+  }, [mounted]); // Add mounted as dependency since we're checking it
+  
+  // Early return for non-mounted state
+  if (!mounted) {
+    return (
+      <>
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Earn with Creators</h1>
+            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   // Filter creators based on category
   const filteredCreators = filter === 'all' 
