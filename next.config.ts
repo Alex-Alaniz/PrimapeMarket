@@ -9,6 +9,11 @@ const pwaConfig = withPWA({
   runtimeCaching: [],
   buildExcludes: [/middleware-manifest\.json$/],
   maximumFileSizeToCacheInBytes: 3000000, // 3MB limit for cached files
+  // Fix for the 500.html file error
+  fallbacks: {
+    document: '/404',
+  },
+  disableDevLogs: true,
 });
 
 const nextConfig: NextConfig = {
