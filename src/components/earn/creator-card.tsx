@@ -19,15 +19,46 @@ type Creator = {
   engagementTypes: string[];
 };
 
+// Keep track of creators seen to manage background image assignment
+const creatorsSeen: string[] = [];
+const orderedBackgrounds = ['noise.png', 'trippy.png', 'zombie.png', 'deathbot.png', 'cheetah.png', 'dmt.png'];
+const usedBackgrounds = new Set<string>();
+
 export function CreatorCard({ creator }: { creator: Creator }) {
-  // Function to get a background image based on creator ID
+  // Function to get a background image based on creator ID and order
   const getBgImage = (id: string) => {
-    // Use creator ID to select one of the background images consistently
-    const bgImages = ['cheetah.png', 'dmt.png', 'trippy.png', 'zombie.png', 'deathbot.png', 'noise.png'];
+    // If we've already assigned this creator a background, use the same one
+    const creatorIndex = creatorsSeen.indexOf(id);
+    if (creatorIndex !== -1) {
+      // Creator has been seen before, use their assigned background
+      const position = creatorIndex % orderedBackgrounds.length;
+      return orderedBackgrounds[position];
+    }
+
+    // New creator, assign the next background in sequence or random if we've used all
+    creatorsSeen.push(id);
     
-    // Use the sum of character codes to create a deterministic selection
-    const charSum = id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return bgImages[charSum % bgImages.length];
+    if (creatorsSeen.length <= orderedBackgrounds.length) {
+      // Use the ordered backgrounds for the first 6 creators
+      return orderedBackgrounds[creatorsSeen.length - 1];
+    } else {
+      // For subsequent creators, use a random background from the ones that are least used
+      // Reset the used backgrounds set if all have been used
+      if (usedBackgrounds.size >= orderedBackgrounds.length) {
+        usedBackgrounds.clear();
+      }
+      
+      // Find backgrounds that haven't been used recently
+      const availableBackgrounds = orderedBackgrounds.filter(bg => !usedBackgrounds.has(bg));
+      
+      // If all backgrounds have been used recently, pick a random one
+      const selectedBg = availableBackgrounds.length > 0 ? 
+        availableBackgrounds[Math.floor(Math.random() * availableBackgrounds.length)] : 
+        orderedBackgrounds[Math.floor(Math.random() * orderedBackgrounds.length)];
+      
+      usedBackgrounds.add(selectedBg);
+      return selectedBg;
+    }
   };
 
   // Format handle for display and links
