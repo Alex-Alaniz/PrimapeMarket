@@ -16,9 +16,13 @@ export default function EarnPage() {
 
   useEffect(() => {
     setMounted(true); // Set mounted to true after component mounts
+    
     // Function to fetch creators data
     const fetchCreators = async () => {
       if (!mounted) return;
+
+      setIsLoading(true);
+      console.log('Starting to fetch creators data...');
 
       try {
         // Try using cached data first
@@ -41,83 +45,178 @@ export default function EarnPage() {
           console.log('Cache expired or not available, fetching fresh data');
         }
 
-        // Try to fetch from main API first
+        // Try multiple API endpoints in sequence
+        
+        // 1. Try the main API endpoint first
+        console.log('Attempting to fetch from main API endpoint...');
+        let response;
         try {
-          const response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
+          response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
           
-          if (!response.ok) {
-            console.warn(`Main API request failed with status ${response.status}, trying fallback`);
-            throw new Error(`API request failed with status ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log('Fetched creators data:', data);
-          
-          if (Array.isArray(data) && data.length > 0) {
-            console.log('Updating UI with fresh data from API');
-            setCreators(data);
-            // Cache the successful data
-            localStorage.setItem('cachedCreators', JSON.stringify(data));
-            localStorage.setItem('cacheTime', now.toString());
-            setIsLoading(false);
-            return;
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Fetched creators data:', data);
+            
+            if (Array.isArray(data) && data.length > 0) {
+              console.log('Updating UI with fresh data from API');
+              setCreators(data);
+              // Cache the data
+              localStorage.setItem('cachedCreators', JSON.stringify(data));
+              localStorage.setItem('cacheTime', now.toString());
+              setIsLoading(false);
+              return;
+            } else {
+              console.warn('Main API returned empty data, trying simple fallback API');
+            }
           } else {
-            console.warn('Main API returned empty data, trying simple fallback API');
-            throw new Error('Empty data from main API');
+            console.warn(`Main API request failed with status ${response.status}, trying fallback`);
           }
         } catch (error) {
-          console.warn('Falling back to simple API endpoint:', error);
-          // Try the simplified endpoint as fallback
+          console.error('Error fetching from main API:', error);
+        }
+        
+        // 2. Try the simplified endpoint as fallback
+        console.log('Attempting to fetch from simple API endpoint...');
+        try {
           const fallbackResponse = await fetch(`/api/creators/simple?_t=${now}`);
           
-          if (!fallbackResponse.ok) {
-            throw new Error(`Fallback API request failed with status ${fallbackResponse.status}`);
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            console.log('Fetched fallback creators data:', fallbackData);
+            
+            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+              console.log('Updating UI with fallback API data');
+              setCreators(fallbackData);
+              // Cache the fallback data
+              localStorage.setItem('cachedCreators', JSON.stringify(fallbackData));
+              localStorage.setItem('cacheTime', now.toString());
+              setIsLoading(false);
+              return;
+            } else {
+              console.warn('Simple API returned empty data, using hardcoded fallback');
+            }
+          } else {
+            console.warn(`Fallback API request failed with status ${fallbackResponse.status}, using hardcoded fallback`);
           }
-          
-          const fallbackData = await fallbackResponse.json();
-          console.log('Fetched fallback creators data:', fallbackData);
-          
-          if (Array.isArray(fallbackData) && fallbackData.length > 0) {
-            console.log('Updating UI with fallback API data');
-            setCreators(fallbackData);
-            // Cache the fallback data
-            localStorage.setItem('cachedCreators', JSON.stringify(fallbackData));
-            localStorage.setItem('cacheTime', now.toString());
-            setIsLoading(false);
-            return;
-          }
-          
-          // If we get here, both APIs failed to return valid data
-          console.warn('API returned empty creators array or invalid data');
-          // Use fallback data if API returns empty array
-          const fallbackCreators = [
-            { 
-              id: "PrimapeMarkets", 
-              handle: "@PrimapeMarkets", 
-              name: "PRIMAPE",
-              points: 690, 
-              category: "News", 
-              engagementTypes: ["listen", "share", "comment"],
-              avatar: '/images/pm.PNG',
-              description: "The premier prediction markets platform in the Ape ecosystem."
-            },
-            { 
-              id: "AlexDotEth", 
-              handle: "@AlexDotEth", 
-              name: "Alex | ApeChain",
-              points: 500, 
-              category: "Spaces", 
-              engagementTypes: ["listen", "share", "comment"],
-              avatar: '/images/pm.PNG',
-              description: "Building ApeChain - The future of Web3 social engagement."
-            },
-            // Add other fallback creators here as needed.
-          ];
-          setCreators(fallbackCreators);
+        } catch (error) {
+          console.error('Error fetching from simple API:', error);
         }
+        
+        // 3. Use hardcoded fallback data if both APIs fail
+        console.warn('All API requests failed, using hardcoded fallback data');
+        const fallbackCreators = [
+          { 
+            id: "PrimapeMarkets", 
+            handle: "@PrimapeMarkets", 
+            name: "PRIMAPE",
+            points: 690, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "The premier prediction markets platform in the Ape ecosystem."
+          },
+          { 
+            id: "AlexDotEth", 
+            handle: "@AlexDotEth", 
+            name: "Alex | ApeChain",
+            points: 500, 
+            category: "Spaces", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Building ApeChain - The future of Web3 social engagement."
+          },
+          { 
+            id: "apecoin", 
+            handle: "@apecoin", 
+            name: "ApeCoin",
+            points: 250, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "The official ApeCoin account."
+          },
+          { 
+            id: "ApeChainHUB", 
+            handle: "@ApeChainHUB", 
+            name: "ApeChain HUB",
+            points: 250, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Central hub for ApeChain news and updates."
+          },
+          { 
+            id: "yugalabs", 
+            handle: "@yugalabs", 
+            name: "Yuga Labs",
+            points: 250, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Creators of Bored Ape Yacht Club and other iconic NFT collections."
+          },
+          { 
+            id: "ApewhaleNFT", 
+            handle: "@ApewhaleNFT", 
+            name: "ApeWhale",
+            points: 250, 
+            category: "Spaces", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Leading NFT collector in the Ape ecosystem."
+          },
+          { 
+            id: "boringmerch", 
+            handle: "@boringmerch", 
+            name: "Boring Merch",
+            points: 250, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Official merchandise for the Ape ecosystem."
+          },
+          { 
+            id: "BoredApeYC", 
+            handle: "@BoredApeYC", 
+            name: "Bored Ape Yacht Club",
+            points: 250, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "The official Bored Ape Yacht Club account."
+          }
+        ];
+        
+        setCreators(fallbackCreators);
+        // Cache the fallback creators too
+        localStorage.setItem('cachedCreators', JSON.stringify(fallbackCreators));
+        localStorage.setItem('cacheTime', now.toString());
+        
       } catch (error) {
-        console.error('Error fetching creators:', error);
-        // Handle error state -  Consider adding a more user-friendly error message here.
+        console.error('Unhandled error in fetchCreators:', error);
+        // Use minimal fallback for total failure
+        setCreators([
+          { 
+            id: "PrimapeMarkets", 
+            handle: "@PrimapeMarkets", 
+            name: "PRIMAPE",
+            points: 690, 
+            category: "News", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "The premier prediction markets platform in the Ape ecosystem."
+          },
+          { 
+            id: "AlexDotEth", 
+            handle: "@AlexDotEth", 
+            name: "Alex | ApeChain",
+            points: 500, 
+            category: "Spaces", 
+            engagementTypes: ["listen", "share", "comment"],
+            avatar: '/images/pm.PNG',
+            description: "Building ApeChain - The future of Web3 social engagement."
+          }
+        ]);
       } finally {
         setIsLoading(false);
       }
@@ -128,7 +227,7 @@ export default function EarnPage() {
     return () => {
       setMounted(false); // Clean up mounted state on unmount
     };
-  }, []);
+  }, [mounted]);
 
   return (
     <div className="flex min-h-screen flex-col">

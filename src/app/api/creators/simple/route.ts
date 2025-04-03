@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 // Simplified creators route that always works without DB dependencies
 export async function GET() {
   try {
+    console.log("Simple creators API endpoint called");
+    
     // Hardcoded creators data for guaranteed uptime
     const creators = [
       {
@@ -103,6 +105,7 @@ export async function GET() {
       }
     ];
 
+    console.log(`Returning ${creators.length} creators from simple API`);
     return NextResponse.json(creators);
   } catch (error) {
     console.error("Error in simplified creators API route:", error);
