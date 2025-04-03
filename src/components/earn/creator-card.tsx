@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { CalendarIcon, MessageSquare, Share2 } from "lucide-react";
 
 type Creator = {
@@ -16,30 +21,31 @@ type Creator = {
 
 export function CreatorCard({ creator }: { creator: Creator }) {
   // Format handle for display and links
-  const cleanHandle = creator.handle.replace('@', '');
-  
+  const cleanHandle = creator.handle.replace("@", "");
+
   // Ensure we have proper display values even if API data is incomplete
-  const displayName = creator.name && creator.name.trim() !== '' 
-    ? creator.name 
-    : `${cleanHandle} | ApeChain Creator`;
-    
-  const displayAvatar = creator.avatar && creator.avatar !== '' 
-    ? creator.avatar 
-    : '/images/pm.PNG';
-    
-  const displayDescription = creator.description && creator.description.trim() !== ''
-    ? creator.description
-    : 'Profile data will be loaded soon. Check back later for full details!';
+  const displayName =
+    creator.name && creator.name.trim() !== ""
+      ? creator.name
+      : `${cleanHandle} | ApeChain Creator`;
+
+  const displayAvatar =
+    creator.avatar && creator.avatar !== "" ? creator.avatar : "/images/pm.PNG";
+
+  const displayDescription =
+    creator.description && creator.description.trim() !== ""
+      ? creator.description
+      : "Profile data will be loaded soon. Check back later for full details!";
 
   return (
     <Card className="overflow-hidden bg-card border-0 shadow-md">
       <div className="relative">
         <div className="h-32 bg-gradient-to-r from-blue-600 to-purple-600"></div>
-        <div className="absolute -bottom-16 left-4">
+        <div className="absolute -bottom-7 left-4">
           <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
-            <img 
-              src={displayAvatar} 
-              alt={displayName} 
+            <img
+              src={displayAvatar}
+              alt={displayName}
               className="h-full w-full object-cover"
             />
           </div>
@@ -65,7 +71,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
           <div className="text-sm font-medium">
             <span className="text-primary">{creator.points}</span> points
           </div>
-          <a 
+          <a
             href={`https://twitter.com/${cleanHandle}`}
             target="_blank"
             rel="noopener noreferrer"
