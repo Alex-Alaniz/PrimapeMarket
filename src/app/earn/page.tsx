@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navbar from '@/components/navbar';
-import CreatorCard from '@/components/earn/creator-card';
+import { Navbar } from '@/components/navbar';
+import { CreatorCard } from '@/components/earn/creator-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
