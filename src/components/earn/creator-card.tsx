@@ -33,7 +33,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         </div>
       </div>
 
-      <CardContent className="pt-16 p-4">
+      <CardContent className="pt-20 p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-bold">{creator.name || `${cleanHandle} | ApeChain Creator`}</h3>
@@ -44,7 +44,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 h-14 overflow-y-auto">
           {creator.description || 'Profile data will be loaded soon. Check back later for full details!'}
         </p>
 
