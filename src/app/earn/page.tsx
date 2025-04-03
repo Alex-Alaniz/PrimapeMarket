@@ -294,7 +294,7 @@ export default function EarnPage() {
                   // Split creators into two groups: those with avatar (cached data) and those without
                   [...creators]
                     .sort((a, b) => {
-                      // Define priority order
+                      // Define priority order with exact IDs
                       const priorityOrder = [
                         "PrimapeMarkets", // 1. Primape
                         "AlexDotEth",     // 2. Alex
@@ -306,38 +306,35 @@ export default function EarnPage() {
                         "yugalabs"        // 8. yugalabs
                       ];
 
-                      // Get index in priority array (or -1 if not in priority list)
-                      const indexA = priorityOrder.indexOf(a.id);
-                      const indexB = priorityOrder.indexOf(b.id);
+                      // Case insensitive ID match for more reliable sorting
+                      const idA = a.id.toLowerCase();
+                      const idB = b.id.toLowerCase();
+
+                      // Handle IDs that match our priority list (case insensitive)
+                      const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                      const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
 
                       // If both are in priority list, sort by priority order
-                      if (indexA !== -1 && indexB !== -1) {
-                        return indexA - indexB;
+                      if (priorityA !== -1 && priorityB !== -1) {
+                        return priorityA - priorityB;
                       }
 
                       // If only A is in priority list, A comes first
-                      if (indexA !== -1) return -1;
+                      if (priorityA !== -1) return -1;
 
                       // If only B is in priority list, B comes first
-                      if (indexB !== -1) return 1;
+                      if (priorityB !== -1) return 1;
 
-                      // For non-priority creators, check for placeholder data
-                      const isPlaceholderA = 
-                        !a.avatar || 
-                        a.avatar === '/images/pm.PNG' || 
-                        a.description?.includes('Profile data will be loaded soon') ||
-                        a.description?.includes('Check back later');
+                      // For remaining creators, prioritize those with complete profiles
+                      // This ensures creators with proper avatars appear before placeholder ones
+                      const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                      const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
 
-                      const isPlaceholderB = 
-                        !b.avatar || 
-                        b.avatar === '/images/pm.PNG' || 
-                        b.description?.includes('Profile data will be loaded soon') ||
-                        b.description?.includes('Check back later');
+                      if (hasAvatarA && !hasAvatarB) return -1;
+                      if (!hasAvatarA && hasAvatarB) return 1;
 
-                      // True profiles first, placeholders last
-                      if (!isPlaceholderA && isPlaceholderB) return -1;
-                      if (isPlaceholderA && !isPlaceholderB) return 1;
-                      return 0;
+                      // As a final sort, use alphabetical order by name
+                      return a.name.localeCompare(b.name);
                     })
                     .map(creator => (
                       <CreatorCard 
@@ -359,7 +356,7 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Spaces')
                   .sort((a, b) => {
-                    // Define priority order
+                    // Define priority order with exact IDs
                     const priorityOrder = [
                       "PrimapeMarkets", // 1. Primape
                       "AlexDotEth",     // 2. Alex
@@ -371,38 +368,35 @@ export default function EarnPage() {
                       "yugalabs"        // 8. yugalabs
                     ];
 
-                    // Get index in priority array (or -1 if not in priority list)
-                    const indexA = priorityOrder.indexOf(a.id);
-                    const indexB = priorityOrder.indexOf(b.id);
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
 
                     // If both are in priority list, sort by priority order
-                    if (indexA !== -1 && indexB !== -1) {
-                      return indexA - indexB;
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
                     }
 
                     // If only A is in priority list, A comes first
-                    if (indexA !== -1) return -1;
+                    if (priorityA !== -1) return -1;
 
                     // If only B is in priority list, B comes first
-                    if (indexB !== -1) return 1;
+                    if (priorityB !== -1) return 1;
 
-                    // For non-priority creators, check for placeholder data
-                    const isPlaceholderA = 
-                      !a.avatar || 
-                      a.avatar === '/images/pm.PNG' || 
-                      a.description?.includes('Profile data will be loaded soon') ||
-                      a.description?.includes('Check back later');
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
 
-                    const isPlaceholderB = 
-                      !b.avatar || 
-                      b.avatar === '/images/pm.PNG' || 
-                      b.description?.includes('Profile data will be loaded soon') ||
-                      b.description?.includes('Check back later');
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
 
-                    // True profiles first, placeholders last
-                    if (!isPlaceholderA && isPlaceholderB) return -1;
-                    if (isPlaceholderA && !isPlaceholderB) return 1;
-                    return 0;
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 
@@ -423,7 +417,7 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Podcast')
                   .sort((a, b) => {
-                    // Define priority order
+                    // Define priority order with exact IDs
                     const priorityOrder = [
                       "PrimapeMarkets", // 1. Primape
                       "AlexDotEth",     // 2. Alex
@@ -435,38 +429,35 @@ export default function EarnPage() {
                       "yugalabs"        // 8. yugalabs
                     ];
 
-                    // Get index in priority array (or -1 if not in priority list)
-                    const indexA = priorityOrder.indexOf(a.id);
-                    const indexB = priorityOrder.indexOf(b.id);
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
 
                     // If both are in priority list, sort by priority order
-                    if (indexA !== -1 && indexB !== -1) {
-                      return indexA - indexB;
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
                     }
 
                     // If only A is in priority list, A comes first
-                    if (indexA !== -1) return -1;
+                    if (priorityA !== -1) return -1;
 
                     // If only B is in priority list, B comes first
-                    if (indexB !== -1) return 1;
+                    if (priorityB !== -1) return 1;
 
-                    // For non-priority creators, check for placeholder data
-                    const isPlaceholderA = 
-                      !a.avatar || 
-                      a.avatar === '/images/pm.PNG' || 
-                      a.description?.includes('Profile data will be loaded soon') ||
-                      a.description?.includes('Check back later');
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
 
-                    const isPlaceholderB = 
-                      !b.avatar || 
-                      b.avatar === '/images/pm.PNG' || 
-                      b.description?.includes('Profile data will be loaded soon') ||
-                      b.description?.includes('Check back later');
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
 
-                    // True profiles first, placeholders last
-                    if (!isPlaceholderA && isPlaceholderB) return -1;
-                    if (isPlaceholderA && !isPlaceholderB) return 1;
-                    return 0;
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 
@@ -487,7 +478,7 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'News')
                   .sort((a, b) => {
-                    // Define priority order
+                    // Define priority order with exact IDs
                     const priorityOrder = [
                       "PrimapeMarkets", // 1. Primape
                       "AlexDotEth",     // 2. Alex
@@ -499,38 +490,35 @@ export default function EarnPage() {
                       "yugalabs"        // 8. yugalabs
                     ];
 
-                    // Get index in priority array (or -1 if not in priority list)
-                    const indexA = priorityOrder.indexOf(a.id);
-                    const indexB = priorityOrder.indexOf(b.id);
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
 
                     // If both are in priority list, sort by priority order
-                    if (indexA !== -1 && indexB !== -1) {
-                      return indexA - indexB;
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
                     }
 
                     // If only A is in priority list, A comes first
-                    if (indexA !== -1) return -1;
+                    if (priorityA !== -1) return -1;
 
                     // If only B is in priority list, B comes first
-                    if (indexB !== -1) return 1;
+                    if (priorityB !== -1) return 1;
 
-                    // For non-priority creators, check for placeholder data
-                    const isPlaceholderA = 
-                      !a.avatar || 
-                      a.avatar === '/images/pm.PNG' || 
-                      a.description?.includes('Profile data will be loaded soon') ||
-                      a.description?.includes('Check back later');
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
 
-                    const isPlaceholderB = 
-                      !b.avatar || 
-                      b.avatar === '/images/pm.PNG' || 
-                      b.description?.includes('Profile data will be loaded soon') ||
-                      b.description?.includes('Check back later');
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
 
-                    // True profiles first, placeholders last
-                    if (!isPlaceholderA && isPlaceholderB) return -1;
-                    if (isPlaceholderA && !isPlaceholderB) return 1;
-                    return 0;
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 
