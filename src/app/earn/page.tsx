@@ -51,7 +51,7 @@ export default function EarnPage() {
 
         console.log('Cache expired or not available, fetching fresh data');
 
-        // Fetch from the main creators API that uses the Twitter database connection
+        // Fetch from the main creators API that uses the 𝕏 database connection
         // This uses the proper DB wrapper from twitter-prisma.ts
         const response = await fetch(`/api/creators?_t=${Date.now()}`);
 
@@ -60,7 +60,7 @@ export default function EarnPage() {
         }
 
         const data = await response.json();
-        console.log('Updating UI with fresh data from Twitter DB API');
+        console.log('Updating UI with fresh data from 𝕏 DB API');
         console.log('Fetched creators data:', data);
 
         if (Array.isArray(data) && data.length > 0) {
@@ -70,7 +70,7 @@ export default function EarnPage() {
           localStorage.setItem('cachedCreators', JSON.stringify(data));
           localStorage.setItem('cacheTime', now.toString());
         } else {
-          console.warn('Twitter DB API returned empty creators array or invalid data');
+          console.warn('𝕏 DB API returned empty creators array or invalid data');
           // Use fallback data if API returns empty array
           const fallbackCreators = [
             {

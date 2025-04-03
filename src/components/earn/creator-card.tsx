@@ -128,7 +128,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
             rel="noopener noreferrer"
             className="text-sm text-blue-500 hover:underline"
           >
-            Follow on Twitter
+            Follow on 𝕏
           </a>
         </div>
 
@@ -142,7 +142,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Listen to Twitter Spaces</p>
+                <p>Listen to 𝕏 Spaces</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -170,7 +170,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Comment on tweets</p>
+                <p>Comment on posts</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
