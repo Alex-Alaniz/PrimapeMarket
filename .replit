@@ -41,16 +41,6 @@ localPort = 33757
 externalPort = 3003
 exposeLocalhost = true
 
-[[ports]]
-localPort = 35085
-externalPort = 6800
-exposeLocalhost = true
-
-[[ports]]
-localPort = 45851
-externalPort = 6000
-exposeLocalhost = true
-
 [workflows]
 runButton = "Run"
 
