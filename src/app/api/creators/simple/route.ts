@@ -76,7 +76,7 @@ export async function GET() {
     console.log(`Found ${twitterProfiles.length} Twitter profiles for ${usernames.length} creators`);
 
     // Create a username-to-profile map for quick lookups
-    const profileMap = {};
+    const profileMap: Record<string, typeof twitterProfiles[number]> = {};
     twitterProfiles.forEach(profile => {
       profileMap[profile.username.toLowerCase()] = profile;
     });

@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CalendarIcon, MessageSquare, Share2 } from "lucide-react";
+import Image from "next/image";
 
 type Creator = {
   id: string;
@@ -90,10 +91,13 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         ></div>
         <div className="absolute -bottom-7 left-4">
           <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
-            <img
+            <Image
               src={displayAvatar}
               alt={displayName}
+              width={80}
+              height={80}
               className="h-full w-full object-cover"
+              unoptimized={displayAvatar.startsWith('/')} // Use unoptimized for local files
             />
           </div>
         </div>
