@@ -244,7 +244,9 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, [creators.length, fallbackCreators]);
+    // Don't include creators.length in the dependency array, as it causes an infinite loop
+    // when setCreators is called, which changes creators.length, triggering the effect again
+  }, []);
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {

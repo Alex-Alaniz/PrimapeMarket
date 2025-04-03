@@ -1,8 +1,7 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { twitterDb } from "@/lib/twitter-prisma";
 
-// Same admin validation as in other admin routes
+// Admin wallet addresses - keep this list secure and limited
 const ADMIN_WALLETS = [
   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
   "*", // Temporary wildcard to allow all wallet addresses for testing
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest) {
       const missingHosts = hostUsernames.filter(
         host => !existingHosts.some(h => h.username === host)
       );
-      
+
       return NextResponse.json(
         { 
           error: "Some hosts are not found in our Twitter profiles", 
