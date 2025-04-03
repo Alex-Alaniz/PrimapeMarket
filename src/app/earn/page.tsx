@@ -352,7 +352,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, [isLoading]); // Remove creators.length to avoid circular dependency
+  }, [isLoading, toast]); // Include toast dependency and remove creators.length
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {

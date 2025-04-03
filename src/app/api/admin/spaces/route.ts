@@ -191,14 +191,10 @@ export async function PUT(req: NextRequest) {
         title: space.title,
         description: space.description,
         day_of_week: space.day_of_week,
-        start_hour: space.start_hour !== undefined ? parseInt(space.start_hour) : undefined,
-        start_minute: space.start_minute !== undefined ? parseInt(space.start_minute) : undefined,
-        duration_minutes: space.duration_minutes !== undefined ? parseInt(space.duration_minutes) : undefined,
-        scheduled_date: space.scheduled_date ? new Date(space.scheduled_date) : undefined,
-        is_recurring: space.is_recurring,
-        recurring_rule: space.recurring_rule,
+        start_time: space.scheduled_date ? new Date(space.scheduled_date) : undefined,
+        duration_minutes: space.duration_minutes !== undefined ? parseInt(space.duration_minutes.toString()) : undefined,
+        recurring: space.is_recurring,
         space_url: space.space_url,
-        status: space.status,
         updated_at: new Date()
       }
     });

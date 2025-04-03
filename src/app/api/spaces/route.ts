@@ -33,7 +33,8 @@ export async function GET() {
     
     // Format spaces for display and sort by day of week starting with current day
     const formattedSpaces = spaces.map(space => {
-      const startDate = space.start_time;
+      // Handle null or undefined start_time
+      const startDate = space.start_time || new Date();
       const startTime = format(startDate, 'HH:mm');
       const endTime = space.end_time ? format(space.end_time, 'HH:mm') : 
                     format(new Date(startDate.getTime() + 60 * 60 * 1000), 'HH:mm'); // Default 1hr
@@ -41,17 +42,19 @@ export async function GET() {
       // Format the time as 12-hour with AM/PM
       const formattedStartTime = format(startDate, 'h:mm a');
       
-      const hostUsername = space.hosts && space.hosts.length > 0 ? space.hosts[0].username : '';
-      const hostName = space.hosts && space.hosts.length > 0 ? space.hosts[0].name || hostUsername : '';
-      const hostProfileImage = space.hosts && space.hosts.length > 0 ? space.hosts[0].profile_image_url || '' : '';
+      // Safely access host information
+      const primaryHost = space.hosts && space.hosts.length > 0 ? space.hosts[0] : null;
+      const hostUsername = primaryHost?.username || '';
+      const hostName = primaryHost?.name || hostUsername;
+      const hostProfileImage = primaryHost?.profile_image_url || '';
       
       return {
         id: space.id,
         title: space.title,
         description: space.description || '',
         host: {
-          username: hostUsername || '',
-          name: hostName || '',
+          username: hostUsername,
+          name: hostName,
           profileImageUrl: hostProfileImage
         },
         dayOfWeek: space.day_of_week,
