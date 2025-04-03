@@ -1,7 +1,8 @@
 // Twitter Database Schema
 generator client {
-  provider = "prisma-client-js"
-  output   = "../node_modules/@prisma/twitter-client"
+  provider      = "prisma-client-js"
+  output        = "../node_modules/@prisma/twitter-client"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

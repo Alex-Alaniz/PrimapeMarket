@@ -46,9 +46,15 @@ export async function GET(request: Request) {
           const cleanUsername = creator.handle.replace('@', '');
           console.log(`Fetching cached profile for ${cleanUsername}`);
           
-          const cachedProfile = await twitterDb.twitterProfile.findUnique({
-            where: { username: cleanUsername }
-          });
+          let cachedProfile = null;
+          try {
+            cachedProfile = await twitterDb.twitterProfile.findUnique({
+              where: { username: cleanUsername }
+            });
+          } catch (prismaError) {
+            console.error(`Prisma error for ${cleanUsername}:`, prismaError);
+            // Continue with null cachedProfile, will use fallback data below
+          }
           
           if (cachedProfile) {
             console.log(`Using cached Twitter data for ${cleanUsername}`);

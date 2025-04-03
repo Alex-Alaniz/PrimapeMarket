@@ -33,7 +33,7 @@ export default function EarnPage() {
 
   // Track last fetch time in session storage to avoid repeated fetches
   const [_lastFetchTime, setLastFetchTime] = useState<string | null>(null);
-  
+
   // Check refresh status periodically
   useEffect(() => {
     const checkRefreshStatus = async () => {
@@ -47,49 +47,149 @@ export default function EarnPage() {
         console.error("Failed to check refresh status:", error);
       }
     };
-    
+
     // Check immediately and then every minute
     checkRefreshStatus();
     const interval = setInterval(checkRefreshStatus, 60000);
-    
+
     return () => clearInterval(interval);
   }, []);
+
+  // Production fallback data in case API completely fails
+  const fallbackCreators = [
+    {
+      id: "PrimapeMarkets",
+      handle: "@PrimapeMarkets",
+      name: "PRIMAPE",
+      points: 690,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "1788583582811766785",
+      description: "The premier prediction market platform on ApeChain",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "AlexDotEth",
+      handle: "@AlexDotEth",
+      name: "Alex",
+      points: 500,
+      category: "Spaces",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "ApeChain Developer",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "apecoin",
+      handle: "@apecoin",
+      name: "ApeCoin",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "ApeChainHUB",
+      handle: "@ApeChainHUB",
+      name: "ApeChain HUB",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "ApewhaleNFT",
+      handle: "@ApewhaleNFT",
+      name: "ApeWhale",
+      points: 250,
+      category: "Spaces",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "boringmerch",
+      handle: "@boringmerch",
+      name: "Boring Merch",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "BoredApeYC",
+      handle: "@BoredApeYC",
+      name: "Bored Ape Yacht Club",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    },
+    {
+      id: "yugalabs",
+      handle: "@yugalabs",
+      name: "Yuga Labs",
+      points: 250,
+      category: "News",
+      engagementTypes: ["listen", "share", "comment"],
+      twitterId: "",
+      description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+      avatar: "/images/pm.PNG",
+      claimed: false
+    }
+  ];
   
   useEffect(() => {
     const fetchCreators = async () => {
       try {
         setIsLoading(true);
-        
+
         // Check if we have cached creators in localStorage and when they were last fetched
         const cachedCreators = localStorage.getItem('cached_creators');
         const savedLastFetchTime = sessionStorage.getItem('creators_last_fetch');
         setLastFetchTime(savedLastFetchTime);
-        
+
         const now = new Date().toISOString();
         const cacheAge = savedLastFetchTime 
           ? (new Date(now).getTime() - new Date(savedLastFetchTime).getTime()) 
           : Infinity;
-        
+
         // Use cache for UI immediately if available (regardless of age)
         if (cachedCreators) {
           console.log("Using cached creators data from localStorage");
           setCreators(JSON.parse(cachedCreators));
           setIsLoading(false);
         }
-        
+
         // Only fetch from API if cache is older than 5 minutes or doesn't exist
         if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
           console.log("Cache expired or not available, fetching fresh data");
-          
+
           // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
           const response = await fetch('/api/creators?use_cache=true');
-          
+
           if (!response.ok) {
             throw new Error(`API returned ${response.status}: ${response.statusText}`);
           }
-          
+
           const data = await response.json();
-          
+
           // Transform Twitter handles to include @ if not present
           const enhancedData = data.map((creator: {
             id: string;
@@ -104,30 +204,38 @@ export default function EarnPage() {
             ...creator,
             handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
           }));
-          
+
           // Store in localStorage for future use
           localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
           sessionStorage.setItem('creators_last_fetch', now);
           setLastFetchTime(now);
-          
+
           // Only update state if we got valid data
           if (enhancedData.length > 0) {
             console.log("Updating UI with fresh data from API");
             setCreators(enhancedData);
           }
-          
+
           // Log the fetched data
           console.log("Fetched creators data:", enhancedData);
         }
       } catch (error) {
         console.error("Failed to fetch creators:", error);
-        
+
         // Try to use cached data if available and we haven't already set it
         if (creators.length === 0) {
           const cachedCreators = localStorage.getItem('cached_creators');
           if (cachedCreators) {
             console.log("Using fallback cached data after API error");
             setCreators(JSON.parse(cachedCreators));
+          } else {
+            // No cached data but we still need to show something in production
+            console.log("Using hardcoded fallback creator data");
+            setCreators(fallbackCreators);
+            // Store fallback data in cache so it's available next time
+            const currentTime = new Date().toISOString();
+            localStorage.setItem('cached_creators', JSON.stringify(fallbackCreators));
+            sessionStorage.setItem('creators_last_fetch', currentTime);
           }
         }
       } finally {
@@ -136,7 +244,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-  }, [creators.length]);
+  }, [creators.length, fallbackCreators]);
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {
@@ -210,7 +318,7 @@ export default function EarnPage() {
                       localStorage.removeItem('cached_creators');
                       sessionStorage.removeItem('creators_last_fetch');
                       setIsLoading(true);
-                      
+
                       // Fetch creators function
                       const refreshCreators = async () => {
                         try {
@@ -218,20 +326,20 @@ export default function EarnPage() {
                           if (!response.ok) {
                             throw new Error(`API returned ${response.status}`);
                           }
-                          
+
                           const data = await response.json();
-                          
+
                           // Transform Twitter handles to include @ if not present
                           const enhancedData = data.map((creator: any) => ({
                             ...creator,
                             handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
                           }));
-                          
+
                           // Store in localStorage and update state
                           localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
                           sessionStorage.setItem('creators_last_fetch', new Date().toISOString());
                           setCreators(enhancedData);
-                          
+
                           toast({
                             title: "Refresh Complete",
                             description: "Creator data has been refreshed."
@@ -247,7 +355,7 @@ export default function EarnPage() {
                           setIsLoading(false);
                         }
                       };
-                      
+
                       refreshCreators();
                     }}
                   >
@@ -294,10 +402,47 @@ export default function EarnPage() {
                   // Split creators into two groups: those with avatar (cached data) and those without
                   [...creators]
                     .sort((a, b) => {
-                      // Put creators with avatar (cached data) at the top
-                      if (a.avatar && !b.avatar) return -1;
-                      if (!a.avatar && b.avatar) return 1;
-                      return 0;
+                      // Define priority order with exact IDs
+                      const priorityOrder = [
+                        "PrimapeMarkets", // 1. Primape
+                        "AlexDotEth",     // 2. Alex
+                        "apecoin",        // 3. apecoin
+                        "ApeChainHUB",    // 4. ApeChainHUB
+                        "ApewhaleNFT",    // 5. ApewhaleNFT
+                        "boringmerch",    // 6. boringmerch
+                        "BoredApeYC",     // 7. BoredApeYC
+                        "yugalabs"        // 8. yugalabs
+                      ];
+
+                      // Case insensitive ID match for more reliable sorting
+                      const idA = a.id.toLowerCase();
+                      const idB = b.id.toLowerCase();
+
+                      // Handle IDs that match our priority list (case insensitive)
+                      const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                      const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
+
+                      // If both are in priority list, sort by priority order
+                      if (priorityA !== -1 && priorityB !== -1) {
+                        return priorityA - priorityB;
+                      }
+
+                      // If only A is in priority list, A comes first
+                      if (priorityA !== -1) return -1;
+
+                      // If only B is in priority list, B comes first
+                      if (priorityB !== -1) return 1;
+
+                      // For remaining creators, prioritize those with complete profiles
+                      // This ensures creators with proper avatars appear before placeholder ones
+                      const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                      const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
+
+                      if (hasAvatarA && !hasAvatarB) return -1;
+                      if (!hasAvatarA && hasAvatarB) return 1;
+
+                      // As a final sort, use alphabetical order by name
+                      return a.name.localeCompare(b.name);
                     })
                     .map(creator => (
                       <CreatorCard 
@@ -319,10 +464,47 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Spaces')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
-                    return 0;
+                    // Define priority order with exact IDs
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
+
+                    // If both are in priority list, sort by priority order
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (priorityA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (priorityB !== -1) return 1;
+
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
+
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 
@@ -343,10 +525,47 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Podcast')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
-                    return 0;
+                    // Define priority order with exact IDs
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
+
+                    // If both are in priority list, sort by priority order
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (priorityA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (priorityB !== -1) return 1;
+
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
+
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 
@@ -360,17 +579,54 @@ export default function EarnPage() {
                   ))}
               </div>
             </TabsContent>
-            
+
             {/* News tab with prioritized cached profiles */}
             <TabsContent value="news" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...creators]
                   .filter(c => c.category === 'News')
                   .sort((a, b) => {
-                    // Put creators with avatar (cached data) at the top
-                    if (a.avatar && !b.avatar) return -1;
-                    if (!a.avatar && b.avatar) return 1;
-                    return 0;
+                    // Define priority order with exact IDs
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Case insensitive ID match for more reliable sorting
+                    const idA = a.id.toLowerCase();
+                    const idB = b.id.toLowerCase();
+
+                    // Handle IDs that match our priority list (case insensitive)
+                    const priorityA = priorityOrder.findIndex(id => id.toLowerCase() === idA);
+                    const priorityB = priorityOrder.findIndex(id => id.toLowerCase() === idB);
+
+                    // If both are in priority list, sort by priority order
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (priorityA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (priorityB !== -1) return 1;
+
+                    // For remaining creators, prioritize those with complete profiles
+                    // This ensures creators with proper avatars appear before placeholder ones
+                    const hasAvatarA = a.avatar && !a.avatar.includes('/images/pm.PNG');
+                    const hasAvatarB = b.avatar && !b.avatar.includes('/images/pm.PNG');
+
+                    if (hasAvatarA && !hasAvatarB) return -1;
+                    if (!hasAvatarA && hasAvatarB) return 1;
+
+                    // As a final sort, use alphabetical order by name
+                    return a.name.localeCompare(b.name);
                   })
                   .map(creator => (
                     <CreatorCard 

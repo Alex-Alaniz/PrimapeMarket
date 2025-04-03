@@ -7,10 +7,10 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "node prisma/generate-twitter-schema.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-twitter-schema": "node prisma/generate-twitter-schema.js"
+    "postinstall": "prisma generate && node prisma/generate-twitter-schema.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
