@@ -431,12 +431,12 @@ export default function EarnPage() {
                       // Fetch creators function
                       const refreshCreators = async () => {
                         try {
-                          const response = await fetch('/api/creators?use_cache=true&force_refresh=true');
-                          if (!response.ok) {
-                            throw new Error(`API returned ${response.status}`);
+                          const res = await fetch('/api/creators?use_cache=true&force_refresh=true');
+                          if (!res.ok) {
+                            throw new Error(`API returned ${res.status}`);
                           }
 
-                          const data = await response.json();
+                          const data = await res.json();
 
                           // Transform Twitter handles to include @ if not present
                           const enhancedData = data.map((creator: any) => ({
