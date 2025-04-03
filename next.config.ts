@@ -1,3 +1,4 @@
+
 import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
@@ -17,13 +18,6 @@ const pwaConfig = withPWA({
 });
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "placehold.co",
-        port: "",
-
   // Add output config to ensure proper Vercel deployment with Prisma
   output: 'standalone',
   experimental: {
@@ -34,7 +28,12 @@ const nextConfig: NextConfig = {
       '/**': ['node_modules/@prisma/**/*', 'node_modules/.prisma/**/*']
     },
   },
-
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+        port: "",
         pathname: "/**",
       },
       {
