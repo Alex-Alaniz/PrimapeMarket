@@ -294,7 +294,34 @@ export default function EarnPage() {
                   // Split creators into two groups: those with avatar (cached data) and those without
                   [...creators]
                     .sort((a, b) => {
-                      // Check for placeholder data
+                      // Define priority order
+                      const priorityOrder = [
+                        "PrimapeMarkets", // 1. Primape
+                        "AlexDotEth",     // 2. Alex
+                        "apecoin",        // 3. apecoin
+                        "ApeChainHUB",    // 4. ApeChainHUB
+                        "ApewhaleNFT",    // 5. ApewhaleNFT
+                        "boringmerch",    // 6. boringmerch
+                        "BoredApeYC",     // 7. BoredApeYC
+                        "yugalabs"        // 8. yugalabs
+                      ];
+
+                      // Get index in priority array (or -1 if not in priority list)
+                      const indexA = priorityOrder.indexOf(a.id);
+                      const indexB = priorityOrder.indexOf(b.id);
+
+                      // If both are in priority list, sort by priority order
+                      if (indexA !== -1 && indexB !== -1) {
+                        return indexA - indexB;
+                      }
+
+                      // If only A is in priority list, A comes first
+                      if (indexA !== -1) return -1;
+
+                      // If only B is in priority list, B comes first
+                      if (indexB !== -1) return 1;
+
+                      // For non-priority creators, check for placeholder data
                       const isPlaceholderA = 
                         !a.avatar || 
                         a.avatar === '/images/pm.PNG' || 
@@ -332,7 +359,34 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Spaces')
                   .sort((a, b) => {
-                    // Check for placeholder data
+                    // Define priority order
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Get index in priority array (or -1 if not in priority list)
+                    const indexA = priorityOrder.indexOf(a.id);
+                    const indexB = priorityOrder.indexOf(b.id);
+
+                    // If both are in priority list, sort by priority order
+                    if (indexA !== -1 && indexB !== -1) {
+                      return indexA - indexB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (indexA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (indexB !== -1) return 1;
+
+                    // For non-priority creators, check for placeholder data
                     const isPlaceholderA = 
                       !a.avatar || 
                       a.avatar === '/images/pm.PNG' || 
@@ -369,7 +423,34 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'Podcast')
                   .sort((a, b) => {
-                    // Check for placeholder data
+                    // Define priority order
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Get index in priority array (or -1 if not in priority list)
+                    const indexA = priorityOrder.indexOf(a.id);
+                    const indexB = priorityOrder.indexOf(b.id);
+
+                    // If both are in priority list, sort by priority order
+                    if (indexA !== -1 && indexB !== -1) {
+                      return indexA - indexB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (indexA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (indexB !== -1) return 1;
+
+                    // For non-priority creators, check for placeholder data
                     const isPlaceholderA = 
                       !a.avatar || 
                       a.avatar === '/images/pm.PNG' || 
@@ -406,7 +487,34 @@ export default function EarnPage() {
                 {[...creators]
                   .filter(c => c.category === 'News')
                   .sort((a, b) => {
-                    // Check for placeholder data
+                    // Define priority order
+                    const priorityOrder = [
+                      "PrimapeMarkets", // 1. Primape
+                      "AlexDotEth",     // 2. Alex
+                      "apecoin",        // 3. apecoin
+                      "ApeChainHUB",    // 4. ApeChainHUB
+                      "ApewhaleNFT",    // 5. ApewhaleNFT
+                      "boringmerch",    // 6. boringmerch
+                      "BoredApeYC",     // 7. BoredApeYC
+                      "yugalabs"        // 8. yugalabs
+                    ];
+
+                    // Get index in priority array (or -1 if not in priority list)
+                    const indexA = priorityOrder.indexOf(a.id);
+                    const indexB = priorityOrder.indexOf(b.id);
+
+                    // If both are in priority list, sort by priority order
+                    if (indexA !== -1 && indexB !== -1) {
+                      return indexA - indexB;
+                    }
+
+                    // If only A is in priority list, A comes first
+                    if (indexA !== -1) return -1;
+
+                    // If only B is in priority list, B comes first
+                    if (indexB !== -1) return 1;
+
+                    // For non-priority creators, check for placeholder data
                     const isPlaceholderA = 
                       !a.avatar || 
                       a.avatar === '/images/pm.PNG' || 
