@@ -109,9 +109,53 @@ export default function EarnPage() {
           claimed: false
         },
         {
+          id: "AlexDotEth",
+          handle: "@AlexDotEth",
+          name: "Alex",
+          points: 500,
+          category: "Spaces",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "ApeChain Developer",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
           id: "apecoin",
           handle: "@apecoin",
           name: "ApeCoin",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "ApeChainHUB",
+          handle: "@ApeChainHUB",
+          name: "ApeChain HUB",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "ApewhaleNFT",
+          handle: "@ApewhaleNFT",
+          name: "ApeWhale",
+          points: 250,
+          category: "Spaces",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "boringmerch",
+          handle: "@boringmerch",
+          name: "Boring Merch",
           points: 250,
           category: "News",
           engagementTypes: ["listen", "share", "comment"],

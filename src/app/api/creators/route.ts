@@ -20,13 +20,14 @@ export async function GET(request: Request) {
       if (!whitelistedCreators || whitelistedCreators.length === 0) {
         console.log("No creators found in database, using fallback data");
         whitelistedCreators = [
-          { username: "apecoin", category: "News", points: 250, is_onboarded: true },
-          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-          { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
           { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+          { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },
+          { username: "apecoin", category: "News", points: 250, is_onboarded: true },
           { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
           { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
-          { username: "boringmerch", category: "News", points: 250, is_onboarded: true }
+          { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
+          { username: "yugalabs", category: "News", points: 250, is_onboarded: true }
         ];
       }
     } catch (error) {

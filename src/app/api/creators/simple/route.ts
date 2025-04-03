@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 
 // Simplified creators route that always works without DB dependencies
