@@ -367,7 +367,7 @@ export default function EarnPage() {
 
     try {
       // In production, this would call your API
-      const response = await fetch('/api/engage', {
+      const res = await fetch('/api/engage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,9 +382,9 @@ export default function EarnPage() {
         }),
       });
 
-      const data = await response.json(); //This line is changed
+      const data = await res.json();
 
-      if (response.ok) {
+      if (res.ok) {
         toast({
           title: "Engagement Recorded!",
           description: `You earned ${data.pointsEarned} points for ${engagementType}`,

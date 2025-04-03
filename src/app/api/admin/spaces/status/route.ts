@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/twitter-prisma";
 
@@ -14,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     // Get the wallet address from URL params
     const walletAddress = req.nextUrl.searchParams.get('walletAddress');
-    
+
     // Validate admin wallet
     if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
@@ -35,7 +34,7 @@ export async function GET(req: NextRequest) {
       }
     });
     const cancelledSpaces = 0; // Adjust as needed based on schema
-    
+
     // Get spaces by day of week
     const spacesByDay = await Promise.all(
       ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(async (day) => {
@@ -47,7 +46,7 @@ export async function GET(req: NextRequest) {
         return { day, count };
       })
     );
-    
+
     // Get hosts from spaces with join
     const spaces = await db.twitterSpace.findMany({
       include: {
@@ -55,7 +54,7 @@ export async function GET(req: NextRequest) {
       },
       take: 100 // Limit to recent spaces
     });
-    
+
     // Count frequencies of hosts
     const hostCounts: Record<string, number> = {};
     spaces.forEach(space => {
@@ -67,13 +66,13 @@ export async function GET(req: NextRequest) {
         });
       }
     });
-    
+
     // Sort hosts by count
     const topHostsArray = Object.entries(hostCounts)
       .map(([username, count]) => ({username, count}))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-    
+
     // Get host profiles for top hosts
     const hostUsernames = topHostsArray.map(host => host.username);
     const hostProfiles = await db.twitterProfile.findMany({
@@ -83,25 +82,25 @@ export async function GET(req: NextRequest) {
         }
       }
     });
-    
-    // Create a map for quick lookup
+
+    // Group profiles by username for easy access
     const profileMap = hostProfiles.reduce<Record<string, any>>((map, profile) => {
-      if (profile.username) {
+      if (profile) {
         map[profile.username] = profile;
       }
       return map;
-    }, {} as Record<string, any>);
-    
+    }, {});
+
     // Format top hosts with profile data
     const formattedTopHosts = topHostsArray.map(host => ({
       username: host.username,
       count: host.count,
       profile: host.username && profileMap[host.username] ? profileMap[host.username] : null
     }));
-    
+
     // RSVPs stats
-    const totalRSVPs = await db.twitterSpaceRSVP.count();
-    
+    const totalRSVPs = await db.twitterSpaceRSVP.count(); //This line and others like it will likely cause errors without schema information
+
     return NextResponse.json({
       success: true,
       stats: {

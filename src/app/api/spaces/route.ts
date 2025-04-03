@@ -60,8 +60,8 @@ export async function GET() {
         startTime,
         endTime,
         formattedStartTime,
-        durationMinutes: space.duration_minutes || 60,
-        spaceUrl: space.space_url,
+        durationMinutes: (space as any).duration_minutes || 60,
+        spaceUrl: (space as any).space_url,
         rsvpCount: 0 // Placeholder, will be filled in later
       };
     });
