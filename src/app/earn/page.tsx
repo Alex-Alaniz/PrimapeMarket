@@ -25,18 +25,23 @@ export default function EarnPage() {
         const cacheExpired = !cacheTimestamp || (now - parseInt(cacheTimestamp)) > 300000; // 5 minutes
         
         if (cachedData && !cacheExpired) {
-          console.log("Using cached creators data from localStorage");
-          setCreators(JSON.parse(cachedData));
-          setIsLoading(false);
-          // Refresh in the background
-          fetchFreshData();
-          return;
+          const parsedData = JSON.parse(cachedData);
+          if (parsedData && parsedData.length > 0) {
+            console.log("Using cached creators data from localStorage");
+            setCreators(parsedData);
+            setIsLoading(false);
+            // Refresh in the background
+            fetchFreshData();
+            return;
+          }
         }
         
         console.log("Cache expired or not available, fetching fresh data");
         await fetchFreshData();
       } catch (error) {
         console.error("Error fetching creators:", error);
+        // Try fallback data if everything else fails
+        useFallbackData();
         setIsLoading(false);
       }
     };
@@ -51,11 +56,16 @@ export default function EarnPage() {
         const data = await response.json();
         console.log("Fetched creators data:", data);
         
-        // Update state and save to cache
-        setCreators(data);
-        localStorage.setItem('creatorsData', JSON.stringify(data));
-        localStorage.setItem('creatorsTimestamp', Date.now().toString());
-        console.log("Updating UI with fresh data from API");
+        if (data && data.length > 0) {
+          // Update state and save to cache
+          setCreators(data);
+          localStorage.setItem('creatorsData', JSON.stringify(data));
+          localStorage.setItem('creatorsTimestamp', Date.now().toString());
+          console.log("Updating UI with fresh data from API");
+          setIsLoading(false);
+          return;
+        }
+        throw new Error('Empty data from regular API');
       } catch (firstError) {
         console.error("Error with primary API, trying fallback:", firstError);
         
@@ -66,17 +76,75 @@ export default function EarnPage() {
             throw new Error('Fallback API also failed');
           }
           const fallbackData = await fallbackResponse.json();
-          setCreators(fallbackData);
-          localStorage.setItem('creatorsData', JSON.stringify(fallbackData));
-          localStorage.setItem('creatorsTimestamp', Date.now().toString());
+          if (fallbackData && fallbackData.length > 0) {
+            setCreators(fallbackData);
+            localStorage.setItem('creatorsData', JSON.stringify(fallbackData));
+            localStorage.setItem('creatorsTimestamp', Date.now().toString());
+            setIsLoading(false);
+            return;
+          }
+          throw new Error('Empty data from fallback API');
         } catch (fallbackError) {
           console.error("Both APIs failed:", fallbackError);
-          // Use empty array if all attempts fail
-          setCreators([]);
+          // Use hardcoded creators if all API attempts fail
+          useFallbackData();
         }
       } finally {
         setIsLoading(false);
       }
+    };
+    
+    // Hardcoded fallback data when all else fails
+    const useFallbackData = () => {
+      const fallbackCreators = [
+        {
+          id: "PrimapeMarkets",
+          handle: "@PrimapeMarkets",
+          name: "PRIMAPE",
+          points: 690,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "The premier prediction market platform on ApeChain",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "apecoin",
+          handle: "@apecoin",
+          name: "ApeCoin",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "BoredApeYC",
+          handle: "@BoredApeYC",
+          name: "Bored Ape Yacht Club",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        },
+        {
+          id: "yugalabs",
+          handle: "@yugalabs",
+          name: "Yuga Labs",
+          points: 250,
+          category: "News",
+          engagementTypes: ["listen", "share", "comment"],
+          description: "An awesome ApeChain creator building the future of Web3 social engagement.",
+          avatar: "/images/pm.PNG",
+          claimed: false
+        }
+      ];
+      
+      console.log("Using hardcoded fallback creator data");
+      setCreators(fallbackCreators);
     };
 
     fetchCreators();

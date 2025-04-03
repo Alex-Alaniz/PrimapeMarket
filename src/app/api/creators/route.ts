@@ -15,6 +15,20 @@ export async function GET(request: Request) {
     try {
       // Use the safe wrapper which has built-in fallback for production
       whitelistedCreators = await db.twitterWhitelist.findMany();
+      
+      // Check if we got any data, if not use fallback
+      if (!whitelistedCreators || whitelistedCreators.length === 0) {
+        console.log("No creators found in database, using fallback data");
+        whitelistedCreators = [
+          { username: "apecoin", category: "News", points: 250, is_onboarded: true },
+          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
+          { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+          { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+          { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+          { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
+          { username: "boringmerch", category: "News", points: 250, is_onboarded: true }
+        ];
+      }
     } catch (error) {
       console.error("Failed to fetch from twitterWhitelist:", error);
       // Fallback to hardcoded creators if database fetch fails
@@ -22,7 +36,10 @@ export async function GET(request: Request) {
         { username: "apecoin", category: "News", points: 250, is_onboarded: true },
         { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
         { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
-        { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true }
+        { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+        { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+        { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
+        { username: "boringmerch", category: "News", points: 250, is_onboarded: true }
       ];
     }
     
