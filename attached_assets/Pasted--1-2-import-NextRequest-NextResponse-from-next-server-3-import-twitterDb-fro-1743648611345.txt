@@ -1,0 +1,52 @@
+  1 │ 
+  2 │ import { NextRequest, NextResponse } from "next/server";
+  3 │ import { twitterDb } from "@/lib/twitter-prisma";
+    ·          ────┬────
+    ·              ╰── previous definition of `twitterDb` here
+  4 │ 
+  5 │ // Admin wallet addresses - keep this list secure and limited
+  6 │ const ADMIN_WALLETS = [
+  7 │   // Add your admin wallet addresses here in lowercase for consistent comparison
+  8 │   "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
+  9 │   // Add more wallet addresses to ensure access
+ 10 │   "*", // Temporary wildcard to allow all wallet addresses for testing
+ 11 │   // Add more as needed
+ 12 │ ];
+ 13 │ 
+ 14 │ async function validateAdmin(req: NextRequest): Promise<boolean> {
+ 15 │   const adminWallet = req.headers.get("x-admin-wallet");
+ 16 │   if (!adminWallet) return false;
+ 17 │   
+ 18 │   // Convert to lowercase for case-insensitive comparison
+ 19 │   const normalizedWallet = adminWallet.toLowerCase();
+ 20 │   
+ 21 │   // Check if the wallet is in our admin list
+ 22 │   return ADMIN_WALLETS.includes(normalizedWallet);
+ 23 │ }
+ 24 │ 
+ 25 │ // POST /api/admin/spaces/status - Update space status
+ 26 │ export async function POST(req: NextRequest) {
+ 27 │   try {
+ 28 │     // Validate admin access
+ 29 │     if (!(await validateAdmin(req))) {
+ 30 │       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ 31 │     }
+ 32 │ 
+ 33 │     const { id, isActive } = await req.json();
+ 34 │ 
+ 35 │     if (!id) {
+ 36 │       return NextResponse.json(
+ 37 │         { error: "Space ID is required" },
+ 38 │         { status: 400 },
+ 39 │       );
+ 40 │     }
+ 41 │ 
+ 42 │     // Update the space (in a real implementation, you might have a specific status field)
+ 43 │     const updatedSpace = await twitterDb.twitterSpace.update({
+ 44 │       where: { id },
+ 45 │       data: {
+ 46 │         // This could be a specific status field in your schema
+ 47 │         // For now, we'll use a placeholder approach
+ 48 │         // isActive: isActive,
+ 49 │         description: isActive 
+ 50 │           ? `${(await twitterDb.twitterSpace.findUnique({ where: { id } }))?.description || ''} (Active)`.trim()
