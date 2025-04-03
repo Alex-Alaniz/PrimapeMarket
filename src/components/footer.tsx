@@ -7,17 +7,19 @@ import { useEffect, useState } from "react";
 
 export function Footer() {
   const { theme, resolvedTheme } = useTheme();
-  const [currentTheme, setCurrentTheme] = useState<string | undefined>(undefined);
+  const [currentTheme, setCurrentTheme] = useState<string | undefined>(
+    undefined,
+  );
 
   // Update current theme when theme changes or component mounts
   useEffect(() => {
-    setCurrentTheme(theme === 'system' ? resolvedTheme : theme);
+    setCurrentTheme(theme === "system" ? resolvedTheme : theme);
   }, [theme, resolvedTheme]);
 
   // Determine which ApeChain logo to use based on theme
   const getApeChainLogo = () => {
     if (currentTheme === "light") {
-      return "/apechain-branding/apechain-blue.png";
+      return "/apechain-branding/apechain-blk.png";
     } else if (currentTheme === "dark" || currentTheme === "ape") {
       return "/apechain-branding/apechain-white.png";
     }
@@ -37,18 +39,16 @@ export function Footer() {
   };
 
   return (
-    <footer
-      className={`border-t py-2 ${getFooterBgClass()}`}
-    >
+    <footer className={`border-t py-2 ${getFooterBgClass()}`}>
       <div className="container mx-auto">
         <div className="flex flex-row items-center justify-between px-4">
           <div className="flex items-center space-x-2">
             <Image
               src={getApeChainLogo()}
               alt="Powered by ApeChain"
-              width={100}
-              height={20}
-              className="h-5 w-auto" 
+              width={300}
+              height={300}
+              className="h-11 w-auto"
             />
           </div>
 
