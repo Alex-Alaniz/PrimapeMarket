@@ -27,11 +27,10 @@ export async function GET(req: NextRequest) {
     const spaces = await db.twitterSpace.findMany({
       orderBy: [
         { day_of_week: 'asc' },
-        { start_hour: 'asc' },
-        { start_minute: 'asc' }
+        { start_time: 'asc' }
       ],
       include: {
-        host: true
+        hosts: true
       }
     });
     
@@ -90,24 +89,30 @@ export async function POST(req: NextRequest) {
       });
     }
     
+    // Get the host profile for the relation
+    const host = await db.twitterProfile.findUnique({
+      where: {
+        username: cleanUsername
+      }
+    });
+
     // Create the space
     const createdSpace = await db.twitterSpace.create({
       data: {
         id: space.id || `space_${Date.now()}`,
-        host_username: cleanUsername,
         title: space.title,
         description: space.description || '',
         day_of_week: space.day_of_week,
-        start_hour: parseInt(space.start_hour) || 0,
-        start_minute: parseInt(space.start_minute) || 0,
-        duration_minutes: parseInt(space.duration_minutes) || 60,
-        scheduled_date: space.scheduled_date ? new Date(space.scheduled_date) : null,
-        is_recurring: space.is_recurring || false,
-        recurring_rule: space.recurring_rule || null,
-        space_url: space.space_url || null,
-        status: 'scheduled',
+        start_time: space.scheduled_date ? new Date(space.scheduled_date) : new Date(),
+        end_time: null,
+        recurring: space.is_recurring || false,
+        space_id: space.space_url ? space.space_url.split('/').pop() : null,
+        points: 100,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
+        hosts: {
+          connect: host ? [{ id: host.id }] : []
+        }
       }
     });
     

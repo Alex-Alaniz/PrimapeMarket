@@ -18,16 +18,12 @@ export async function GET() {
   try {
     // Get all upcoming spaces
     const spaces = await db.twitterSpace.findMany({
-      where: {
-        status: 'scheduled'
-      },
       orderBy: [
         { day_of_week: 'asc' },
-        { start_hour: 'asc' },
-        { start_minute: 'asc' }
+        { start_time: 'asc' }
       ],
       include: {
-        host: true
+        hosts: true
       }
     });
     
@@ -37,13 +33,13 @@ export async function GET() {
     
     // Format spaces for display and sort by day of week starting with current day
     const formattedSpaces = spaces.map(space => {
-      const startTime = `${String(space.start_hour).padStart(2, '0')}:${String(space.start_minute).padStart(2, '0')}`;
-      const endHour = (space.start_hour + Math.floor((space.start_minute + (space.duration_minutes || 60)) / 60)) % 24;
-      const endMinute = (space.start_minute + (space.duration_minutes || 60)) % 60;
-      const endTime = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+      const startDate = space.start_time;
+      const startTime = format(startDate, 'HH:mm');
+      const endTime = space.end_time ? format(space.end_time, 'HH:mm') : 
+                    format(new Date(startDate.getTime() + 60 * 60 * 1000), 'HH:mm'); // Default 1hr
       
       // Format the time as 12-hour with AM/PM
-      const formattedStartTime = format(new Date().setHours(space.start_hour, space.start_minute), 'h:mm a');
+      const formattedStartTime = format(startDate, 'h:mm a');
       
       return {
         id: space.id,
