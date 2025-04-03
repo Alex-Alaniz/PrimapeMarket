@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     }));
 
     // RSVPs stats
-    const totalRSVPs = await db.twitterSpaceRSVP.count(); //This line and others like it will likely cause errors without schema information
+    const totalRSVPs = await db.twitterSpaceRSVP.count(); //Using the fixed twitterSpaceRSVP property
 
     return NextResponse.json({
       success: true,
