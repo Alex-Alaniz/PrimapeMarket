@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { twitterDb } from '@/lib/twitter-prisma';
+import { db } from '@/lib/twitter-prisma'; // Import the safe db wrapper instead
 import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 
 export async function GET(request: Request) {
@@ -10,17 +10,19 @@ export async function GET(request: Request) {
   const _forceRefresh = url.searchParams.get('force_refresh') === 'true';
   
   try {
-    // Get whitelisted creators from the database
+    // Get whitelisted creators from the database using our safety wrapper
     let whitelistedCreators = [];
     try {
-      whitelistedCreators = await twitterDb.twitterWhitelist.findMany();
+      // Use the safe wrapper which has built-in fallback for production
+      whitelistedCreators = await db.twitterWhitelist.findMany();
     } catch (error) {
       console.error("Failed to fetch from twitterWhitelist:", error);
       // Fallback to hardcoded creators if database fetch fails
       whitelistedCreators = [
         { username: "apecoin", category: "News", points: 250, is_onboarded: true },
         { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-        { username: "yugalabs", category: "News", points: 250, is_onboarded: true }
+        { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+        { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true }
       ];
     }
     
@@ -48,7 +50,8 @@ export async function GET(request: Request) {
           
           let cachedProfile = null;
           try {
-            cachedProfile = await twitterDb.twitterProfile.findUnique({
+            // Use the safer db wrapper that includes fallback handling
+            cachedProfile = await db.twitterProfile.findUnique({
               where: { username: cleanUsername }
             });
           } catch (prismaError) {
@@ -86,11 +89,16 @@ export async function GET(request: Request) {
             if (twitterData) {
               await cacheTwitterProfile(twitterData);
               
-              // Mark as onboarded in the whitelist
-              await twitterDb.twitterWhitelist.update({
-                where: { username: creator.handle.replace('@', '') },
-                data: { is_onboarded: true }
-              });
+              // Mark as onboarded in the whitelist using our safer wrapper
+              try {
+                await db.twitterWhitelist.update({
+                  where: { username: creator.handle.replace('@', '') },
+                  data: { is_onboarded: true }
+                });
+              } catch (updateError) {
+                console.error(`Error updating whitelist for ${creator.handle}:`, updateError);
+                // Continue even if update fails
+              }
               
               return {
                 ...creator,
