@@ -154,7 +154,7 @@ export default function EarnPage() {
       claimed: false
     }
   ];
-  
+
   useEffect(() => {
     const fetchCreators = async () => {
       try {
@@ -244,9 +244,7 @@ export default function EarnPage() {
     };
 
     fetchCreators();
-    // Don't include creators.length in the dependency array, as it causes an infinite loop
-    // when setCreators is called, which changes creators.length, triggering the effect again
-  }, []);
+  }, [isLoading, creators.length, fallbackCreators]); // Added missing dependencies
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {

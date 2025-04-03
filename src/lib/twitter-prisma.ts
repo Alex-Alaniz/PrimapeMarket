@@ -5,6 +5,8 @@ import { PrismaClient as DefaultPrismaClient } from "@prisma/client";
 // Import the Twitter PrismaClient type directly to ensure proper typing
 import type { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 
+// Remove unused variable warning
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let PrismaClient: any;
 let hasTwitterClient = false;
 
@@ -99,7 +101,7 @@ const safeTwitterDbWrapper = {
 };
 
 // Export the safe wrapper in production, or the real client in development
-const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb;
+export const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb;
 
 // Create proxy methods for fallback operation if Twitter client isn't available
 if (!hasTwitterClient) {
