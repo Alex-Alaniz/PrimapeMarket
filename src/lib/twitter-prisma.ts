@@ -76,11 +76,14 @@ const safeTwitterDbWrapper = {
   },
 };
 
+// Define the TwitterDb type to include all necessary properties
+type TwitterDb = TwitterPrismaClient | typeof safeTwitterDbWrapper;
+
 // Export the Twitter database client
 export const twitterDb = hasTwitterClient ? twitterPrismaInstance : null;
 
 // Export a safe wrapper for when the Twitter client isn't available
-export const db = hasTwitterClient ? twitterPrismaInstance || safeTwitterDbWrapper : safeTwitterDbWrapper;
+export const db: TwitterDb = hasTwitterClient ? twitterPrismaInstance || safeTwitterDbWrapper : safeTwitterDbWrapper;
 
 // Log warning if Twitter client isn't available
 if (!hasTwitterClient) {

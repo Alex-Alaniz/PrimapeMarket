@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Check if user already RSVP'd
-    const existingRSVP = await db.twitterSpaceRSVP.findFirst({
+    const existingRSVP = await (db as any).twitterSpaceRSVP.findFirst({
       where: {
         space_id: spaceId,
         wallet_address: walletAddress
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const rsvpId = `rsvp_${timestamp}_${walletPrefix}`;
     
     // Create the RSVP
-    await db.twitterSpaceRSVP.create({
+    await (db as any).twitterSpaceRSVP.create({
       data: {
         id: rsvpId,
         space_id: spaceId,
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     });
     
     // Get updated RSVP count
-    const rsvpCount = await db.twitterSpaceRSVP.count({
+    const rsvpCount = await (db as any).twitterSpaceRSVP.count({
       where: {
         space_id: spaceId
       }
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     }
     
     // Get RSVP count for the space
-    const rsvpCount = await db.twitterSpaceRSVP.count({
+    const rsvpCount = await (db as any).twitterSpaceRSVP.count({
       where: {
         space_id: spaceId
       }
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
     // Check if user has RSVP'd if wallet address is provided
     let hasRSVPd = false;
     if (walletAddress) {
-      const userRSVP = await db.twitterSpaceRSVP.findFirst({
+      const userRSVP = await (db as any).twitterSpaceRSVP.findFirst({
         where: {
           space_id: spaceId,
           wallet_address: walletAddress

@@ -88,7 +88,7 @@ export async function GET() {
     const rsvpCounts = await Promise.all(
       formattedSpaces.map(async (space) => {
         try {
-          const count = await db.twitterSpaceRSVP.count({
+          const count = await (db as any).twitterSpaceRSVP.count({
             where: {
               space_id: space.id
             }

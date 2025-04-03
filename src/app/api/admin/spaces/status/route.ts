@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     }));
 
     // RSVPs stats
-    const totalRSVPs = await db.twitterSpaceRSVP.count(); //Using the fixed twitterSpaceRSVP property
+    const totalRSVPs = await (db as any).twitterSpaceRSVP.count();
 
     return NextResponse.json({
       success: true,
