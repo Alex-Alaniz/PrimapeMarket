@@ -119,7 +119,7 @@ export async function GET() {
       }
       acc[day].push(space);
       return acc;
-    }, {});
+    }, {} as Record<string, any[]>);
     
     return NextResponse.json({
       success: true,

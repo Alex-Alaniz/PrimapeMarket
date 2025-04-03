@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
     
     // Create a unique RSVP ID with timestamp and wallet prefix
     const timestamp = Date.now().toString();
-    const walletPrefix = typeof walletAddress === 'string' ? walletAddress.substring(0, 8) : 'unknown';
+    const walletPrefix = walletAddress ? 
+      (typeof walletAddress === 'string' ? walletAddress.substring(0, 8) : 'unknown') : 
+      'unknown';
     const rsvpId = `rsvp_${timestamp}_${walletPrefix}`;
     
     // Create the RSVP

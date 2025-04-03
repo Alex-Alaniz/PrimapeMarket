@@ -353,7 +353,7 @@ export default function EarnPage() {
 
     fetchCreators();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // Remove toast from dependencies to avoid circular references
+  }, [isLoading]); // Keep dependencies minimal to avoid unnecessary re-renders
 
   const handleEngagement = async (creatorId: string, engagementType: string) => {
     if (!activeAccount) {

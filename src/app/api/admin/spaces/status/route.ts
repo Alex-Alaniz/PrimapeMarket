@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         map[profile.username] = profile;
       }
       return map;
-    }, {});
+    }, {} as Record<string, any>);
     
     // Format top hosts with profile data
     const formattedTopHosts = topHostsArray.map(host => ({
