@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get all whitelisted creators with their Twitter profile data if available
-    const whitelistedCreators = await db.whitelistedCreator.findMany({
+    const whitelistedCreators = await db.twitterWhitelist.findMany({
       orderBy: {
         username: 'asc'
       }

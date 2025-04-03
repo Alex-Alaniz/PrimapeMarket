@@ -145,6 +145,7 @@ export default function EarnPage() {
   ];
 
   useEffect(() => {
+    // Immediately set fallback creators to ensure something always displays
     // Production fallback data in case API completely fails
     const fallbackCreators = [
       {
@@ -245,6 +246,9 @@ export default function EarnPage() {
       }
     ];
     
+    // Start with fallback data immediately to ensure something always displays
+    setCreators(fallbackCreators);
+    
     const fetchCreators = async () => {
       try {
         setIsLoading(true);
@@ -270,11 +274,26 @@ export default function EarnPage() {
         if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
           console.log("Cache expired or not available, fetching fresh data");
 
-          // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
-          const response = await fetch('/api/creators?use_cache=true');
-
-          if (!response.ok) {
-            throw new Error(`API returned ${response.status}: ${response.statusText}`);
+          try {
+            // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
+            const response = await fetch('/api/creators?use_cache=true');
+            
+            if (!response.ok) {
+              console.warn("Main API failed, trying simplified API");
+              // Try the simplified API as fallback
+              const fallbackResponse = await fetch('/api/creators/simple');
+              
+              if (!fallbackResponse.ok) {
+                throw new Error(`API returned ${fallbackResponse.status}: ${fallbackResponse.statusText}`);
+              }
+              
+              return await fallbackResponse.json();
+            }
+            
+            return await response.json();
+          } catch (error) {
+            console.error("Both APIs failed:", error);
+            throw error;
           }
 
           const data = await response.json();
