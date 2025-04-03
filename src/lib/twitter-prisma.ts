@@ -12,13 +12,33 @@ let twitterPrismaInstance: TwitterPrismaClient | null = null;
 if (hasTwitterClient) {
   try {
     console.log(`Attempting to connect to Twitter database with URL ${twitterDbUrl?.substring(0, 12)}...`);
-    twitterPrismaInstance = new TwitterPrismaClient({
-      datasources: {
-        db: {
-          url: twitterDbUrl,
+    
+    // In production/Vercel, use a different initialization approach
+    if (process.env.NODE_ENV === 'production') {
+      twitterPrismaInstance = new TwitterPrismaClient({
+        datasources: {
+          db: {
+            url: twitterDbUrl,
+          },
         },
-      },
-    });
+        // Explicitly tell Prisma where to find the engine in Vercel
+        __internal: {
+          engine: {
+            binaryPath: '/var/task/.next/server/chunks/query-engine-rhel-openssl-3.0.x',
+          },
+        },
+      });
+    } else {
+      // Development environment
+      twitterPrismaInstance = new TwitterPrismaClient({
+        datasources: {
+          db: {
+            url: twitterDbUrl,
+          },
+        },
+      });
+    }
+    
     console.log('Twitter Prisma client initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Twitter Prisma client:', error);

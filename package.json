@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate --schema=./prisma/twitter-schema.prisma && next build",
-    "postbuild": "cp -r node_modules/@prisma/twitter-client .vercel/output/functions/_prisma-client || true",
+    "postbuild": "node scripts/copy-prisma-engines.js",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate && node prisma/generate-twitter-schema.js"

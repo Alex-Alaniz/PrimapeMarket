@@ -23,6 +23,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "placehold.co",
         port: "",
+
+  // Add output config to ensure proper Vercel deployment with Prisma
+  output: 'standalone',
+  experimental: {
+    // This includes files in the output trace
+    outputFileTracingRoot: process.cwd(),
+    // Ensure Prisma binaries are included
+    outputFileTracingIncludes: {
+      '/**': ['node_modules/@prisma/**/*', 'node_modules/.prisma/**/*']
+    },
+  },
+
         pathname: "/**",
       },
       {
