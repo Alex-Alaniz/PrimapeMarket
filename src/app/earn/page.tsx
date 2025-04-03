@@ -1,487 +1,248 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useActiveAccount } from "thirdweb/react";
-import { CreatorCard } from "@/components/earn/creator-card";
+import Navbar from '@/components/navbar';
+import CreatorCard from '@/components/earn/creator-card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSyncUserWallets } from '@/hooks/useSyncUserWallets';
 
 export default function EarnPage() {
-  const activeAccount = useActiveAccount();
-  const [isLoading, setIsLoading] = useState(true);
   const [creators, setCreators] = useState([]);
-  const [mounted, setMounted] = useState(false); // Added for useEffect cleanup
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
+
+  // Sync user wallets
+  useSyncUserWallets();
 
   useEffect(() => {
-    setMounted(true); // Set mounted to true after component mounts
-    
-    // Function to fetch creators data
     const fetchCreators = async () => {
-      if (!mounted) return;
-
-      setIsLoading(true);
-      console.log('Starting to fetch creators data...');
-
       try {
-        // Try using cached data first
-        const cachedCreators = localStorage.getItem('cachedCreators');
-        const cacheTime = localStorage.getItem('cacheTime');
-        const now = new Date().getTime();
+        setLoading(true);
+        setError(null);
 
-        // Check if cache is valid (less than 5 minutes old)
-        if (cachedCreators && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
+        // Try to use cached data if available and not expired
+        const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+        const now = Date.now();
+        const cachedCreatorsJson = localStorage.getItem('cachedCreators');
+        const cacheTimeStr = localStorage.getItem('cacheTime');
+        const cacheTime = cacheTimeStr ? parseInt(cacheTimeStr) : 0;
+
+        // Check if we have valid cached data
+        if (cachedCreatorsJson && cacheTime && (now - cacheTime < CACHE_EXPIRY_MS)) {
           console.log('Using cached creators data from localStorage');
-          const parsedCreators = JSON.parse(cachedCreators);
-          if (parsedCreators && parsedCreators.length > 0) {
-            setCreators(parsedCreators);
-            setIsLoading(false);
-            return;
-          } else {
-            console.log('Cached data was empty, fetching fresh data');
-          }
-        } else {
-          console.log('Cache expired or not available, fetching fresh data');
+          const cachedData = JSON.parse(cachedCreatorsJson);
+          setCreators(cachedData);
+          setLoading(false);
+          return;
         }
 
-        // First try the simpler API which is more reliable
-        console.log('Attempting to fetch from simple API endpoint...');
-        try {
-          const simpleResponse = await fetch(`/api/creators/simple?_t=${now}`);
-          
-          if (simpleResponse.ok) {
-            const simpleData = await simpleResponse.json();
-            console.log('Fetched creators data:', simpleData);
-            
-            if (Array.isArray(simpleData) && simpleData.length > 0) {
-              console.log('Updating UI with data from simple API');
-              setCreators(simpleData);
-              // Cache the data
-              localStorage.setItem('cachedCreators', JSON.stringify(simpleData));
-              localStorage.setItem('cacheTime', now.toString());
-              setIsLoading(false);
-              return;
-            }
-          } else {
-            console.warn(`Simple API request failed with status ${simpleResponse.status}, trying main API`);
-          }
-        } catch (error) {
-          console.error('Error fetching from simple API:', error);
+        console.log('Cache expired or not available, fetching fresh data');
+
+        // Fetch fresh data
+        const response = await fetch(`/api/creators/simple?_t=${Date.now()}`);
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
         }
-        
-        // Then try the main API as backup
-        console.log('Attempting to fetch from main API endpoint...');
-        try {
-          const mainResponse = await fetch(`/api/creators?use_cache=true&_t=${now}`);
-          
-          if (mainResponse.ok) {
-            const mainData = await mainResponse.json();
-            
-            if (Array.isArray(mainData) && mainData.length > 0) {
-              console.log('Updating UI with data from main API');
-              setCreators(mainData);
-              // Cache the data
-              localStorage.setItem('cachedCreators', JSON.stringify(mainData));
-              localStorage.setItem('cacheTime', now.toString());
-              setIsLoading(false);
-              return;
+
+        const data = await response.json();
+        console.log('Updating UI with fresh data from API');
+        console.log('Fetched creators data:', data);
+
+        if (Array.isArray(data) && data.length > 0) {
+          setCreators(data);
+
+          // Cache the data
+          localStorage.setItem('cachedCreators', JSON.stringify(data));
+          localStorage.setItem('cacheTime', now.toString());
+        } else {
+          console.warn('API returned empty creators array or invalid data');
+          // Use fallback data if API returns empty array
+          const fallbackCreators = [
+            {
+              id: 'PrimapeMarkets',
+              handle: '@PrimapeMarkets',
+              name: 'PRIMAPE',
+              points: 690,
+              category: 'News',
+              engagementTypes: ['listen', 'share', 'comment'],
+              avatar: '/images/pm.PNG',
+              description: 'The premier prediction markets platform for the Ape ecosystem'
+            },
+            {
+              id: 'AlexDotEth',
+              handle: '@AlexDotEth',
+              name: 'Alex | ApeChain Creator',
+              points: 500,
+              category: 'Spaces',
+              engagementTypes: ['listen', 'share', 'comment'],
+              avatar: '/images/pm.PNG',
+              description: 'Web3 Builder and Community Expert'
+            },
+            {
+              id: 'apecoin',
+              handle: '@apecoin',
+              name: 'ApeCoin',
+              points: 250,
+              category: 'News',
+              engagementTypes: ['listen', 'share', 'comment'],
+              avatar: '/images/pm.PNG',
+              description: 'Official account for ApeCoin'
             }
-          } else {
-            console.warn(`Main API request failed with status ${mainResponse.status}, using hardcoded fallback`);
-          }
-        } catch (error) {
-          console.error('Error fetching from main API:', error);
+          ];
+          setCreators(fallbackCreators);
+
+          // Cache the fallback data
+          localStorage.setItem('cachedCreators', JSON.stringify(fallbackCreators));
+          localStorage.setItem('cacheTime', now.toString());
         }
-        
-        // Use hardcoded fallback data if both APIs fail
-        console.warn('All API requests failed, using hardcoded fallback data');
+      } catch (err) {
+        console.error('Error fetching creators:', err);
+        setError(err.message || 'Failed to load creators');
+
+        // Use fallback data if there's an error
         const fallbackCreators = [
-          { 
-            id: "PrimapeMarkets", 
-            handle: "@PrimapeMarkets", 
-            name: "PRIMAPE",
-            points: 690, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
+          {
+            id: 'PrimapeMarkets',
+            handle: '@PrimapeMarkets',
+            name: 'PRIMAPE',
+            points: 690,
+            category: 'News',
+            engagementTypes: ['listen', 'share', 'comment'],
             avatar: '/images/pm.PNG',
-            description: "The premier prediction markets platform in the Ape ecosystem."
+            description: 'The premier prediction markets platform for the Ape ecosystem'
           },
-          { 
-            id: "AlexDotEth", 
-            handle: "@AlexDotEth", 
-            name: "Alex | ApeChain",
-            points: 500, 
-            category: "Spaces", 
-            engagementTypes: ["listen", "share", "comment"],
+          {
+            id: 'AlexDotEth',
+            handle: '@AlexDotEth',
+            name: 'Alex | ApeChain Creator',
+            points: 500,
+            category: 'Spaces',
+            engagementTypes: ['listen', 'share', 'comment'],
             avatar: '/images/pm.PNG',
-            description: "Building ApeChain - The future of Web3 social engagement."
-          },
-          { 
-            id: "apecoin", 
-            handle: "@apecoin", 
-            name: "ApeCoin",
-            points: 250, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "The official ApeCoin account."
-          },
-          { 
-            id: "ApeChainHUB", 
-            handle: "@ApeChainHUB", 
-            name: "ApeChain HUB",
-            points: 250, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "Central hub for ApeChain news and updates."
-          },
-          { 
-            id: "yugalabs", 
-            handle: "@yugalabs", 
-            name: "Yuga Labs",
-            points: 250, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "Creators of Bored Ape Yacht Club and other iconic NFT collections."
-          },
-          { 
-            id: "ApewhaleNFT", 
-            handle: "@ApewhaleNFT", 
-            name: "ApeWhale",
-            points: 250, 
-            category: "Spaces", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "Leading NFT collector in the Ape ecosystem."
-          },
-          { 
-            id: "boringmerch", 
-            handle: "@boringmerch", 
-            name: "Boring Merch",
-            points: 250, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "Official merchandise for the Ape ecosystem."
-          },
-          { 
-            id: "BoredApeYC", 
-            handle: "@BoredApeYC", 
-            name: "Bored Ape Yacht Club",
-            points: 250, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "The official Bored Ape Yacht Club account."
+            description: 'Web3 Builder and Community Expert'
           }
         ];
-        
         setCreators(fallbackCreators);
-        // Cache the fallback creators too
-        localStorage.setItem('cachedCreators', JSON.stringify(fallbackCreators));
-        localStorage.setItem('cacheTime', now.toString());
-        
-      } catch (error) {
-        console.error('Unhandled error in fetchCreators:', error);
-        // Use minimal fallback for total failure
-        setCreators([
-          { 
-            id: "PrimapeMarkets", 
-            handle: "@PrimapeMarkets", 
-            name: "PRIMAPE",
-            points: 690, 
-            category: "News", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "The premier prediction markets platform in the Ape ecosystem."
-          },
-          { 
-            id: "AlexDotEth", 
-            handle: "@AlexDotEth", 
-            name: "Alex | ApeChain",
-            points: 500, 
-            category: "Spaces", 
-            engagementTypes: ["listen", "share", "comment"],
-            avatar: '/images/pm.PNG',
-            description: "Building ApeChain - The future of Web3 social engagement."
-          }
-        ]);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchCreators();
+  }, []);
 
-    return () => {
-      setMounted(false); // Clean up mounted state on unmount
-    };
-  }, [mounted]);
+  // Filter creators based on category
+  const filteredCreators = filter === 'all' 
+    ? creators 
+    : creators.filter(creator => creator.category?.toLowerCase() === filter.toLowerCase());
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="container py-4">
-        <Navbar />
-
-        <div className="mt-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
-            <div>
-              <h1 className="text-3xl font-bold">Earn with Primape</h1>
-              <p className="text-muted-foreground mt-2 max-w-2xl">
-                Engage with top ApeChain creators and earn points redeemable for $APE tokens, 
-                exclusive NFTs, and platform features.
-              </p>
-            </div>
-
-            <div className="bg-card p-4 rounded-lg w-full lg:w-auto">
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><circle cx="12" cy="12" r="10"/><path d="M9.4 15h5.2c.5 0 .8-.4.8-.8v-4.4c0-.5-.4-.8-.8-.8H9.4c-.5 0-.8.4-.8.8v4.4c0 .4.3.8.8.8Z"/></svg>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Your Points</div>
-                  <div className="text-2xl font-bold">{activeAccount ? "Coming Soon" : "Connect Wallet"}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Creators Section */}
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Featured Creators</h2>
-              <span className="bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-sm">Points Coming Soon!</span>
-            </div>
-
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="h-32 bg-muted animate-pulse"></div>
-                    <CardContent className="p-4">
-                      <div className="h-4 w-3/4 bg-muted animate-pulse rounded mb-2"></div>
-                      <div className="h-3 bg-muted animate-pulse rounded mb-4 w-1/2"></div>
-                      <div className="h-10 bg-muted animate-pulse rounded"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : creators.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p>No creators available at this time. Check back soon!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {creators.map((creator) => (
-                  <CreatorCard key={creator.id} creator={creator} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Program Info Tabs - Moved to the bottom */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">Program Information</h2>
-            <Tabs defaultValue="info" className="mt-4">
-              <TabsList className="grid grid-cols-2 lg:w-[300px]">
-                <TabsTrigger value="info">Program Info</TabsTrigger>
-                <TabsTrigger value="rewards">Reward Tiers</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="info" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>How It Works</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>The Primape Earn program will reward users for engaging with content from top ApeChain creators.</p>
-                      <ul className="mt-4 space-y-2">
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          Listen to Twitter Spaces
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          Comment on content
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          Share creator content
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          Promote your favorite creators
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Coming Features</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                          Creator profiles and verification
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                          Engagement tracking and verification
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                          Point redemption for $APE tokens
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-                          Exclusive NFT rewards
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="rewards" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Bronze Tier */}
-                  <Card className="border-2 border-amber-700">
-                    <CardHeader className="pb-2 bg-amber-700/10">
-                      <CardTitle className="text-center text-lg">Bronze Tier</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="text-center mb-4">
-                        <span className="text-3xl font-bold">1,000</span>
-                        <span className="text-muted-foreground"> points</span>
-                      </div>
-
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-amber-700/20 text-amber-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Basic prediction fee discounts</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-amber-700/20 text-amber-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Bronze badge on profile</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-amber-700/20 text-amber-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Access to monthly rewards</span>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* Silver Tier */}
-                  <Card className="border-2 border-gray-400">
-                    <CardHeader className="pb-2 bg-gray-400/10">
-                      <CardTitle className="text-center text-lg">Silver Tier</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="text-center mb-4">
-                        <span className="text-3xl font-bold">5,000</span>
-                        <span className="text-muted-foreground"> points</span>
-                      </div>
-
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-gray-400/20 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Increased fee discounts</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-gray-400/20 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Silver badge on profile</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-gray-400/20 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Weekly $APE rewards</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-gray-400/20 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Early access to new features</span>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* Gold Tier */}
-                  <Card className="border-2 border-yellow-500">
-                    <CardHeader className="pb-2 bg-yellow-500/10">
-                      <CardTitle className="text-center text-lg">Gold Tier</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="text-center mb-4">
-                        <span className="text-3xl font-bold">15,000</span>
-                        <span className="text-muted-foreground"> points</span>
-                      </div>
-
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-yellow-500/20 text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Maximum fee discounts</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-yellow-500/20 text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Gold badge on profile</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-yellow-500/20 text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Daily $APE rewards</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-yellow-500/20 text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Exclusive NFT airdrops</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2 mt-0.5 rounded-full p-1 bg-yellow-500/20 text-yellow-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </span>
-                          <span className="text-sm">Priority access to creator events</span>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+    <>
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Earn with Creators</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Engage with your favorite creators to earn rewards and boost your status
+          </p>
         </div>
-      </div>
 
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Engage-to-Earn Platform</CardTitle>
+            <CardDescription>
+              Listen to Spaces, share content, and comment on posts to earn points and rewards
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button 
+                variant={filter === 'all' ? 'default' : 'outline'} 
+                onClick={() => setFilter('all')}
+                className="rounded-full"
+              >
+                All Creators
+              </Button>
+              <Button 
+                variant={filter === 'spaces' ? 'default' : 'outline'} 
+                onClick={() => setFilter('spaces')}
+                className="rounded-full"
+              >
+                Spaces Hosts
+              </Button>
+              <Button 
+                variant={filter === 'news' ? 'default' : 'outline'} 
+                onClick={() => setFilter('news')}
+                className="rounded-full"
+              >
+                News & Updates
+              </Button>
+            </div>
+
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              {filteredCreators.length} creators available
+            </div>
+          </CardContent>
+        </Card>
+
+        {error && (
+          <Card className="mb-8 border-red-500 bg-red-50 dark:bg-red-950/30">
+            <CardHeader>
+              <CardTitle className="text-red-700 dark:text-red-400">Error Loading Creators</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{error}</p>
+              <p className="mt-2">Using fallback creator data instead.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading ? (
+            // Show skeletons while loading
+            Array(6).fill(0).map((_, i) => (
+              <Card key={`skeleton-${i}`} className="overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-[150px]" />
+                      <Skeleton className="h-4 w-[100px]" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+
+                  <div className="mt-6 space-y-3">
+                    <Skeleton className="h-8 w-full rounded-md" />
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            filteredCreators.map(creator => (
+              <CreatorCard key={creator.id} creator={creator} />
+            ))
+          )}
+        </div>
+
+        {!loading && filteredCreators.length === 0 && (
+          <Card className="p-8 text-center">
+            <h3 className="text-xl font-medium mb-2">No creators found</h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              No creators matched your current filter. Try selecting a different category.
+            </p>
+          </Card>
+        )}
+      </main>
       <div className="mt-auto">
         <Footer />
       </div>
-    </div>
+    </>
   );
 }
