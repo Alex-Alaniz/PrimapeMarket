@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActiveAccount } from "thirdweb/react";
+import { CreatorCard } from "@/components/earn/creator-card";
 
 export default function EarnPage() {
   const activeAccount = useActiveAccount();
@@ -45,64 +46,56 @@ export default function EarnPage() {
           console.log('Cache expired or not available, fetching fresh data');
         }
 
-        // Try multiple API endpoints in sequence
-        
-        // 1. Try the main API endpoint first
-        console.log('Attempting to fetch from main API endpoint...');
-        let response;
-        try {
-          response = await fetch(`/api/creators?use_cache=true&_t=${now}`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Fetched creators data:', data);
-            
-            if (Array.isArray(data) && data.length > 0) {
-              console.log('Updating UI with fresh data from API');
-              setCreators(data);
-              // Cache the data
-              localStorage.setItem('cachedCreators', JSON.stringify(data));
-              localStorage.setItem('cacheTime', now.toString());
-              setIsLoading(false);
-              return;
-            } else {
-              console.warn('Main API returned empty data, trying simple fallback API');
-            }
-          } else {
-            console.warn(`Main API request failed with status ${response.status}, trying fallback`);
-          }
-        } catch (error) {
-          console.error('Error fetching from main API:', error);
-        }
-        
-        // 2. Try the simplified endpoint as fallback
+        // First try the simpler API which is more reliable
         console.log('Attempting to fetch from simple API endpoint...');
         try {
-          const fallbackResponse = await fetch(`/api/creators/simple?_t=${now}`);
+          const simpleResponse = await fetch(`/api/creators/simple?_t=${now}`);
           
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            console.log('Fetched fallback creators data:', fallbackData);
+          if (simpleResponse.ok) {
+            const simpleData = await simpleResponse.json();
+            console.log('Fetched creators data:', simpleData);
             
-            if (Array.isArray(fallbackData) && fallbackData.length > 0) {
-              console.log('Updating UI with fallback API data');
-              setCreators(fallbackData);
-              // Cache the fallback data
-              localStorage.setItem('cachedCreators', JSON.stringify(fallbackData));
+            if (Array.isArray(simpleData) && simpleData.length > 0) {
+              console.log('Updating UI with data from simple API');
+              setCreators(simpleData);
+              // Cache the data
+              localStorage.setItem('cachedCreators', JSON.stringify(simpleData));
               localStorage.setItem('cacheTime', now.toString());
               setIsLoading(false);
               return;
-            } else {
-              console.warn('Simple API returned empty data, using hardcoded fallback');
             }
           } else {
-            console.warn(`Fallback API request failed with status ${fallbackResponse.status}, using hardcoded fallback`);
+            console.warn(`Simple API request failed with status ${simpleResponse.status}, trying main API`);
           }
         } catch (error) {
           console.error('Error fetching from simple API:', error);
         }
         
-        // 3. Use hardcoded fallback data if both APIs fail
+        // Then try the main API as backup
+        console.log('Attempting to fetch from main API endpoint...');
+        try {
+          const mainResponse = await fetch(`/api/creators?use_cache=true&_t=${now}`);
+          
+          if (mainResponse.ok) {
+            const mainData = await mainResponse.json();
+            
+            if (Array.isArray(mainData) && mainData.length > 0) {
+              console.log('Updating UI with data from main API');
+              setCreators(mainData);
+              // Cache the data
+              localStorage.setItem('cachedCreators', JSON.stringify(mainData));
+              localStorage.setItem('cacheTime', now.toString());
+              setIsLoading(false);
+              return;
+            }
+          } else {
+            console.warn(`Main API request failed with status ${mainResponse.status}, using hardcoded fallback`);
+          }
+        } catch (error) {
+          console.error('Error fetching from main API:', error);
+        }
+        
+        // Use hardcoded fallback data if both APIs fail
         console.warn('All API requests failed, using hardcoded fallback data');
         const fallbackCreators = [
           { 
@@ -286,47 +279,7 @@ export default function EarnPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {creators.map((creator) => (
-                  <Card key={creator.id} className="overflow-hidden">
-                    <div className="relative">
-                      <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                      <div className="absolute -bottom-10 left-4">
-                        <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
-                          <img 
-                            src={creator.avatar || '/images/pm.PNG'} 
-                            alt={creator.name} 
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <CardContent className="pt-12 p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-bold">{creator.name}</h3>
-                          <p className="text-sm text-muted-foreground">{creator.handle}</p>
-                        </div>
-                        <div className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded text-xs font-medium">
-                          {creator.category}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                        {creator.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">
-                          <span className="text-primary">{creator.points}</span> points
-                        </div>
-                        <a 
-                          href={`https://twitter.com/${creator.handle.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-500 hover:underline"
-                        >
-                          Follow on Twitter
-                        </a>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <CreatorCard key={creator.id} creator={creator} />
                 ))}
               </div>
             )}
