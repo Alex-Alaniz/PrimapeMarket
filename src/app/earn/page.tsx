@@ -274,12 +274,11 @@ export default function EarnPage() {
         if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
           console.log("Cache expired or not available, fetching fresh data");
 
-          let res;
           try {
-            // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
-            res = await fetch('/api/creators?use_cache=true');
+            // Try the main API first
+            const response = await fetch('/api/creators?use_cache=true');
 
-            if (!res.ok) {
+            if (!response.ok) {
               console.warn("Main API failed, trying simplified API");
               // Try the simplified API as fallback
               const fallbackResponse = await fetch('/api/creators/simple');
@@ -288,47 +287,54 @@ export default function EarnPage() {
                 throw new Error(`API returned ${fallbackResponse.status}: ${fallbackResponse.statusText}`);
               }
 
-              const data = await fallbackResponse.json();
-              return data;
+              const fallbackData = await fallbackResponse.json();
+              console.log("Using simplified API data:", fallbackData);
+
+              // Store in localStorage and update state
+              localStorage.setItem('cached_creators', JSON.stringify(fallbackData));
+              sessionStorage.setItem('creators_last_fetch', now);
+              setLastFetchTime(now);
+
+              if (fallbackData.length > 0) {
+                setCreators(fallbackData);
+              }
+
+              return fallbackData;
             }
 
-            const data = await res.json();
+            const data = await response.json();
+
+            // Store in localStorage for future use
+            localStorage.setItem('cached_creators', JSON.stringify(data));
+            sessionStorage.setItem('creators_last_fetch', now);
+            setLastFetchTime(now);
+
+            // Only update state if we got valid data
+            if (data.length > 0) {
+              console.log("Updating UI with fresh data from API");
+              setCreators(data);
+            } else {
+              console.log("API returned empty data, using fallback data");
+              setCreators(fallbackCreators);
+              localStorage.setItem('cached_creators', JSON.stringify(fallbackCreators));
+            }
+
+            // Log the fetched data
+            console.log("Fetched creators data:", data);
             return data;
           } catch (error) {
-            console.error("Both APIs failed:", error);
-            throw error;
+            console.error("All APIs failed:", error);
+
+            // Use hardcoded fallback data
+            console.log("Using hardcoded fallback creator data");
+            setCreators(fallbackCreators);
+
+            // Store fallback data in cache so it's available next time
+            localStorage.setItem('cached_creators', JSON.stringify(fallbackCreators));
+            sessionStorage.setItem('creators_last_fetch', now);
+
+            return fallbackCreators;
           }
-
-          const data = await res.json();
-
-          // Transform Twitter handles to include @ if not present
-          const enhancedData = data.map((creator: {
-            id: string;
-            name: string;
-            handle: string;
-            avatar: string;
-            description: string;
-            category: string;
-            points: number;
-            engagementTypes: string[];
-          }) => ({
-            ...creator,
-            handle: creator.handle.startsWith('@') ? creator.handle : `@${creator.handle}`,
-          }));
-
-          // Store in localStorage for future use
-          localStorage.setItem('cached_creators', JSON.stringify(enhancedData));
-          sessionStorage.setItem('creators_last_fetch', now);
-          setLastFetchTime(now);
-
-          // Only update state if we got valid data
-          if (enhancedData.length > 0) {
-            console.log("Updating UI with fresh data from API");
-            setCreators(enhancedData);
-          }
-
-          // Log the fetched data
-          console.log("Fetched creators data:", enhancedData);
         }
       } catch (error) {
         console.error("Failed to fetch creators:", error);
