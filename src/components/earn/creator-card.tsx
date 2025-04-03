@@ -33,7 +33,7 @@ export function CreatorCard({ creator }: { creator: Creator }) {
         </div>
       </div>
 
-      <CardContent className="pt-12 p-4">
+      <CardContent className="pt-16 p-4">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-bold">{creator.name || `${cleanHandle} | ApeChain Creator`}</h3>
