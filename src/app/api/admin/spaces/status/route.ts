@@ -1,67 +1,109 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { db as twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses - keep this list secure and limited
 const ADMIN_WALLETS = [
-  // Add your admin wallet addresses here in lowercase for consistent comparison
-  "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
-  // Add more wallet addresses to ensure access
-  "*", // Temporary wildcard to allow all wallet addresses for testing
-  // Add more as needed
+  "0xD1D1B36c40D522eb84D9a8f76A99f713A9BfA9C4",
+  "0xE9e6a56Fe9b8C47dF185B25e3B07f7d08e1fBb77",
+  "0xc88B5AaC42e0FD868cBCE2D0C5A8aA30a91FB9EA",
+  "0xC17A09F8599B53d55Fa6426f38B6F6F7C4d95A10"
 ];
 
-async function validateAdmin(req: NextRequest): Promise<boolean> {
-  const adminWallet = req.headers.get("x-admin-wallet");
-  if (!adminWallet) return false;
-  
-  // Convert to lowercase for case-insensitive comparison
-  const normalizedWallet = adminWallet.toLowerCase();
-  
-  // Check if the wallet is in our admin list
-  return ADMIN_WALLETS.includes(normalizedWallet);
-}
-
-// POST /api/admin/spaces/status - Update space status
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get the wallet address from URL params
+    const walletAddress = req.nextUrl.searchParams.get('walletAddress');
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
 
-    const { id, isActive } = await req.json();
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Space ID is required" },
-        { status: 400 },
-      );
-    }
-
-    // Update the space (in a real implementation, you might have a specific status field)
-    const updatedSpace = await twitterDb.twitterSpace.update({
-      where: { id },
-      data: {
-        // This could be a specific status field in your schema
-        // For now, we'll use a placeholder approach
-        // isActive: isActive,
-        description: isActive 
-          ? `${(await twitterDb.twitterSpace.findUnique({ where: { id } }))?.description || ''} (Active)`.trim()
-          : ((await twitterDb.twitterSpace.findUnique({ where: { id } }))?.description || '')
-              .replace(/ \(Active\)$/, ''),
-      },
-      include: {
-        hosts: true,
-      },
+    // Basic stats
+    const totalSpaces = await db.twitterSpace.count();
+    const upcomingSpaces = await db.twitterSpace.count({
+      where: {
+        status: 'scheduled'
+      }
     });
-
-    return NextResponse.json(updatedSpace);
-  } catch (error) {
-    console.error("Error updating space status:", error);
-    return NextResponse.json(
-      { error: "Failed to update space status" },
-      { status: 500 },
+    const completedSpaces = await db.twitterSpace.count({
+      where: {
+        status: 'completed'
+      }
+    });
+    const cancelledSpaces = await db.twitterSpace.count({
+      where: {
+        status: 'cancelled'
+      }
+    });
+    
+    // Get spaces by day of week
+    const spacesByDay = await Promise.all(
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(async (day) => {
+        const count = await db.twitterSpace.count({
+          where: {
+            day_of_week: day
+          }
+        });
+        return { day, count };
+      })
     );
+    
+    // Get top hosts
+    const topHosts = await db.twitterSpace.groupBy({
+      by: ['host_username'],
+      _count: {
+        id: true
+      },
+      orderBy: {
+        _count: {
+          id: 'desc'
+        }
+      },
+      take: 5
+    });
+    
+    // Get host details
+    const hostUsernames = topHosts.map(host => host.host_username);
+    const hostProfiles = await db.twitterProfile.findMany({
+      where: {
+        username: {
+          in: hostUsernames
+        }
+      }
+    });
+    
+    // Create a map for quick lookup
+    const profileMap = hostProfiles.reduce((map, profile) => {
+      map[profile.username] = profile;
+      return map;
+    }, {} as Record<string, any>);
+    
+    // Format top hosts with profile data
+    const formattedTopHosts = topHosts.map(host => ({
+      username: host.host_username,
+      count: host._count.id,
+      profile: profileMap[host.host_username] || null
+    }));
+    
+    // RSVPs stats
+    const totalRSVPs = await db.twitterSpaceRSVP.count();
+    
+    return NextResponse.json({
+      success: true,
+      stats: {
+        total: totalSpaces,
+        upcoming: upcomingSpaces,
+        completed: completedSpaces,
+        cancelled: cancelledSpaces,
+        byDay: spacesByDay,
+        topHosts: formattedTopHosts,
+        rsvps: totalRSVPs
+      }
+    });
+  } catch (error) {
+    console.error('Error in spaces status API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

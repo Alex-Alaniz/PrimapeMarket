@@ -1,95 +1,44 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { getTwitterProfileData, cacheTwitterProfile } from "@/lib/twitter-api";
-import { db as twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses (same as in other admin routes)
 const ADMIN_WALLETS = [
-  "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
-  "*", // Temporary wildcard to allow all wallet addresses for testing
+  "0xD1D1B36c40D522eb84D9a8f76A99f713A9BfA9C4",
+  "0xE9e6a56Fe9b8C47dF185B25e3B07f7d08e1fBb77",
+  "0xc88B5AaC42e0FD868cBCE2D0C5A8aA30a91FB9EA",
+  "0xC17A09F8599B53d55Fa6426f38B6F6F7C4d95A10"
 ];
 
-async function validateAdmin(req: NextRequest): Promise<boolean> {
-  const adminWallet = req.headers.get("x-admin-wallet");
-  if (!adminWallet) return false;
-  
-  // Convert to lowercase for case-insensitive comparison
-  const normalizedWallet = adminWallet.toLowerCase();
-  
-  // Check if the wallet is in our admin list
-  return ADMIN_WALLETS.includes(normalizedWallet);
-}
-
-// POST /api/admin/creators/fetch-single - Fetch a single Twitter profile
 export async function POST(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Get connected wallet from request
+    const data = await req.json();
+    const { walletAddress, username } = data;
 
-    const body = await req.json();
-    const { username } = body;
+    // Validate admin wallet
+    if (!ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
+    }
 
     if (!username) {
-      return NextResponse.json(
-        { error: "Username is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
-    // Clean username (remove @ if present)
-    const cleanUsername = username.replace("@", "");
-
-    // Check if creator exists in whitelist
-    const creator = await twitterDb.twitterWhitelist.findUnique({
-      where: { username: cleanUsername },
-    });
-
-    if (!creator) {
-      return NextResponse.json(
-        { error: "Creator not found in whitelist", success: false },
-        { status: 404 },
-      );
-    }
-
-    // Get existing profile if any
-    const existingProfile = await twitterDb.twitterProfile.findUnique({
-      where: { username: cleanUsername }
-    });
-
-    // Fetch the Twitter profile
-    console.log(`Manually fetching Twitter data for ${cleanUsername}`);
-    const twitterData = await getTwitterProfileData(cleanUsername);
+    // Fetch Twitter profile data
+    const twitterData = await getTwitterProfileData(username);
 
     if (!twitterData) {
-      return NextResponse.json({
-        error: "Failed to fetch Twitter data",
-        success: false,
-        existingProfile: existingProfile || null,
-      }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch Twitter profile' }, { status: 404 });
     }
 
     // Cache the Twitter profile
     await cacheTwitterProfile(twitterData);
 
-    return NextResponse.json({
-      success: true,
-      message: `Successfully fetched and cached Twitter data for ${cleanUsername}`,
-      oldProfile: existingProfile || null,
-      newProfile: twitterData
-    });
-    
-  } catch (error: any) {
-    console.error("Error fetching creator profile:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to fetch creator profile", 
-        message: error.message || "Unknown error",
-        success: false 
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: true, profile: twitterData });
+  } catch (error) {
+    console.error('Error in fetch-single API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }
 
@@ -115,7 +64,7 @@ export async function GET(req: NextRequest) {
     const cleanUsername = username.replace("@", "");
 
     // Check if creator exists in whitelist
-    const creator = await twitterDb.twitterWhitelist.findUnique({
+    const creator = await db.twitterWhitelist.findUnique({
       where: { username: cleanUsername },
     });
 
@@ -127,7 +76,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get existing profile if any
-    const existingProfile = await twitterDb.twitterProfile.findUnique({
+    const existingProfile = await db.twitterProfile.findUnique({
       where: { username: cleanUsername }
     });
 
@@ -144,4 +93,15 @@ export async function GET(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+async function validateAdmin(req: NextRequest): Promise<boolean> {
+  const adminWallet = req.headers.get("x-admin-wallet");
+  if (!adminWallet) return false;
+  
+  // Convert to lowercase for case-insensitive comparison
+  const normalizedWallet = adminWallet.toLowerCase();
+  
+  // Check if the wallet is in our admin list
+  return ADMIN_WALLETS.includes(normalizedWallet);
 }

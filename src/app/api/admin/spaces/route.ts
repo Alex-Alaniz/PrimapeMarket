@@ -1,148 +1,254 @@
+
 import { NextRequest, NextResponse } from "next/server";
-import { db as twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses - keep this list secure and limited
 const ADMIN_WALLETS = [
-  "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
-  "*", // Temporary wildcard to allow all wallet addresses for testing
+  "0xD1D1B36c40D522eb84D9a8f76A99f713A9BfA9C4",
+  "0xE9e6a56Fe9b8C47dF185B25e3B07f7d08e1fBb77",
+  "0xc88B5AaC42e0FD868cBCE2D0C5A8aA30a91FB9EA",
+  "0xC17A09F8599B53d55Fa6426f38B6F6F7C4d95A10"
 ];
 
-async function validateAdmin(req: NextRequest): Promise<boolean> {
-  const adminWallet = req.headers.get("x-admin-wallet");
-  if (!adminWallet) return false;
-  const normalizedWallet = adminWallet.toLowerCase();
-  return ADMIN_WALLETS.includes(normalizedWallet);
-}
+// Day of week validation
+const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-// GET /api/admin/spaces - List all spaces
 export async function GET(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get the wallet address from URL params
+    const walletAddress = req.nextUrl.searchParams.get('walletAddress');
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
 
-    const spaces = await twitterDb.twitterSpace.findMany({
-      include: {
-        hosts: true,
-      },
+    // Get all spaces with host data if available
+    const spaces = await db.twitterSpace.findMany({
       orderBy: [
-        { day_of_week: "asc" },
-        { start_time: "asc" },
+        { day_of_week: 'asc' },
+        { start_hour: 'asc' },
+        { start_minute: 'asc' }
       ],
+      include: {
+        host: true
+      }
     });
-
-    return NextResponse.json(spaces);
+    
+    return NextResponse.json({
+      success: true,
+      spaces,
+      count: spaces.length
+    });
   } catch (error) {
-    console.error("Error fetching spaces:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch Twitter spaces" },
-      { status: 500 },
-    );
+    console.error('Error in spaces GET API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }
 
-// POST /api/admin/spaces - Create a new space
 export async function POST(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const data = await req.json();
+    const { walletAddress, space } = data;
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
-
-    const body = await req.json();
-    const { title, description, start_time, end_time, day_of_week, hosts, points, recurring, space_id } = body;
-
-    if (!title || !day_of_week || !start_time || !hosts || !Array.isArray(hosts) || hosts.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
+    
+    // Validate space data
+    if (!space || !space.host_username || !space.title || !space.day_of_week) {
+      return NextResponse.json({ error: 'Missing required space data' }, { status: 400 });
     }
-
-    // Find Twitter profiles for all hosts
-    const hostUsernames = hosts.map(host => host.replace('@', ''));
-    const existingHosts = await twitterDb.twitterProfile.findMany({
+    
+    // Validate day of week
+    if (!DAYS_OF_WEEK.includes(space.day_of_week)) {
+      return NextResponse.json({ error: 'Invalid day of week' }, { status: 400 });
+    }
+    
+    // Clean the username (remove @ if present)
+    const cleanUsername = space.host_username.replace('@', '');
+    
+    // Find or create the host profile
+    let hostProfile = await db.twitterProfile.findUnique({
       where: {
-        username: {
-          in: hostUsernames,
-        },
-      },
+        username: cleanUsername
+      }
     });
-
-    // Check if all hosts exist
-    if (existingHosts.length !== hostUsernames.length) {
-      const missingHosts = hostUsernames.filter(
-        host => !existingHosts.some(h => h.username === host)
-      );
-
-      return NextResponse.json(
-        { 
-          error: "Some hosts are not found in our Twitter profiles", 
-          missingHosts 
-        },
-        { status: 400 },
-      );
+    
+    if (!hostProfile) {
+      // If host doesn't exist in our database, create a placeholder
+      hostProfile = await db.twitterProfile.create({
+        data: {
+          id: `placeholder_${cleanUsername}`,
+          username: cleanUsername,
+          name: cleanUsername,
+          description: '',
+          profile_image_url: '',
+          last_updated: new Date()
+        }
+      });
     }
-
+    
     // Create the space
-    const space = await twitterDb.twitterSpace.create({
+    const createdSpace = await db.twitterSpace.create({
       data: {
-        title,
-        description,
-        start_time: new Date(start_time),
-        end_time: end_time ? new Date(end_time) : undefined,
-        day_of_week,
-        recurring: recurring !== undefined ? recurring : true,
-        points: points || 100,
-        space_id,
-        hosts: {
-          connect: existingHosts.map(host => ({ id: host.id })),
-        },
-      },
-      include: {
-        hosts: true,
-      },
+        id: space.id || `space_${Date.now()}`,
+        host_username: cleanUsername,
+        title: space.title,
+        description: space.description || '',
+        day_of_week: space.day_of_week,
+        start_hour: parseInt(space.start_hour) || 0,
+        start_minute: parseInt(space.start_minute) || 0,
+        duration_minutes: parseInt(space.duration_minutes) || 60,
+        scheduled_date: space.scheduled_date ? new Date(space.scheduled_date) : null,
+        is_recurring: space.is_recurring || false,
+        recurring_rule: space.recurring_rule || null,
+        space_url: space.space_url || null,
+        status: 'scheduled',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
     });
-
-    return NextResponse.json(space, { status: 201 });
+    
+    return NextResponse.json({
+      success: true,
+      space: createdSpace
+    });
   } catch (error) {
-    console.error("Error creating space:", error);
-    return NextResponse.json(
-      { error: "Failed to create Twitter space" },
-      { status: 500 },
-    );
+    console.error('Error in spaces POST API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }
 
-// DELETE /api/admin/spaces/:id - Delete a space
+export async function PUT(req: NextRequest) {
+  try {
+    const data = await req.json();
+    const { walletAddress, space } = data;
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
+    }
+    
+    // Validate space data
+    if (!space || !space.id) {
+      return NextResponse.json({ error: 'Missing space ID' }, { status: 400 });
+    }
+    
+    // Validate day of week if provided
+    if (space.day_of_week && !DAYS_OF_WEEK.includes(space.day_of_week)) {
+      return NextResponse.json({ error: 'Invalid day of week' }, { status: 400 });
+    }
+    
+    // Find the space to update
+    const existingSpace = await db.twitterSpace.findUnique({
+      where: {
+        id: space.id
+      }
+    });
+    
+    if (!existingSpace) {
+      return NextResponse.json({ error: 'Space not found' }, { status: 404 });
+    }
+    
+    // Clean the username if provided (remove @ if present)
+    let cleanUsername = undefined;
+    if (space.host_username) {
+      cleanUsername = space.host_username.replace('@', '');
+      
+      // Check if host exists, create placeholder if not
+      const hostProfile = await db.twitterProfile.findUnique({
+        where: {
+          username: cleanUsername
+        }
+      });
+      
+      if (!hostProfile) {
+        await db.twitterProfile.create({
+          data: {
+            id: `placeholder_${cleanUsername}`,
+            username: cleanUsername,
+            name: cleanUsername,
+            description: '',
+            profile_image_url: '',
+            last_updated: new Date()
+          }
+        });
+      }
+    }
+    
+    // Update the space
+    const updatedSpace = await db.twitterSpace.update({
+      where: {
+        id: space.id
+      },
+      data: {
+        host_username: cleanUsername,
+        title: space.title,
+        description: space.description,
+        day_of_week: space.day_of_week,
+        start_hour: space.start_hour !== undefined ? parseInt(space.start_hour) : undefined,
+        start_minute: space.start_minute !== undefined ? parseInt(space.start_minute) : undefined,
+        duration_minutes: space.duration_minutes !== undefined ? parseInt(space.duration_minutes) : undefined,
+        scheduled_date: space.scheduled_date ? new Date(space.scheduled_date) : undefined,
+        is_recurring: space.is_recurring,
+        recurring_rule: space.recurring_rule,
+        space_url: space.space_url,
+        status: space.status,
+        updated_at: new Date()
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      space: updatedSpace
+    });
+  } catch (error) {
+    console.error('Error in spaces PUT API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const data = await req.json();
+    const { walletAddress, spaceId } = data;
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Space ID is required" },
-        { status: 400 },
-      );
+    
+    // Validate space ID
+    if (!spaceId) {
+      return NextResponse.json({ error: 'Missing space ID' }, { status: 400 });
     }
-
-    await twitterDb.twitterSpace.delete({
-      where: { id },
+    
+    // Find the space to delete
+    const existingSpace = await db.twitterSpace.findUnique({
+      where: {
+        id: spaceId
+      }
     });
-
-    return NextResponse.json({ success: true });
+    
+    if (!existingSpace) {
+      return NextResponse.json({ error: 'Space not found' }, { status: 404 });
+    }
+    
+    // Delete the space
+    await db.twitterSpace.delete({
+      where: {
+        id: spaceId
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Space deleted successfully'
+    });
   } catch (error) {
-    console.error("Error deleting space:", error);
-    return NextResponse.json(
-      { error: "Failed to delete Twitter space" },
-      { status: 500 },
-    );
+    console.error('Error in spaces DELETE API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

@@ -1,198 +1,69 @@
-import { PrismaClient as DefaultPrismaClient } from "@prisma/client";
+import { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
+import 'dotenv/config';
 
-// Import the Twitter PrismaClient type directly to ensure proper typing
-import type { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
+// Determine if Twitter client is available based on DATABASE_URL_TWITTER
+const hasTwitterClient = !!process.env.DATABASE_URL_TWITTER;
 
-// Remove unused variable warning
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let PrismaClient: any;
-let hasTwitterClient = false;
+// Initialize Twitter Prisma client if available
+let twitterDb: TwitterPrismaClient | null = null;
 
-// Function to create a PrismaClient with proper output for production
-const getPrismaClient = () => {
+if (hasTwitterClient) {
   try {
-    // Dynamic import to avoid build errors when the module doesn't exist yet
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaClient: TwitterClient } = require("@prisma/twitter-client");
-
-    // For production environments like Vercel, we need to specify the output
-    if (process.env.NODE_ENV === 'production') {
-      return new TwitterClient({
-        datasources: {
-          db: {
-            url: process.env.TWITTER_POSTGRES_URL || process.env.DATABASE_URL,
-          },
-        },
-        // This is crucial for Vercel deployment - forces binary target
-        errorFormat: 'minimal',
-      });
-    }
-
-    // For development, use standard initialization
-    hasTwitterClient = true;
-    return new TwitterClient({
+    twitterDb = new TwitterPrismaClient({
       datasources: {
         db: {
-          url: process.env.TWITTER_POSTGRES_URL || process.env.DATABASE_URL,
+          url: process.env.DATABASE_URL_TWITTER || '',
         },
       },
     });
+    console.log('Twitter Prisma client initialized successfully');
   } catch (error) {
-    // Fallback to regular PrismaClient if the Twitter client is not generated yet
-    console.warn("Twitter client not found, using regular Prisma client as fallback:", error);
-    return null;
+    console.error('Failed to initialize Twitter Prisma client:', error);
+    twitterDb = null;
   }
-};
+}
 
-// Initialize the client with our custom function
-const twitterDb = getPrismaClient();
-
-// Create a safe wrapper for Twitter client operations that gracefully falls back
-// This is used when we can't connect to Twitter's database
+// Create safe fallback wrapper for Twitter operations
 const safeTwitterDbWrapper = {
   twitterProfile: {
-    findUnique: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterProfile.findUnique(params);
-        return null;
-      } catch (err) {
-        console.error("Error in twitterProfile.findUnique:", err);
-        return null;
-      }
-    },
-    findMany: async (params?: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterProfile.findMany(params);
-        return [];
-      } catch (error) {
-        console.error("Error in twitterProfile.findMany:", error);
-        return [];
-      }
-    },
-    create: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterProfile.create(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterProfile.create:", error);
-        return null;
-      }
-    },
-    update: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterProfile.update(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterProfile.update:", error);
-        return null;
-      }
-    },
-    upsert: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterProfile.upsert(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterProfile.upsert:", error);
-        return null;
-      }
-    }
-  },
-  twitterWhitelist: {
-    findMany: async (params?: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterWhitelist.findMany(params);
-        return [];
-      } catch (error) {
-        console.error("Error in twitterWhitelist.findMany:", error);
-        return [];
-      }
-    },
-    findUnique: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterWhitelist.findUnique(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterWhitelist.findUnique:", error);
-        return null;
-      }
-    },
-    create: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterWhitelist.create(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterWhitelist.create:", error);
-        return null;
-      }
-    },
-    update: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterWhitelist.update(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterWhitelist.update:", error);
-        return null;
-      }
-    },
-    upsert: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterWhitelist.upsert(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterWhitelist.upsert:", error);
-        return null;
-      }
-    }
+    findUnique: async () => null,
+    findMany: async () => [],
+    create: async () => null,
+    update: async () => null,
+    upsert: async () => null,
   },
   twitterSpace: {
-    findMany: async (params?: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterSpace.findMany(params);
-        return [];
-      } catch (error) {
-        console.error("Error in twitterSpace.findMany:", error);
-        return [];
-      }
-    },
-    create: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.twitterSpace.create(params);
-        return null;
-      } catch (error) {
-        console.error("Error in twitterSpace.create:", error);
-        return null;
-      }
-    }
+    findUnique: async () => null,
+    findMany: async () => [],
+    create: async () => null,
+    update: async () => null,
+    upsert: async () => null,
   },
-  spaceRSVP: {
-    findMany: async (params?: any) => {
-      try {
-        if (twitterDb) return await twitterDb.spaceRSVP.findMany(params);
-        return [];
-      } catch (error) {
-        console.error("Error in spaceRSVP.findMany:", error);
-        return [];
-      }
-    },
-    create: async (params: any) => {
-      try {
-        if (twitterDb) return await twitterDb.spaceRSVP.create(params);
-        return null;
-      } catch (error) {
-        console.error("Error in spaceRSVP.create:", error);
-        return null;
-      }
-    }
-  }
+  twitterSpaceRSVP: {
+    findUnique: async () => null,
+    findMany: async () => [],
+    create: async () => null,
+    update: async () => null,
+    upsert: async () => null,
+    count: async () => 0,
+  },
+  whitelistedCreator: {
+    findUnique: async () => null,
+    findMany: async () => [],
+    create: async () => null,
+    update: async () => null,
+    upsert: async () => null,
+    count: async () => 0,
+  },
 };
 
-// Export the safe wrapper in production, or the real client in development
-export const db = process.env.NODE_ENV === 'production' ? safeTwitterDbWrapper : twitterDb || safeTwitterDbWrapper;
+// Export the Twitter database client
+export const twitterDb = hasTwitterClient ? twitterDb : null;
 
-// Also export the raw twitterDb instance for direct access when needed
-export { twitterDb };
+// Export a safe wrapper for when the Twitter client isn't available
+export const db = hasTwitterClient ? twitterDb || safeTwitterDbWrapper : safeTwitterDbWrapper;
 
-// Create proxy methods for fallback operation if Twitter client isn't available
+// Log warning if Twitter client isn't available
 if (!hasTwitterClient) {
   console.warn("Using fallback Twitter client. Limited functionality available.");
 }

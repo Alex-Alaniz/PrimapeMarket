@@ -1,37 +1,29 @@
-
 import 'dotenv/config';
-import { db as twitterDb } from './twitter-prisma';
+import { db, twitterDb } from './twitter-prisma';
 
 // Twitter API v2 endpoint for user lookup
 const TWITTER_API_ENDPOINT = 'https://api.twitter.com/2/users/by/username/';
 
-// Track API rate limits
-let apiCallsInWindow = 0;
-let apiWindowResetTime = Date.now() + (15 * 60 * 1000); // 15 minutes from now
-
-// Reset counter when the time window passes
-function checkAndResetRateLimit() {
-  const now = Date.now();
-  if (now > apiWindowResetTime) {
-    apiCallsInWindow = 0;
-    apiWindowResetTime = now + (15 * 60 * 1000); // 15 minutes from now
-    return true;
-  }
-  return false;
-}
-
-// Check if we're within rate limits
-export function canMakeApiCall() {
-  checkAndResetRateLimit();
-  return apiCallsInWindow < 3; // 3 requests per 15 minutes
-}
-
-interface TwitterUserData {
+// Interface for Twitter API response
+export interface TwitterUserData {
   id: string;
   name: string;
   username: string;
   description: string;
   profile_image_url: string;
+}
+
+// Rate limiting
+let lastApiCallTime = 0;
+const MIN_API_CALL_INTERVAL = 3000; // 3 seconds between API calls
+
+/**
+ * Checks if we can make an API call based on rate limiting
+ */
+export function canMakeApiCall(): boolean {
+  const now = Date.now();
+  const timeSinceLastCall = now - lastApiCallTime;
+  return timeSinceLastCall >= MIN_API_CALL_INTERVAL;
 }
 
 /**
@@ -43,11 +35,11 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
   try {
     // Clean the username (remove @ if present)
     const cleanUsername = username.replace('@', '');
-    
+
     // First, try to get data from our database to avoid API calls
     let existingProfile;
     try {
-      existingProfile = await twitterDb.twitterProfile.findUnique({
+      existingProfile = await db.twitterProfile.findUnique({
         where: {
           username: cleanUsername
         }
@@ -56,7 +48,7 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
       console.error(`Error fetching existing Twitter profile for ${cleanUsername}:`, error);
       existingProfile = null;
     }
-    
+
     if (existingProfile) {
       console.log(`Using existing Twitter profile for ${cleanUsername}`);
       return {
@@ -67,101 +59,48 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
         profile_image_url: existingProfile.profile_image_url || ''
       };
     }
-    
+
+    // Check if we can make an API call based on rate limiting
+    if (!canMakeApiCall()) {
+      console.warn('Rate limit exceeded for Twitter API calls');
+      return null;
+    }
+
     // Check if we have Twitter bearer tokens (primary and backup)
     const primaryBearerToken = process.env.TWITTER_BEARER_TOKEN;
     const secondaryBearerToken = process.env.TWITTER_BEARER_TOKEN_SECONDARY;
-    
+
     if (!primaryBearerToken && !secondaryBearerToken) {
       console.warn('No Twitter Bearer Tokens found in environment variables');
       return null;
     }
-    
-    // For manual fetching, we'll bypass the rate limit check
-    const isManualFetch = process.env.MANUAL_FETCH === 'true';
-    
-    // Check rate limits before making API call (unless it's a manual fetch)
-    if (!isManualFetch && !canMakeApiCall()) {
-      console.warn(`Rate limit reached for Twitter API. Cannot fetch ${cleanUsername} data.`);
+
+    // Set the bearer token (try primary first, then secondary)
+    const bearerToken = primaryBearerToken || secondaryBearerToken;
+
+    // Update last API call time for rate limiting
+    lastApiCallTime = Date.now();
+
+    // Make the API call
+    const response = await fetch(`${TWITTER_API_ENDPOINT}${cleanUsername}?user.fields=profile_image_url,description`, {
+      headers: {
+        'Authorization': `Bearer ${bearerToken}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch Twitter profile for ${cleanUsername}: ${response.status} ${response.statusText}`);
       return null;
-    }
-
-    // Only fetch from Twitter API if we don't have data in our DB
-    console.log(`Fetching Twitter data for ${cleanUsername} from API`);
-    
-    // Increment API call counter (unless it's a manual fetch)
-    if (!isManualFetch) {
-      apiCallsInWindow++;
-    }
-    
-    // Determine which token to use - start with primary
-    let bearerToken = primaryBearerToken;
-    
-    // Fetch user data from Twitter API with retry logic
-    let retries = 2;
-    let response: Response | undefined;
-    
-    let useSecondaryToken = false;
-    
-    while (retries >= 0) {
-      // If primary token fails with auth error and we have a secondary token, try that
-      if (useSecondaryToken && secondaryBearerToken) {
-        console.log(`Trying secondary token for ${cleanUsername}`);
-        bearerToken = secondaryBearerToken;
-      }
-      
-      try {
-        response = await fetch(
-          `${TWITTER_API_ENDPOINT}${cleanUsername}?user.fields=description,profile_image_url`, 
-          {
-            headers: {
-              Authorization: `Bearer ${bearerToken}`
-            }
-          }
-        );
-        
-        // If we get a 401 Unauthorized and have a secondary token to try
-        if (response.status === 401 && secondaryBearerToken && !useSecondaryToken) {
-          console.warn(`Auth failed for ${cleanUsername}, trying secondary token...`);
-          useSecondaryToken = true;
-          continue; // Try again with secondary token
-        }
-        
-        if (response.status === 429) {
-          // Rate limited - wait and retry if we have retries left
-          if (retries > 0) {
-            console.warn(`Rate limited fetching ${cleanUsername}, retrying in 2s...`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            retries--;
-            continue;
-          }
-          throw new Error('Twitter API rate limited');
-        }
-        
-        // Break out of retry loop if we got a response (even if it's an error)
-        break;
-      } catch (error) {
-        console.error(`Network error fetching ${cleanUsername}:`, error);
-        if (retries > 0) {
-          retries--;
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          continue;
-        }
-        throw error; // Re-throw if out of retries
-      }
-    }
-
-    if (!response || !response.ok) {
-      throw new Error(`Twitter API error: ${response?.status || 'unknown'} ${response?.statusText || 'unknown'}`);
     }
 
     const data = await response.json();
-    
+
     if (!data.data) {
-      console.warn(`No Twitter data found for username: ${username}`);
+      console.error(`No data returned for Twitter profile ${cleanUsername}`);
       return null;
     }
 
+    // Return the user data
     return {
       id: data.data.id,
       name: data.data.name,
@@ -170,39 +109,46 @@ export async function getTwitterProfileData(username: string): Promise<TwitterUs
       profile_image_url: data.data.profile_image_url || ''
     };
   } catch (error) {
-    console.error(`Error fetching Twitter data for ${username}:`, error);
+    console.error(`Error fetching Twitter profile for ${username}:`, error);
     return null;
   }
 }
 
 /**
- * Caches Twitter profile data in our database
+ * Caches a Twitter profile in the database
+ * @param profile Twitter profile data to cache
  */
-export async function cacheTwitterProfile(profileData: TwitterUserData): Promise<void> {
+export async function cacheTwitterProfile(profile: TwitterUserData): Promise<boolean> {
+  if (!twitterDb) {
+    console.warn('Twitter database not available, cannot cache profile');
+    return false;
+  }
+
   try {
-    await twitterDb.twitterProfile.upsert({
-      where: { id: profileData.id },
+    await db.twitterProfile.upsert({
+      where: {
+        username: profile.username
+      },
       update: {
-        username: profileData.username,
-        name: profileData.name,
-        description: profileData.description,
-        profile_image_url: profileData.profile_image_url,
-        // You can update other fields as needed
+        name: profile.name,
+        description: profile.description,
+        profile_image_url: profile.profile_image_url,
+        last_updated: new Date()
       },
       create: {
-        id: profileData.id,
-        username: profileData.username,
-        name: profileData.name,
-        description: profileData.description,
-        profile_image_url: profileData.profile_image_url,
-        // Set default values for other required fields
-        followers_count: 0,
-        following_count: 0,
-        tweet_count: 0,
-      },
+        id: profile.id,
+        username: profile.username,
+        name: profile.name,
+        description: profile.description,
+        profile_image_url: profile.profile_image_url,
+        last_updated: new Date()
+      }
     });
-    console.log('Twitter profile cached successfully:', profileData.username);
+
+    console.log(`Twitter profile cached for ${profile.username}`);
+    return true;
   } catch (error) {
-    console.error('Error caching Twitter profile:', error);
+    console.error(`Error caching Twitter profile for ${profile.username}:`, error);
+    return false;
   }
 }
