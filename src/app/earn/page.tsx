@@ -8,10 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Footer } from '@/components/footer';
 
+interface Creator {
+  id: string;
+  handle: string;
+  name: string;
+  points: number;
+  category: string;
+  engagementTypes: string[];
+  avatar: string;
+  description: string;
+  twitterId?: string;
+  claimed?: boolean;
+}
+
 export default function EarnPage() {
-  const [creators, setCreators] = useState([]);
+  const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
@@ -97,7 +110,7 @@ export default function EarnPage() {
           localStorage.setItem('cachedCreators', JSON.stringify(fallbackCreators));
           localStorage.setItem('cacheTime', now.toString());
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching creators:', err);
         setError(err.message || 'Failed to load creators');
 
