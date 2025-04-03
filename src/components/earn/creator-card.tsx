@@ -19,15 +19,34 @@ type Creator = {
   engagementTypes: string[];
 };
 
+// Keep track of last 5 used background images to prevent repetition
+const recentlyUsedBgs: string[] = [];
+
 export function CreatorCard({ creator }: { creator: Creator }) {
-  // Function to get a background image based on creator ID
+  // Function to get a background image with variety
   const getBgImage = (id: string) => {
-    // Use creator ID to select one of the background images consistently
     const bgImages = ['cheetah.png', 'dmt.png', 'trippy.png', 'zombie.png', 'deathbot.png', 'noise.png'];
     
-    // Use the sum of character codes to create a deterministic selection
+    // Use the sum of character codes to create a consistent but varied selection
     const charSum = id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return bgImages[charSum % bgImages.length];
+    let selectedIndex = charSum % bgImages.length;
+    let selectedImage = bgImages[selectedIndex];
+    
+    // If this image was recently used, try the next ones until we find one not in recent list
+    let attempts = 0;
+    while (recentlyUsedBgs.includes(selectedImage) && attempts < bgImages.length - 1) {
+      selectedIndex = (selectedIndex + 1) % bgImages.length;
+      selectedImage = bgImages[selectedIndex];
+      attempts++;
+    }
+    
+    // Update recently used images list (keep only last 5)
+    recentlyUsedBgs.push(selectedImage);
+    if (recentlyUsedBgs.length > 5) {
+      recentlyUsedBgs.shift();
+    }
+    
+    return selectedImage;
   };
 
   // Format handle for display and links
