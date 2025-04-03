@@ -6,16 +6,13 @@ import CreatorCard from '@/components/earn/creator-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useSyncUserWallets } from '@/hooks/useSyncUserWallets';
+import { Footer } from '@/components/footer';
 
 export default function EarnPage() {
   const [creators, setCreators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
-
-  // Sync user wallets
-  useSyncUserWallets();
 
   useEffect(() => {
     const fetchCreators = async () => {
@@ -41,15 +38,16 @@ export default function EarnPage() {
 
         console.log('Cache expired or not available, fetching fresh data');
 
-        // Fetch fresh data
-        const response = await fetch(`/api/creators/simple?_t=${Date.now()}`);
+        // Fetch from the main creators API that uses the Twitter database connection
+        // This uses the proper DB wrapper from twitter-prisma.ts
+        const response = await fetch(`/api/creators?_t=${Date.now()}`);
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Updating UI with fresh data from API');
+        console.log('Updating UI with fresh data from Twitter DB API');
         console.log('Fetched creators data:', data);
 
         if (Array.isArray(data) && data.length > 0) {
@@ -59,7 +57,7 @@ export default function EarnPage() {
           localStorage.setItem('cachedCreators', JSON.stringify(data));
           localStorage.setItem('cacheTime', now.toString());
         } else {
-          console.warn('API returned empty creators array or invalid data');
+          console.warn('Twitter DB API returned empty creators array or invalid data');
           // Use fallback data if API returns empty array
           const fallbackCreators = [
             {
