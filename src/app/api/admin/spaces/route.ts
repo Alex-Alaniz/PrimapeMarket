@@ -192,8 +192,10 @@ export async function PUT(req: NextRequest) {
         description: space.description,
         day_of_week: space.day_of_week,
         start_time: space.scheduled_date ? new Date(space.scheduled_date) : undefined,
-        duration_minutes: space.duration_minutes !== undefined ? parseInt(space.duration_minutes.toString()) : undefined,
-        recurring: space.is_recurring,
+        duration_minutes: space.duration_minutes !== undefined ? 
+          parseInt(typeof space.duration_minutes === 'string' ? space.duration_minutes : String(space.duration_minutes)) : 
+          undefined,
+        recurring: !!space.is_recurring,
         space_url: space.space_url,
         updated_at: new Date()
       }

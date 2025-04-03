@@ -85,16 +85,18 @@ export async function GET(req: NextRequest) {
     });
     
     // Create a map for quick lookup
-    const profileMap = hostProfiles.reduce((map, profile) => {
-      map[profile.username] = profile;
+    const profileMap = hostProfiles.reduce<Record<string, any>>((map, profile) => {
+      if (profile.username) {
+        map[profile.username] = profile;
+      }
       return map;
-    }, {} as Record<string, any>);
+    }, {});
     
     // Format top hosts with profile data
     const formattedTopHosts = topHostsArray.map(host => ({
       username: host.username,
       count: host.count,
-      profile: profileMap[host.username] || null
+      profile: host.username && profileMap[host.username] ? profileMap[host.username] : null
     }));
     
     // RSVPs stats

@@ -112,13 +112,14 @@ export async function GET() {
     });
     
     // Group by day of week
-    const spacesByDay = spacesWithRSVP.reduce((acc, space) => {
-      if (!acc[space.dayOfWeek]) {
-        acc[space.dayOfWeek] = [];
+    const spacesByDay = spacesWithRSVP.reduce<Record<string, any[]>>((acc, space) => {
+      const day = space.dayOfWeek || 'Unknown';
+      if (!acc[day]) {
+        acc[day] = [];
       }
-      acc[space.dayOfWeek].push(space);
+      acc[day].push(space);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {});
     
     return NextResponse.json({
       success: true,
