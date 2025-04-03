@@ -1,4 +1,3 @@
-
 import { PrismaClient as TwitterPrismaClient } from '@prisma/twitter-client';
 import 'dotenv/config';
 
@@ -90,7 +89,7 @@ if (!hasTwitterClient) {
   console.warn("Using fallback Twitter client. Limited functionality available.");
 }
 
-export async function getCreatorsData({ useCachedData = false }: { useCachedData?: boolean } = {}) {
+export async function getCreatorsData({ _useCachedData = false }: { _useCachedData?: boolean } = {}) {
   try {
     const whitelistedCreators = await db.twitterWhitelist.findMany({
       orderBy: {
