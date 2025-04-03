@@ -274,11 +274,12 @@ export default function EarnPage() {
         if (!cachedCreators || cacheAge > 5 * 60 * 1000) {
           console.log("Cache expired or not available, fetching fresh data");
 
+          let res;
           try {
             // Always use_cache=true to ensure we use DB cached profiles rather than Twitter API
-            const response = await fetch('/api/creators?use_cache=true');
+            res = await fetch('/api/creators?use_cache=true');
 
-            if (!response.ok) {
+            if (!res.ok) {
               console.warn("Main API failed, trying simplified API");
               // Try the simplified API as fallback
               const fallbackResponse = await fetch('/api/creators/simple');
@@ -287,10 +288,12 @@ export default function EarnPage() {
                 throw new Error(`API returned ${fallbackResponse.status}: ${fallbackResponse.statusText}`);
               }
 
-              return await fallbackResponse.json();
+              const data = await fallbackResponse.json();
+              return data;
             }
 
-            return await response.json();
+            const data = await res.json();
+            return data;
           } catch (error) {
             console.error("Both APIs failed:", error);
             throw error;
