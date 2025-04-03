@@ -24,12 +24,20 @@ export async function GET() {
   // Test Twitter database connection
   let twitterDbStatus = 'Unknown';
   let twitterDbClientType = rawTwitterDb ? 'Real Client' : 'Fallback Wrapper';
+  let creatorCount = 0;
+  let profileCount = 0;
   
   try {
-    // Try to make a simple query to test the connection
-    const creators = await twitterDb.twitterWhitelist.findMany({ take: 1 });
+    // Try to make a simple query to test the connection and count all creators
+    const creators = await twitterDb.twitterWhitelist.findMany();
+    creatorCount = creators?.length || 0;
+    
+    // Also count Twitter profiles
+    const profiles = await twitterDb.twitterProfile.findMany();
+    profileCount = profiles?.length || 0;
+    
     twitterDbStatus = creators ? 
-      `Connected (found ${creators.length} sample records)` : 
+      `Connected (found ${creatorCount} creators and ${profileCount} profiles)` : 
       'Connected but no records found';
   } catch (error) {
     twitterDbStatus = `Error: ${error.message}`;
@@ -44,6 +52,10 @@ export async function GET() {
     twitterDatabase: {
       status: twitterDbStatus,
       clientType: twitterDbClientType,
+      counts: {
+        whitelistedCreators: creatorCount,
+        twitterProfiles: profileCount
+      }
     }
   });
 }

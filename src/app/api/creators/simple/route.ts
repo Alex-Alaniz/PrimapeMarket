@@ -8,7 +8,17 @@ export async function GET() {
     // First get all whitelisted creators from the database
     let whitelistedCreators = [];
     try {
-      const dbCreators = await db.twitterWhitelist.findMany();
+      // Get all creators with no limit
+      const dbCreators = await db.twitterWhitelist.findMany({
+        orderBy: {
+          // Sort by onboarded status first, then by points (descending), then by username
+          is_onboarded: 'desc',
+          points: 'desc',
+          username: 'asc'
+        }
+      });
+      
+      console.log(`Simple API - Fetching all creators, found: ${dbCreators?.length || 0}`);
 
       if (dbCreators && dbCreators.length > 0) {
         console.log(`Found ${dbCreators.length} creators in whitelist`);

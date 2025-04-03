@@ -10,21 +10,15 @@ export async function GET(request: Request) {
   const _forceRefresh = url.searchParams.get('force_refresh') === 'true';
   
   try {
-    // Define the specific order for creators
-    const orderedCreators = [
-      "PrimapeMarkets",
-      "AlexDotEth",
-      "apecoin",
-      "ApeChainHUB",
-      "yugalabs",
-      "ApewhaleNFT",
-      "boringmerch",
-      "BoredApeYC"
-    ];
+    // We'll fetch all creators from the database and sort them later if needed
+    console.log('Fetching all whitelisted creators from Twitter database');
     
     // Get whitelisted creators from the database using our safety wrapper
     let whitelistedCreators = [];
     try {
+      // Import the twitterDb from the actual module instead of referring to it directly
+      const { twitterDb } = require('@/lib/twitter-prisma');
+      
       // Check if we have a real Twitter DB connection
       const usingRealDb = !!twitterDb;
       console.log(`Twitter database connection: ${usingRealDb ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
@@ -42,24 +36,26 @@ export async function GET(request: Request) {
         console.log(`Found ${dbCreators.length} creators in database`);
         console.log('Database creators:', JSON.stringify(dbCreators));
         
-        // Sort creators in the specified order
-        const creatorMap = {};
-        dbCreators.forEach(creator => {
-          creatorMap[creator.username] = creator;
+        // Use all creators from database
+        whitelistedCreators = dbCreators;
+        
+        // Sort creators by a sensible default (recent additions first, then alphabetically)
+        whitelistedCreators.sort((a, b) => {
+          // First prioritize onboarded creators
+          if (a.is_onboarded !== b.is_onboarded) {
+            return a.is_onboarded ? -1 : 1;
+          }
+          
+          // Then sort by points (higher first)
+          if (a.points !== b.points) {
+            return b.points - a.points;
+          }
+          
+          // Finally sort alphabetically
+          return a.username.localeCompare(b.username);
         });
         
-        // First add creators in our specific order
-        whitelistedCreators = orderedCreators
-          .filter(username => creatorMap[username])
-          .map(username => creatorMap[username]);
-        
-        // Then add any remaining creators
-        const remainingCreators = dbCreators.filter(
-          creator => !orderedCreators.includes(creator.username)
-        );
-        
-        whitelistedCreators = [...whitelistedCreators, ...remainingCreators];
-        console.log(`Sorted ${whitelistedCreators.length} creators in preferred order`);
+        console.log(`Found ${whitelistedCreators.length} creators in database`);
       } else {
         // Fallback to hardcoded creators if no data in database
         console.log("No creators found in database, using fallback data");
