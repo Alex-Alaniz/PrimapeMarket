@@ -47,18 +47,12 @@ export const metadata: Metadata = {
     images: ["/images/pm.PNG"],
     creator: "@PrimapeMarkets"
   },
-  icons: {
-    icon: [
-      { url: '/primape/pm-blue.png', sizes: '32x32', type: 'image/png' },
-      { url: '/primape/pm-blue.png', sizes: '16x16', type: 'image/png' }
-    ],
-    apple: [
-      { url: '/primape/pm-blue.png', sizes: '180x180', type: 'image/png' }
-    ],
-    shortcut: [
-      { url: '/primape/pm-transparent.png' }
-    ]
-  }
+  icons: [
+    { rel: "icon", url: "/primape/pm-blk.png" },
+    { rel: "icon", url: "/primape/pm-blk.png", sizes: "16x16", type: "image/png" },
+    { rel: "icon", url: "/primape/pm-blk.png", sizes: "32x32", type: "image/png" },
+    { rel: "apple-touch-icon", url: "/primape/pm-blk.png", sizes: "180x180" }
+  ]
 };
 
 export const viewport = {
