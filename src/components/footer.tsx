@@ -59,7 +59,10 @@ export function Footer() {
             <Link href="/terms" className="hover:opacity-80">
               Terms of Use
             </Link>
-            <Link href="/docs" className="hover:opacity-80">
+            <Link
+              href="https://docs.primape.markets/"
+              className="hover:opacity-80"
+            >
               Docs
             </Link>
             <Link href="/careers" className="hover:opacity-80">
@@ -69,7 +72,7 @@ export function Footer() {
 
           <div className="flex items-center space-x-3">
             <a
-              href="https://x.com"
+              href="https://x.com/PrimapeMarkets"
               target="_blank"
               rel="noreferrer"
               aria-label="X (formerly Twitter)"
@@ -93,7 +96,7 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/Alex-Alaniz/PrimapeMarket"
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub"
@@ -118,7 +121,23 @@ export function Footer() {
             <span className="text-xs text-muted-foreground"> by</span>
             <span className="mx-1 text-muted-foreground">•</span>
             <span className="text-muted-foreground">
-              BearifiedCo | ApeForge © 2025
+              <a
+                href="https://apeforge.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:underline"
+              >
+                ApeForge
+              </a>
+              <span className="mx-1 text-muted-foreground">|</span>
+              <a
+                href="https://bearified.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:underline"
+              >
+                BearifiedCo LLC © 2025
+              </a>
             </span>
           </p>
         </div>
