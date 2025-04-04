@@ -79,16 +79,6 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/**': ['node_modules/@prisma/**/*', 'node_modules/.prisma/**/*']
   },
-  // Disable chunking optimization for build stability
-  experimental: {
-    gzipSize: false,
-    craCompat: false,
-  },
-  webpack: (config) => {
-    // Improve chunk management
-    config.optimization.moduleIds = 'deterministic';
-    return config;
-  },
   images: {
     remotePatterns: [
       {
