@@ -48,10 +48,10 @@ export const metadata: Metadata = {
     creator: "@PrimapeMarkets"
   },
   icons: [
-    { rel: "icon", url: "/primape/pm-blk.png" },
-    { rel: "icon", url: "/primape/pm-blk.png", sizes: "16x16", type: "image/png" },
-    { rel: "icon", url: "/primape/pm-blk.png", sizes: "32x32", type: "image/png" },
-    { rel: "apple-touch-icon", url: "/primape/pm-blk.png", sizes: "180x180" }
+    { rel: "icon", url: "/primape /pm-blk.png" },
+    { rel: "icon", url: "/primape /pm-blk.png", sizes: "16x16", type: "image/png" },
+    { rel: "icon", url: "/primape /pm-blk.png", sizes: "32x32", type: "image/png" },
+    { rel: "apple-touch-icon", url: "/primape /pm-blk.png", sizes: "180x180" }
   ]
 };
 

@@ -34,25 +34,25 @@ const manifestContent = {
   theme_color: '#000000',
   icons: [
     {
-      src: '/primape/pm-blk.png',
+      src: '/primape /pm-blk.png',
       sizes: '192x192',
       type: 'image/png',
       purpose: 'any'
     },
     {
-      src: '/primape/pm-blk.png',
+      src: '/primape /pm-blk.png',
       sizes: '512x512',
       type: 'image/png',
       purpose: 'any'
     },
     {
-      src: '/primape/pm-blk.png',
+      src: '/primape /pm-blk.png',
       sizes: '192x192',
       type: 'image/png',
       purpose: 'maskable'
     },
     {
-      src: '/primape/pm-blk.png',
+      src: '/primape /pm-blk.png',
       sizes: '512x512',
       type: 'image/png',
       purpose: 'maskable'
