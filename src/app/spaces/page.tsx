@@ -12,8 +12,14 @@ import Link from "next/link";
 
 export default function SpacesPage() {
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
   
-  interface TwitterSpace {
+  // Ensure proper hydration in PWA environment
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  interface XSpace {
     id: string;
     title: string;
     description: string | null;
@@ -33,7 +39,7 @@ export default function SpacesPage() {
     }[];
   }
 
-  const [spacesData, setSpacesData] = useState<Record<string, TwitterSpace[]>>({});
+  const [spacesData, setSpacesData] = useState<Record<string, XSpace[]>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +75,20 @@ export default function SpacesPage() {
 
   // Featured hosts are displayed in the UI directly
 
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <div className="container py-4">
+          <Navbar />
+          <div className="mt-8">
+            <h1 className="text-3xl font-bold">ApeChain 𝕏 Spaces Schedule</h1>
+            <p className="text-muted-foreground mt-2">Loading spaces...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="container py-4">
@@ -77,10 +97,10 @@ export default function SpacesPage() {
         <div className="mt-8">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
             <div>
-              <h1 className="text-3xl font-bold">ApeChain Spaces Schedule</h1>
+              <h1 className="text-3xl font-bold">ApeChain 𝕏 Spaces Schedule</h1>
               <p className="text-muted-foreground mt-2 max-w-2xl">
-                Join our community spaces throughout the week and engage with top ApeChain creators.
-                Earn points by participating and engaging with creators.
+                Join our community 𝕏 spaces throughout the week and engage with top ApeChain creators.
+                Earn points by participating and engaging with creators through posts and spaces.
               </p>
             </div>
             
@@ -88,7 +108,7 @@ export default function SpacesPage() {
               <Button asChild variant="outline">
                 <Link href="https://twitter.com/i/spaces" target="_blank" rel="noopener noreferrer">
                   <Twitter className="w-4 h-4 mr-2" />
-                  View Live Spaces
+                  View Live 𝕏 Spaces
                 </Link>
               </Button>
             </div>
@@ -102,7 +122,7 @@ export default function SpacesPage() {
           </div>
 
           <div className="mt-12 p-6 bg-blue-950 rounded-lg text-white">
-            <h2 className="text-2xl font-bold mb-4">Featured Creators Streaming Schedule</h2>
+            <h2 className="text-2xl font-bold mb-4">Featured 𝕏 Creators Streaming Schedule</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-xl font-semibold mb-3">Blue Eye Queen</h3>

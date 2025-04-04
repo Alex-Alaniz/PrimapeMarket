@@ -1,111 +1,145 @@
+"use client";
 
-import { Twitter, Github } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Footer() {
+  const { theme, resolvedTheme } = useTheme();
+  const [currentTheme, setCurrentTheme] = useState<string | undefined>(
+    undefined,
+  );
+
+  // Update current theme when theme changes or component mounts
+  useEffect(() => {
+    setCurrentTheme(theme === "system" ? resolvedTheme : theme);
+  }, [theme, resolvedTheme]);
+
+  // Determine which ApeChain logo to use based on theme
+  const getApeChainLogo = () => {
+    if (currentTheme === "light") {
+      return "/apechain-branding/apechain-blk.png";
+    } else if (currentTheme === "dark" || currentTheme === "ape") {
+      return "/apechain-branding/apechain-white.png";
+    }
+    return "/apechain-branding/apechain-white.png";
+  };
+
+  // Use current theme state for determining the styles
+  const getFooterBgClass = () => {
+    if (currentTheme === "light") {
+      return "bg-white";
+    } else if (currentTheme === "dark") {
+      return "bg-black";
+    } else if (currentTheme === "ape") {
+      return "bg-transparent";
+    }
+    return "bg-white"; // Default
+  };
+
   return (
-    <footer className="border-t bg-card">
-      <div className="container py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/images/pm.PNG"
-                alt="Primape Logo"
-                width={32}
-                height={32}
-                className="h-8 w-auto"
-              />
-              <h3 className="text-xl font-bold">Primape Markets</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              The premier prediction marketplace on ApeChain, where you can participate in 
-              decentralized prediction markets.
-            </p>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-4">Links</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/" className="hover:text-foreground transition-colors">
-                  Markets
-                </Link>
-              </li>
-              <li>
-                <Link href="/leaderboard" className="hover:text-foreground transition-colors">
-                  Leaderboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/profile" className="hover:text-foreground transition-colors">
-                  Profile
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Documentation
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-foreground transition-colors">
-                  FAQ
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-medium mb-4">Connect</h4>
-            <div className="flex items-center gap-4">
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Github className="h-5 w-5" />
-                <span className="sr-only">GitHub</span>
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © 2025 Primape Markets. All rights reserved.
-          </p>
-          
-          <div className="flex items-center">
+    <footer className={`border-t py-2 ${getFooterBgClass()}`}>
+      <div className="container mx-auto">
+        <div className="flex flex-row items-center justify-between px-4">
+          <div className="flex items-center space-x-2">
             <Image
-              src="/Powered by ApeCoin.png"
-              alt="Powered by ApeCoin"
-              width={180}
-              height={32}
-              className="h-8 w-auto"
+              src={getApeChainLogo()}
+              alt="Powered by ApeChain"
+              width={300}
+              height={300}
+              className="h-11 w-auto"
             />
           </div>
+
+          <div className="flex items-center space-x-3 text-xs">
+            <Link href="/privacy" className="hover:opacity-80">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:opacity-80">
+              Terms of Use
+            </Link>
+            <Link
+              href="https://docs.primape.markets/"
+              className="hover:opacity-80"
+            >
+              Docs
+            </Link>
+            <Link href="/careers" className="hover:opacity-80">
+              Careers
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <a
+              href="https://x.com/PrimapeMarkets"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="X (formerly Twitter)"
+            >
+              <span className="text-sm">𝕏</span>
+            </a>
+            <a
+              href="https://discord.gg/kKuKNAHwNd"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Discord"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 127.14 96.36"
+                fill="currentColor"
+              >
+                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
+              </svg>
+            </a>
+            <a
+              href="https://github.com/Alex-Alaniz/PrimapeMarket"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-1 border-t border-muted/20 pt-1">
+          <p className="text-xs text-center">
+            <span className="text-muted-foreground">Primape Markets</span>
+            <span className="mx-1 text-muted-foreground">•</span>
+            <span className="text-xs text-muted-foreground"> by</span>
+            <span className="mx-1 text-muted-foreground">•</span>
+            <span className="text-muted-foreground">
+              <a
+                href="https://apeforge.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:underline"
+              >
+                ApeForge
+              </a>
+              <span className="mx-1 text-muted-foreground">|</span>
+              <a
+                href="https://bearified.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:underline"
+              >
+                BearifiedCo LLC © 2025
+              </a>
+            </span>
+          </p>
         </div>
       </div>
     </footer>

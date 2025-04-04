@@ -1,147 +1,181 @@
-
-import { useState } from 'react';
-import Image from 'next/image';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { /* ExternalLink, */ Twitter } from "lucide-react";
-import type { EngagementType } from '@/types/engagement-types';
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { CalendarIcon, MessageSquare, Share2 } from "lucide-react";
+import Image from "next/image";
 
 type Creator = {
   id: string;
-  name: string;
   handle: string;
-  avatar: string;
-  description: string;
-  category: string;
+  name: string;
   points: number;
-  engagementTypes: EngagementType[];
+  category: string;
+  description: string;
+  avatar: string;
+  engagementTypes: string[];
 };
 
-type OnEngageFunction = (creatorId: string, engagementType: string) => Promise<void>;
+// Keep track of creators seen to manage background image assignment
+const creatorsSeen: string[] = [];
+const orderedBackgrounds = ['noise.png', 'trippy.png', 'zombie.png', 'deathbot.png', 'cheetah.png', 'dmt.png'];
+const usedBackgrounds = new Set<string>();
 
-export function CreatorCard({ creator, onEngage }: { creator: Creator; onEngage: OnEngageFunction }) {
-  const [isLoading, setIsLoading] = useState(false);
+export function CreatorCard({ creator }: { creator: Creator }) {
+  // Function to get a background image based on creator ID and order
+  const getBgImage = (id: string) => {
+    // If we've already assigned this creator a background, use the same one
+    const creatorIndex = creatorsSeen.indexOf(id);
+    if (creatorIndex !== -1) {
+      // Creator has been seen before, use their assigned background
+      const position = creatorIndex % orderedBackgrounds.length;
+      return orderedBackgrounds[position];
+    }
 
-  const handleEngagement = async (type: EngagementType) => {
-    setIsLoading(true);
-    try {
-      await onEngage(creator.id, type);
-    } finally {
-      setIsLoading(false);
+    // New creator, assign the next background in sequence or random if we've used all
+    creatorsSeen.push(id);
+    
+    if (creatorsSeen.length <= orderedBackgrounds.length) {
+      // Use the ordered backgrounds for the first 6 creators
+      return orderedBackgrounds[creatorsSeen.length - 1];
+    } else {
+      // For subsequent creators, use a random background from the ones that are least used
+      // Reset the used backgrounds set if all have been used
+      if (usedBackgrounds.size >= orderedBackgrounds.length) {
+        usedBackgrounds.clear();
+      }
+      
+      // Find backgrounds that haven't been used recently
+      const availableBackgrounds = orderedBackgrounds.filter(bg => !usedBackgrounds.has(bg));
+      
+      // If all backgrounds have been used recently, pick a random one
+      const selectedBg = availableBackgrounds.length > 0 ? 
+        availableBackgrounds[Math.floor(Math.random() * availableBackgrounds.length)] : 
+        orderedBackgrounds[Math.floor(Math.random() * orderedBackgrounds.length)];
+      
+      usedBackgrounds.add(selectedBg);
+      return selectedBg;
     }
   };
 
-  const engagementButtons: Record<EngagementType, { label: string; icon: JSX.Element; tooltip: string }> = {
-    listen: {
-      label: "Listen",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-9.33-5"></path><path d="m6 12-3.47-3.47a6 6 0 0 1 0-8.46"></path><path d="M8 15a6 6 0 0 0 9.33 5"></path><path d="m18 12 3.47 3.47a6 6 0 0 1 0 8.46"></path></svg>,
-      tooltip: "Listen to their latest Space and earn points"
-    },
-    read: {
-      label: "Read",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
-      tooltip: "Read their latest article and earn points"
-    },
-    question: {
-      label: "Ask",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>,
-      tooltip: "Ask a question during a Space and earn points"
-    },
-    comment: {
-      label: "Comment",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
-      tooltip: "Leave a thoughtful comment and earn points"
-    },
-    share: {
-      label: "Share",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>,
-      tooltip: "Share their content and earn points"
-    },
-    promote: {
-      label: "Promote",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>,
-      tooltip: "Promote their Space or Podcast and earn bonus points"
-    }
-  };
+  // Format handle for display and links
+  const cleanHandle = creator.handle.replace("@", "");
+
+  // Ensure we have proper display values even if API data is incomplete
+  const displayName =
+    creator.name && creator.name.trim() !== ""
+      ? creator.name
+      : `${cleanHandle} | ApeChain Creator`;
+
+  const displayAvatar =
+    creator.avatar && creator.avatar !== "" ? creator.avatar : "/images/pm.PNG";
+
+  const displayDescription =
+    creator.description && creator.description.trim() !== ""
+      ? creator.description
+      : "Profile data will be loaded soon. Check back later for full details!";
 
   return (
-    <Card>
-      <CardContent className="p-0">
-        <div className="relative h-[100px] bg-gradient-to-r from-primary/20 to-primary/10">
-          {/* Creator avatar */}
-          <div className="absolute -bottom-10 left-4">
-            <div className="relative w-20 h-20 rounded-full border-4 border-background overflow-hidden">
-              <Image 
-                src={creator.avatar || '/images/pm.PNG'} 
-                alt={creator.name}
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  // Fallback if image fails to load
-                  e.currentTarget.src = '/images/pm.PNG';
-                }}
-              />
-            </div>
-          </div>
-          
-          {/* Twitter icon */}
-          <div className="absolute top-4 right-4">
-            <a 
-              href={`https://twitter.com/${creator.handle.replace('@', '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#1DA1F2]/90 text-white p-1.5 rounded-full hover:bg-[#1DA1F2] transition-colors"
-            >
-              <Twitter size={16} />
-            </a>
+    <Card className="overflow-hidden bg-card border-0 shadow-md">
+      <div className="relative">
+        <div 
+          className="h-32 bg-cover bg-center" 
+          style={{ 
+            backgroundImage: `url('/apechain/${getBgImage(creator.id)}')`,
+            backgroundSize: 'cover'
+          }}
+        ></div>
+        <div className="absolute -bottom-7 left-4">
+          <div className="h-20 w-20 rounded-full border-4 border-background overflow-hidden">
+            <Image
+              src={displayAvatar}
+              alt={displayName}
+              width={80}
+              height={80}
+              className="h-full w-full object-cover"
+              unoptimized={displayAvatar.startsWith('/')} // Use unoptimized for local files
+            />
           </div>
         </div>
-        
-        <div className="p-6 pt-12">
-          <h3 className="font-bold text-lg">
-            {creator.name || `${creator.handle.replace('@', '')} | ApeChain Creator`}
-          </h3>
-          <p className="text-sm text-muted-foreground">{creator.handle}</p>
-          
-          <p className="mt-2 text-sm">
-            {creator.description || 'An awesome ApeChain creator building the future of Web3 social engagement. Check back soon for their full profile!'}
-          </p>
-          
-          <div className="mt-4 flex items-center gap-2">
-            <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
-              {creator.category}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {creator.points} points per engagement
-            </div>
+      </div>
+
+      <CardContent className="pt-16 p-4">
+        <div className="flex justify-between items-start mb-4 mt-8">
+          <div className="max-w-[70%]">
+            <h3 className="font-bold truncate">{displayName}</h3>
+            <p className="text-sm text-muted-foreground">@{cleanHandle}</p>
+          </div>
+          <div className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded text-xs font-medium">
+            {creator.category}
           </div>
         </div>
-      </CardContent>
-      
-      <CardFooter className="flex flex-wrap gap-2 p-4 pt-2 border-t">
-        <TooltipProvider>
-          {creator.engagementTypes.map(type => (
-            <Tooltip key={type}>
+
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 min-h-[3.6rem]">
+          {displayDescription}
+        </p>
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-medium">
+            <span className="text-primary">{creator.points}</span> points
+          </div>
+          <a
+            href={`https://twitter.com/${cleanHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-500 hover:underline"
+          >
+            Follow on 𝕏
+          </a>
+        </div>
+
+        <div className="flex gap-2 w-full justify-between mt-2">
+          <TooltipProvider>
+            <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => handleEngagement(type as EngagementType)}
-                  disabled={isLoading}
-                  className="gap-1.5"
-                >
-                  {engagementButtons[type as EngagementType].icon}
-                  <span>{engagementButtons[type as EngagementType].label}</span>
+                <Button variant="outline" size="sm" className="flex-1 gap-1">
+                  <CalendarIcon className="h-4 w-4" />
+                  <span className="hidden md:inline">Listen</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{engagementButtons[type].tooltip}</p>
+                <p>Listen to 𝕏 Spaces</p>
               </TooltipContent>
             </Tooltip>
-          ))}
-        </TooltipProvider>
-      </CardFooter>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1 gap-1">
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden md:inline">Share</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share creator content</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1 gap-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span className="hidden md:inline">Comment</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Comment on posts</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </CardContent>
     </Card>
   );
 }

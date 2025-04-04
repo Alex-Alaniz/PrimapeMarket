@@ -1,111 +1,117 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 
 // Simple RSVP API for Twitter spaces
 export async function POST(req: NextRequest) {
   try {
-    const { spaceId, walletAddress } = await req.json();
+    const data = await req.json();
+    const { spaceId, walletAddress, twitterUsername } = data;
     
     if (!spaceId || !walletAddress) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-
-    // Verify the space exists
-    const space = await twitterDb.twitterSpace.findUnique({
-      where: { id: spaceId },
-      include: { hosts: true }
-    });
-
-    if (!space) {
-      return NextResponse.json(
-        { error: "Twitter space not found" },
-        { status: 404 }
-      );
-    }
-
-    // Store RSVP in the Twitter database
-    const rsvp = await twitterDb.spaceRSVP.upsert({
+    
+    // Check if space exists
+    const space = await db.twitterSpace.findUnique({
       where: {
-        spaceId_walletAddress: {
-          spaceId,
-          walletAddress,
-        },
-      },
-      update: {
-        updatedAt: new Date(),
-      },
-      create: {
-        spaceId,
-        walletAddress,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "RSVP recorded successfully",
-      data: rsvp,
-      space: {
-        id: space.id,
-        title: space.title,
-        start_time: space.start_time,
-        hosts: space.hosts.map(host => host.username)
+        id: spaceId
       }
     });
+    
+    if (!space) {
+      return NextResponse.json({ error: 'Space not found' }, { status: 404 });
+    }
+    
+    // Check if user already RSVP'd
+    const existingRSVP = await (db as any).twitterSpaceRSVP.findFirst({
+      where: {
+        space_id: spaceId,
+        wallet_address: walletAddress
+      }
+    });
+    
+    if (existingRSVP) {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'You have already RSVP\'d for this space',
+        alreadyRSVPd: true
+      });
+    }
+    
+    // Create a unique RSVP ID with timestamp and wallet prefix
+    const timestamp = Date.now().toString();
+    const walletPrefix = walletAddress ? 
+      (typeof walletAddress === 'string' ? walletAddress.substring(0, 8) : 'unknown') : 
+      'unknown';
+    const rsvpId = `rsvp_${timestamp}_${walletPrefix}`;
+    
+    // Create the RSVP
+    await (db as any).twitterSpaceRSVP.create({
+      data: {
+        id: rsvpId,
+        space_id: spaceId,
+        wallet_address: walletAddress,
+        twitter_username: twitterUsername || null,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+    
+    // Get updated RSVP count
+    const rsvpCount = await (db as any).twitterSpaceRSVP.count({
+      where: {
+        space_id: spaceId
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'RSVP successful',
+      rsvpCount
+    });
   } catch (error) {
-    console.error("Error recording RSVP:", error);
-    return NextResponse.json(
-      { error: "Failed to record RSVP" },
-      { status: 500 }
-    );
+    console.error('Error in RSVP API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }
 
-// Get RSVPs for a space or by a user
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const spaceId = searchParams.get("spaceId");
-    const walletAddress = searchParams.get("wallet");
-
-    if (!spaceId && !walletAddress) {
-      return NextResponse.json(
-        { error: "Either spaceId or wallet address is required" },
-        { status: 400 }
-      );
-    }
-
-    let whereClause = {};
+    const spaceId = req.nextUrl.searchParams.get('spaceId');
+    const walletAddress = req.nextUrl.searchParams.get('walletAddress');
     
-    if (spaceId) {
-      whereClause = { ...whereClause, spaceId };
+    if (!spaceId) {
+      return NextResponse.json({ error: 'Space ID is required' }, { status: 400 });
     }
     
-    if (walletAddress) {
-      whereClause = { ...whereClause, walletAddress };
-    }
-
-    const rsvps = await twitterDb.spaceRSVP.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: "desc",
-      },
+    // Get RSVP count for the space
+    const rsvpCount = await (db as any).twitterSpaceRSVP.count({
+      where: {
+        space_id: spaceId
+      }
     });
-
+    
+    // Check if user has RSVP'd if wallet address is provided
+    let hasRSVPd = false;
+    if (walletAddress) {
+      const userRSVP = await (db as any).twitterSpaceRSVP.findFirst({
+        where: {
+          space_id: spaceId,
+          wallet_address: walletAddress
+        }
+      });
+      
+      hasRSVPd = !!userRSVP;
+    }
+    
     return NextResponse.json({
       success: true,
-      data: rsvps,
+      rsvpCount,
+      hasRSVPd
     });
   } catch (error) {
-    console.error("Error fetching RSVPs:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch RSVPs" },
-      { status: 500 }
-    );
+    console.error('Error in RSVP GET API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

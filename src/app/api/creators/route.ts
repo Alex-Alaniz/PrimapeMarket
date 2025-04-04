@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { twitterDb } from '@/lib/twitter-prisma';
+import { db } from '@/lib/twitter-prisma'; // Import the safe db wrapper instead
 import { getTwitterProfileData, cacheTwitterProfile } from '@/lib/twitter-api';
 
 export async function GET(request: Request) {
@@ -10,17 +10,79 @@ export async function GET(request: Request) {
   const _forceRefresh = url.searchParams.get('force_refresh') === 'true';
   
   try {
-    // Get whitelisted creators from the database
+    // We'll fetch all creators from the database and sort them later if needed
+    console.log('Fetching all whitelisted creators from Twitter database');
+    
+    // Get whitelisted creators from the database using our safety wrapper
     let whitelistedCreators = [];
     try {
-      whitelistedCreators = await twitterDb.twitterWhitelist.findMany();
+      // Import the twitterDb from the actual module instead of referring to it directly
+      const { twitterDb } = require('@/lib/twitter-prisma');
+      
+      // Check if we have a real Twitter DB connection
+      const usingRealDb = !!twitterDb;
+      console.log(`Twitter database connection: ${usingRealDb ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
+      
+      if (!usingRealDb) {
+        console.warn('Using fallback Twitter wrapper because no database connection is available');
+        console.warn('Check your DATABASE_URL_TWITTER or TWITTER_POSTGRES_URL environment variables');
+      }
+      
+      // Use the safe wrapper which has built-in fallback for production
+      const dbCreators = await db.twitterWhitelist.findMany();
+      
+      // If we have creators from DB, sort them according to our preferred order
+      if (dbCreators && dbCreators.length > 0) {
+        console.log(`Found ${dbCreators.length} creators in database`);
+        console.log('Database creators:', JSON.stringify(dbCreators));
+        
+        // Use all creators from database
+        whitelistedCreators = dbCreators;
+        
+        // Sort creators by a sensible default (recent additions first, then alphabetically)
+        whitelistedCreators.sort((a, b) => {
+          // First prioritize onboarded creators
+          if (a.is_onboarded !== b.is_onboarded) {
+            return a.is_onboarded ? -1 : 1;
+          }
+          
+          // Then sort by points (higher first)
+          if (a.points !== b.points) {
+            return b.points - a.points;
+          }
+          
+          // Finally sort alphabetically
+          return a.username.localeCompare(b.username);
+        });
+        
+        console.log(`Found ${whitelistedCreators.length} creators in database`);
+      } else {
+        // Fallback to hardcoded creators if no data in database
+        console.log("No creators found in database, using fallback data");
+        console.log("This is the first fallback mechanism inside the main creators API");
+        whitelistedCreators = [
+          { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+          { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },
+          { username: "apecoin", category: "News", points: 250, is_onboarded: true },
+          { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+          { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+          { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
+          { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+          { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true }
+        ];
+      }
     } catch (error) {
       console.error("Failed to fetch from twitterWhitelist:", error);
       // Fallback to hardcoded creators if database fetch fails
       whitelistedCreators = [
+        { username: "PrimapeMarkets", category: "News", points: 690, is_onboarded: true },
+        { username: "AlexDotEth", category: "Spaces", points: 500, is_onboarded: true },
         { username: "apecoin", category: "News", points: 250, is_onboarded: true },
-        { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true },
-        { username: "yugalabs", category: "News", points: 250, is_onboarded: true }
+        { username: "ApeChainHUB", category: "News", points: 250, is_onboarded: true },
+        { username: "yugalabs", category: "News", points: 250, is_onboarded: true },
+        { username: "ApewhaleNFT", category: "Spaces", points: 250, is_onboarded: true },
+        { username: "boringmerch", category: "News", points: 250, is_onboarded: true },
+        { username: "BoredApeYC", category: "News", points: 250, is_onboarded: true }
       ];
     }
     
@@ -48,7 +110,8 @@ export async function GET(request: Request) {
           
           let cachedProfile = null;
           try {
-            cachedProfile = await twitterDb.twitterProfile.findUnique({
+            // Use the safer db wrapper that includes fallback handling
+            cachedProfile = await db.twitterProfile.findUnique({
               where: { username: cleanUsername }
             });
           } catch (prismaError) {
@@ -86,11 +149,16 @@ export async function GET(request: Request) {
             if (twitterData) {
               await cacheTwitterProfile(twitterData);
               
-              // Mark as onboarded in the whitelist
-              await twitterDb.twitterWhitelist.update({
-                where: { username: creator.handle.replace('@', '') },
-                data: { is_onboarded: true }
-              });
+              // Mark as onboarded in the whitelist using our safer wrapper
+              try {
+                await db.twitterWhitelist.update({
+                  where: { username: creator.handle.replace('@', '') },
+                  data: { is_onboarded: true }
+                });
+              } catch (updateError) {
+                console.error(`Error updating whitelist for ${creator.handle}:`, updateError);
+                // Continue even if update fails
+              }
               
               return {
                 ...creator,

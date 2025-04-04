@@ -1,71 +1,63 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 
 // Admin wallet addresses - keep this list in sync with the main API route
 const ADMIN_WALLETS = [
-  // Add your admin wallet addresses here in lowercase for consistent comparison
-  "0x1a5b5a2ff1f70989e186ac6109705cf2ca327158",
-  // Add more wallet addresses to ensure access
-  "*", // Temporary wildcard to allow all wallet addresses for testing
-  // Add more as needed
+  "0xD1D1B36c40D522eb84D9a8f76A99f713A9BfA9C4",
+  "0xE9e6a56Fe9b8C47dF185B25e3B07f7d08e1fBb77",
+  "0xc88B5AaC42e0FD868cBCE2D0C5A8aA30a91FB9EA",
+  "0xC17A09F8599B53d55Fa6426f38B6F6F7C4d95A10"
 ];
 
-async function validateAdmin(req: NextRequest): Promise<boolean> {
-  const adminWallet = req.headers.get("x-admin-wallet");
-  if (!adminWallet) return false;
-  
-  // Convert to lowercase for case-insensitive comparison
-  const normalizedWallet = adminWallet.toLowerCase();
-  
-  // Check if the wallet is in our admin list
-  return ADMIN_WALLETS.includes(normalizedWallet);
-}
-
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    // Validate admin access
-    if (!(await validateAdmin(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get the wallet address from URL params
+    const walletAddress = req.nextUrl.searchParams.get('walletAddress');
+    
+    // Validate admin wallet
+    if (!walletAddress || !ADMIN_WALLETS.includes(walletAddress)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { username, isOnboarded } = body;
-
-    if (!username) {
-      return NextResponse.json(
-        { error: "Username is required" },
-        { status: 400 },
-      );
-    }
-
-    // Clean username (remove @ if present)
-    const cleanUsername = username.replace("@", "");
-
-    // Check if creator exists in whitelist
-    const creator = await twitterDb.twitterWhitelist.findUnique({
-      where: { username: cleanUsername },
+    // Get all whitelisted creators with their Twitter profile data if available
+    const whitelistedCreators = await db.twitterWhitelist.findMany({
+      orderBy: {
+        username: 'asc'
+      }
     });
-
-    if (!creator) {
-      return NextResponse.json(
-        { error: "Creator not found in whitelist" },
-        { status: 404 },
-      );
-    }
-
-    // Update onboarded status
-    const updatedCreator = await twitterDb.twitterWhitelist.update({
-      where: { username: cleanUsername },
-      data: { is_onboarded: isOnboarded },
+    
+    // Get all Twitter profiles in one query to avoid N+1 problem
+    const twitterProfiles = await db.twitterProfile.findMany({
+      where: {
+        username: {
+          in: whitelistedCreators.map(creator => creator.username)
+        }
+      }
     });
-
-    return NextResponse.json(updatedCreator);
+    
+    // Create a map for quick lookup
+    const profileMap = twitterProfiles.reduce((map, profile) => {
+      map[profile.username] = profile;
+      return map;
+    }, {} as Record<string, any>);
+    
+    // Combine data
+    const creatorsWithProfiles = whitelistedCreators.map(creator => {
+      const profile = profileMap[creator.username];
+      return {
+        ...creator,
+        twitterProfile: profile || null
+      };
+    });
+    
+    return NextResponse.json({
+      success: true,
+      creators: creatorsWithProfiles,
+      count: creatorsWithProfiles.length
+    });
   } catch (error) {
-    console.error("Error updating creator status:", error);
-    return NextResponse.json(
-      { error: "Failed to update creator status" },
-      { status: 500 },
-    );
+    console.error('Error in whitelist status API route:', error);
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
   }
 }

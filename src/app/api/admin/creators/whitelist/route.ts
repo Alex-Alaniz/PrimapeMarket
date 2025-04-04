@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { twitterDb } from "@/lib/twitter-prisma";
+import { db } from "@/lib/twitter-prisma";
 import { getTwitterProfileData, cacheTwitterProfile } from "@/lib/twitter-api";
 
 // Admin wallet addresses - keep this list secure and limited
@@ -14,10 +14,10 @@ const ADMIN_WALLETS = [
 async function validateAdmin(req: NextRequest): Promise<boolean> {
   const adminWallet = req.headers.get("x-admin-wallet");
   if (!adminWallet) return false;
-  
+
   // Convert to lowercase for case-insensitive comparison
   const normalizedWallet = adminWallet.toLowerCase();
-  
+
   // Check if the wallet is in our admin list
   return ADMIN_WALLETS.includes(normalizedWallet);
 }
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const whitelistedCreators = await twitterDb.twitterWhitelist.findMany({
+    const whitelistedCreators = await db.twitterWhitelist.findMany({
       orderBy: { added_at: "desc" },
     });
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     const cleanUsername = username.replace("@", "");
 
     // Check if already in whitelist
-    const existing = await twitterDb.twitterWhitelist.findUnique({
+    const existing = await db.twitterWhitelist.findUnique({
       where: { username: cleanUsername },
     });
 
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Add to whitelist
-    const whitelistedCreator = await twitterDb.twitterWhitelist.create({
+    const whitelistedCreator = await db.twitterWhitelist.create({
       data: {
         username: cleanUsername,
         category: category || "Spaces",
@@ -133,7 +133,7 @@ export async function DELETE(req: NextRequest) {
     const cleanUsername = username.replace("@", "");
 
     // Check if in whitelist
-    const existing = await twitterDb.twitterWhitelist.findUnique({
+    const existing = await db.twitterWhitelist.findUnique({
       where: { username: cleanUsername },
     });
 
@@ -145,7 +145,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Remove from whitelist
-    await twitterDb.twitterWhitelist.delete({
+    await db.twitterWhitelist.delete({
       where: { username: cleanUsername },
     });
 

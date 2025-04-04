@@ -25,6 +25,40 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Primape Markets"
   },
+  openGraph: {
+    type: "website",
+    title: "Primape Market",
+    description: "The premier prediction marketplace on ApeChain",
+    url: "https://primape.markets",
+    siteName: "Primape Markets",
+    images: [
+      {
+        url: "/images/pm.PNG",
+        width: 512,
+        height: 512,
+        alt: "Primape Markets Logo"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Primape Market",
+    description: "The premier prediction marketplace on ApeChain",
+    images: ["/images/pm.PNG"],
+    creator: "@PrimapeMarkets"
+  },
+  icons: {
+    icon: [
+      { url: '/primape/pm-blue.png', sizes: '32x32', type: 'image/png' },
+      { url: '/primape/pm-blue.png', sizes: '16x16', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/primape/pm-blue.png', sizes: '180x180', type: 'image/png' }
+    ],
+    shortcut: [
+      { url: '/primape/pm-transparent.png' }
+    ]
+  }
 };
 
 export const viewport = {

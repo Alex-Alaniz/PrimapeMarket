@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     if (!isAdmin) {
       // Limited info for non-admins
       return NextResponse.json({
-        refreshInProgress: status.isFetchingBatch,
+        refreshInProgress: status.isProcessing,
         nextRefresh: status.nextBatchTime,
       });
     }
