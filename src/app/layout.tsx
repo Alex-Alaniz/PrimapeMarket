@@ -47,6 +47,18 @@ export const metadata: Metadata = {
     images: ["/images/pm.PNG"],
     creator: "@PrimapeMarkets"
   },
+  icons: {
+    icon: [
+      { url: '/primape/pm-blue.png', sizes: '32x32', type: 'image/png' },
+      { url: '/primape/pm-blue.png', sizes: '16x16', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/primape/pm-blue.png', sizes: '180x180', type: 'image/png' }
+    ],
+    shortcut: [
+      { url: '/primape/pm-transparent.png' }
+    ]
+  }
 };
 
 export const viewport = {
@@ -54,20 +66,6 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-};
-
-// Add comprehensive favicon settings
-export const icons = {
-  icon: [
-    { url: '/primape/pm-blue.png', sizes: '32x32', type: 'image/png' },
-    { url: '/primape/pm-blue.png', sizes: '16x16', type: 'image/png' }
-  ],
-  apple: [
-    { url: '/primape/pm-blue.png', sizes: '180x180', type: 'image/png' }
-  ],
-  shortcut: [
-    { url: '/primape/pm-transparent.png' }
-  ]
 };
 
 export default function RootLayout({
